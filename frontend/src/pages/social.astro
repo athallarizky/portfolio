@@ -1,7 +1,11 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SearchFilter from '../components/ui/SearchFilter.svelte';
-import { socialProfiles } from '../data/social-profiles';
+
+const API = 'http://localhost:3000/api';
+
+const res = await fetch(`${API}/social-profiles?sort=order`);
+const socialProfiles = await res.json();
 ---
 
 <BaseLayout title="Socials" pageTitle="Socials" activeNav="/social">

@@ -1,7 +1,11 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SearchFilter from '../components/ui/SearchFilter.svelte';
-import { projects } from '../data/projects';
+
+const API = 'http://localhost:3000/api';
+
+const res = await fetch(`${API}/projects?sort=order&depth=1`);
+const projects = await res.json();
 ---
 
 <BaseLayout title="Projects" pageTitle="Projects" activeNav="/projects">

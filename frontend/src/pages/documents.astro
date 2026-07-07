@@ -1,7 +1,14 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { documentCategories } from '../data/document-categories';
-import { documents } from '../data/documents';
+
+const API = 'http://localhost:3000/api';
+
+const [catRes, docRes] = await Promise.all([
+  fetch(`${API}/document-categories?sort=order`),
+  fetch(`${API}/documents?depth=1`),
+]);
+const documentCategories = await catRes.json();
+const documents = await docRes.json();
 
 const categories = documentCategories.docs.sort((a, b) => a.order - b.order);
 
@@ -51,7 +58,7 @@ function fmtSize(bytes: number | null): string {
                     <span class="text-xs text-desc">{fmtSize(doc.filesize)}</span>
                   </div>
                 </div>
-                <a class="icon-btn doc-download" href={doc.url || '#'} download={doc.filename || undefined} title={`Download ${doc.title}`}>
+                <a class="icon-btn doc-download" href={doc.url?.startsWith('/api') ? `http://localhost:3000${doc.url}` : doc.url || '#'} download={doc.filename || undefined} title={`Download ${doc.title}`}>
                   <iconify-icon icon="solar:download-bold" width="18" height="18"></iconify-icon>
                 </a>
               </article>

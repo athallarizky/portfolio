@@ -1,7 +1,11 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import BlogFilter from '../components/blog/BlogFilter.svelte';
-import { articles } from '../data/articles';
+
+const API = 'http://localhost:3000/api';
+
+const res = await fetch(`${API}/articles?sort=-publishedAt&depth=1`);
+const articles = await res.json();
 ---
 
 <BaseLayout title="Blogs" pageTitle="Blogs" activeNav="/blogs">

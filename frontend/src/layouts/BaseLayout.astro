@@ -3,8 +3,15 @@ import '../styles/styles.css';
 import '../styles/iconify-bridge.css';
 import Sidebar from '../components/shell/Sidebar.svelte';
 import Header from '../components/shell/Header.svelte';
-import { nav } from '../data/nav';
-import { siteConfig } from '../data/site-config';
+
+const API = 'http://localhost:3000/api';
+
+const [navRes, siteRes] = await Promise.all([
+  fetch(`${API}/globals/nav`),
+  fetch(`${API}/globals/site-config`),
+]);
+const nav = await navRes.json();
+const siteConfig = await siteRes.json();
 
 interface Props {
   title: string;

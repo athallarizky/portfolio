@@ -1,7 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import Icon from '../ui/Icon.svelte';
-  import { siteConfig } from '../../data/site-config';
+
+  export let timezone: string = 'UTC+7';
 
   let clock = '--:--';
 
@@ -25,5 +26,5 @@
 
 <span class="hero-chip">
   <Icon icon="solar:clock-circle-linear" width={14} height={14} />
-  {siteConfig.timezone || 'UTC+7'} · {clock}
+  {timezone} · {clock}
 </span>

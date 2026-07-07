@@ -4,12 +4,19 @@ import TypedRole from '../components/home/TypedRole.svelte';
 import CountUpStats from '../components/home/CountUpStats.svelte';
 import SpotlightEffect from '../components/home/SpotlightEffect.svelte';
 import LiveClock from '../components/home/LiveClock.svelte';
-import { home } from '../data/home';
-import { siteConfig } from '../data/site-config';
-import { socialProfiles } from '../data/social-profiles';
+
+const API = 'http://localhost:3000/api';
+
+const [homeRes, siteRes, socialRes] = await Promise.all([
+  fetch(`${API}/globals/home`),
+  fetch(`${API}/globals/site-config`),
+  fetch(`${API}/social-profiles?sort=order`),
+]);
+const home = await homeRes.json();
+const siteConfig = await siteRes.json();
+const socialProfiles = await socialRes.json();
 
 const homeProfiles = socialProfiles.docs.filter(p => p.showOnHome);
-const ROLES = ['Full-Stack Engineer', 'Backend-leaning builder', 'AI-tooling tinkerer', 'TypeScript · Go · Python'];
 ---
 
 <BaseLayout title="Home" pageTitle="Home" activeNav="/">
@@ -36,7 +43,7 @@ const ROLES = ['Full-Stack Engineer', 'Backend-leaning builder', 'AI-tooling tin
                 {siteConfig.status}
               </span>
             )}
-            <LiveClock client:visible />
+            <LiveClock client:visible timezone={siteConfig.timezone || 'UTC+7'} />
           </div>
         </div>
       </div>
@@ -113,6 +120,10 @@ const ROLES = ['Full-Stack Engineer', 'Backend-leaning builder', 'AI-tooling tin
 
     <div class="home-foot mt-4 text-center text-desc text-sm">
       Made with <iconify-icon icon="solar:heart-bold" width="14" height="14" style="color:var(--secondary); vertical-align:middle;"></iconify-icon> by {siteConfig.name}
+    </div>
+  </div>
+</BaseLayout>
+ame}
     </div>
   </div>
 </BaseLayout>

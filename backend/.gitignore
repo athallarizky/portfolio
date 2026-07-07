@@ -1,0 +1,17 @@
+node_modules
+.next
+dist
+build
+
+# Payload / SQLite
+payload.db
+payload.db-*
+/media
+/media/**
+
+# env
+.env
+
+# logs
+*.log
+.DS_Store

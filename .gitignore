@@ -1,0 +1,35 @@
+# macOS
+.DS_Store
+
+# Dependencies
+node_modules/
+
+# Build output
+.next/
+dist/
+build/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# AI tooling
+.claude
+.commandcode
+
+# Downloadable documents (personal files)
+frontend/assets/documents/*
+backend/documents/*
+
+# Temp / misc
+temp
+*.log
+*.tsbuildinfo

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blogs — Portfolio</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/styles.css" />
+  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+</head>
+<body>
+  <div class="layout">
+    <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
+    <!-- ============ Sidebar ============ -->
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-top">
+        <div class="avatar-block">
+          <div class="avatar">AT</div>
+          <div class="avatar-meta">
+            <span class="avatar-name">Atha Tharizky</span>
+            <span class="avatar-role">Full-Stack Engineer</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="sidebar-section-title">Menu</div>
+        <a class="sidebar-link" data-page="index.html" href="index.html">
+          <iconify-icon icon="solar:user-id-outline" width="20" height="20"></iconify-icon>
+          <span class="label">Home</span>
+        </a>
+        <a class="sidebar-link" data-page="projects.html" href="projects.html">
+          <iconify-icon icon="solar:widget-5-bold-duotone" width="20" height="20"></iconify-icon>
+          <span class="label">Projects</span>
+        </a>
+        <a class="sidebar-link is-active" data-page="blogs.html" href="blogs.html">
+          <iconify-icon icon="solar:document-text-outline" width="20" height="20"></iconify-icon>
+          <span class="label">Blogs</span>
+        </a>
+        <a class="sidebar-link" data-page="documents.html" href="documents.html">
+          <iconify-icon icon="solar:folder-bold-duotone" width="20" height="20"></iconify-icon>
+          <span class="label">Documents</span>
+        </a>
+        <a class="sidebar-link" data-page="social.html" href="social.html">
+          <iconify-icon icon="solar:users-group-rounded-bold-duotone" width="20" height="20"></iconify-icon>
+          <span class="label">Socials</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Connect</div>
+        <a class="sidebar-link" href="https://github.com" target="_blank" rel="noopener">
+          <iconify-icon icon="mdi:github" width="20" height="20"></iconify-icon>
+          <span class="label">GitHub</span>
+        </a>
+        <a class="sidebar-link" href="https://www.linkedin.com" target="_blank" rel="noopener">
+          <iconify-icon icon="mdi:linkedin" width="20" height="20"></iconify-icon>
+          <span class="label">LinkedIn</span>
+        </a>
+        <a class="sidebar-link" href="mailto:hello@example.com">
+          <iconify-icon icon="solar:letter-outline" width="20" height="20"></iconify-icon>
+          <span class="label">Contact</span>
+        </a>
+      </div>
+
+      <div class="halation"></div>
+
+      <div class="sidebar-bottom">
+        <button id="theme-toggle" class="icon-btn" title="Toggle theme">
+          <iconify-icon icon="solar:moon-bold" width="20" height="20"></iconify-icon>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ============ Main ============ -->
+    <main class="main">
+      <header class="header">
+        <div class="header-left">
+          <button id="hamburger" class="icon-btn hamburger">
+            <iconify-icon icon="solar:hamburger-menu-outline" width="24" height="24"></iconify-icon>
+          </button>
+          <div class="header-title-row">
+            <div class="accent-bar"></div>
+            <span class="page-title" id="page-title">Blogs</span>
+            <span style="display:inline-flex" class="sync-icon" title="Refresh">
+              <iconify-icon icon="fluent:arrow-sync-12-filled" width="20" height="20"></iconify-icon>
+            </span>
+          </div>
+        </div>
+        <div class="header-right">
+          <label class="search">
+            <iconify-icon icon="solar:magnifer-linear" width="16" height="16"></iconify-icon>
+            <input type="text" placeholder="Search articles…" />
+          </label>
+          <button class="icon-btn" title="RSS">
+            <iconify-icon icon="solar:rss-outline" width="22" height="22"></iconify-icon>
+          </button>
+        </div>
+      </header>
+
+      <div class="content-scroll">
+        <div class="layout-container">
+          <div class="corner-blob"></div>
+          <div class="content-inner">
+
+            <p class="text-desc text-sm mb-4">
+              Notes on backend systems, AI tooling, and how I run software projects with AI agents.
+            </p>
+
+            <div class="blog-layout">
+            <div class="blog-list">
+
+              <!-- Article 1 -->
+              <article class="card is-hoverable">
+                <div class="blog-card-meta">
+                  <span class="tag is-secondary">AI</span>
+                  <span class="tag is-secondary">Workflow</span>
+                  <span class="meta-item"><iconify-icon icon="solar:calendar-linear" width="14" height="14"></iconify-icon> Jul 7, 2026</span>
+                  <span class="meta-item"><iconify-icon icon="solar:clock-circle-linear" width="14" height="14"></iconify-icon> 8 min read</span>
+                </div>
+                <a href="article.html" style="text-decoration:none; color:inherit;">
+                  <h2 class="blog-card-title">Running a Software Project With an AI Agent: PRD to Prod</h2>
+                </a>
+                <p class="blog-card-excerpt">
+                  The sprint pattern I use to hand real software work off to an LLM — phase 0
+                  discovery, planning docs, phase reports, and the AGENTS.md file that makes
+                  delegation actually work. If you've ever watched an agent flail for 40 minutes
+                  on a vague task, this post is the antidote.
+                </p>
+                <div class="card-footer">
+                  <span class="text-xs text-desc">Published Jul 7, 2026</span>
+                  <a class="btn btn-ghost" href="article.html">Read article <iconify-icon icon="solar:alt-arrow-right-linear" width="16" height="16"></iconify-icon></a>
+                </div>
+              </article>
+
+              <!-- Article 2 -->
+              <article class="card is-hoverable">
+                <div class="blog-card-meta">
+                  <span class="tag is-secondary">RAG</span>
+                  <span class="tag is-secondary">Go</span>
+                  <span class="meta-item"><iconify-icon icon="solar:calendar-linear" width="14" height="14"></iconify-icon> Jun 22, 2026</span>
+                  <span class="meta-item"><iconify-icon icon="solar:clock-circle-linear" width="14" height="14"></iconify-icon> 12 min read</span>
+                </div>
+                <a href="article.html" style="text-decoration:none; color:inherit;">
+                  <h2 class="blog-card-title">Stop Building RAG From Scratch</h2>
+                </a>
+                <p class="blog-card-excerpt">
+                  Everyone reaches for LangChain on day one. Here's why a 200-line HNSW index,
+                  a chunker, and a single prompt usually beats the framework soup — and where
+                  the frameworks actually start to earn their keep.
+                </p>
+                <div class="card-footer">
+                  <span class="text-xs text-desc">Published Jun 22, 2026</span>
+                  <a class="btn btn-ghost" href="article.html">Read article <iconify-icon icon="solar:alt-arrow-right-linear" width="16" height="16"></iconify-icon></a>
+                </div>
+              </article>
+
+              <!-- Article 3 -->
+              <article class="card is-hoverable">
+                <div class="blog-card-meta">
+                  <span class="tag is-secondary">TypeScript</span>
+                  <span class="tag is-secondary">tRPC</span>
+                  <span class="meta-item"><iconify-icon icon="solar:calendar-linear" width="14" height="14"></iconify-icon> May 18, 2026</span>
+                  <span class="meta-item"><iconify-icon icon="solar:clock-circle-linear" width="14" height="14"></iconify-icon> 6 min read</span>
+                </div>
+                <a href="article.html" style="text-decoration:none; color:inherit;">
+                  <h2 class="blog-card-title">tRPC Is the API Layer I Didn't Know I Needed</h2>
+                </a>
+                <p class="blog-card-excerpt">
+                  End-to-end types without codegen, no schema duplication, and your frontend
+                  just… knows. After a year with tRPC, here's where it shines and where it
+                  starts to bite back at scale.
+                </p>
+                <div class="card-footer">
+                  <span class="text-xs text-desc">Published May 18, 2026</span>
+                  <a class="btn btn-ghost" href="article.html">Read article <iconify-icon icon="solar:alt-arrow-right-linear" width="16" height="16"></iconify-icon></a>
+                </div>
+              </article>
+
+              <!-- Article 4 -->
+              <article class="card is-hoverable">
+                <div class="blog-card-meta">
+                  <span class="tag is-secondary">Go</span>
+                  <span class="tag is-secondary">DX</span>
+                  <span class="meta-item"><iconify-icon icon="solar:calendar-linear" width="14" height="14"></iconify-icon> Apr 30, 2026</span>
+                  <span class="meta-item"><iconify-icon icon="solar:clock-circle-linear" width="14" height="14"></iconify-icon> 10 min read</span>
+                </div>
+                <a href="article.html" style="text-decoration:none; color:inherit;">
+                  <h2 class="blog-card-title">Designing CLI Tools People Actually Want to Use</h2>
+                </a>
+                <p class="blog-card-excerpt">
+                  Good CLIs feel like magic: instant startup, helpful errors, sensible defaults,
+                  and zero config. A field guide to building them in Go with Cobra — including
+                  the error UX most people get wrong.
+                </p>
+                <div class="card-footer">
+                  <span class="text-xs text-desc">Published Apr 30, 2026</span>
+                  <a class="btn btn-ghost" href="article.html">Read article <iconify-icon icon="solar:alt-arrow-right-linear" width="16" height="16"></iconify-icon></a>
+                </div>
+              </article>
+
+              <!-- Article 5 -->
+              <article class="card is-hoverable">
+                <div class="blog-card-meta">
+                  <span class="tag is-secondary">Postgres</span>
+                  <span class="tag is-secondary">AI</span>
+                  <span class="meta-item"><iconify-icon icon="solar:calendar-linear" width="14" height="14"></iconify-icon> Mar 14, 2026</span>
+                  <span class="meta-item"><iconify-icon icon="solar:clock-circle-linear" width="14" height="14"></iconify-icon> 7 min read</span>
+                </div>
+                <a href="article.html" style="text-decoration:none; color:inherit;">
+                  <h2 class="blog-card-title">From Postgres to Vector DB: When to Stop</h2>
+                </a>
+                <p class="blog-card-excerpt">
+                  pgvector handles more than people give it credit for. Before you reach for
+                  Pinecone or Qdrant, check whether your collection even needs a dedicated
+                  vector store — most don't, until they very much do.
+                </p>
+                <div class="card-footer">
+                  <span class="text-xs text-desc">Published Mar 14, 2026</span>
+                  <a class="btn btn-ghost" href="article.html">Read article <iconify-icon icon="solar:alt-arrow-right-linear" width="16" height="16"></iconify-icon></a>
+                </div>
+              </article>
+
+              <!-- Article 6 -->
+              <article class="card is-hoverable">
+                <div class="blog-card-meta">
+                  <span class="tag is-secondary">Testing</span>
+                  <span class="tag is-secondary">DX</span>
+                  <span class="meta-item"><iconify-icon icon="solar:calendar-linear" width="14" height="14"></iconify-icon> Feb 9, 2026</span>
+                  <span class="meta-item"><iconify-icon icon="solar:clock-circle-linear" width="14" height="14"></iconify-icon> 5 min read</span>
+                </div>
+                <a href="article.html" style="text-decoration:none; color:inherit;">
+                  <h2 class="blog-card-title">A Pragmatic Test Pyramid for Side Projects</h2>
+                </a>
+                <p class="blog-card-excerpt">
+                  You don't need 90% coverage on a weekend project. But you do need a handful
+                  of tests that catch the scary stuff. Here's the cheap version that works —
+                  and the three tests I always write first.
+                </p>
+                <div class="card-footer">
+                  <span class="text-xs text-desc">Published Feb 9, 2026</span>
+                  <a class="btn btn-ghost" href="article.html">Read article <iconify-icon icon="solar:alt-arrow-right-linear" width="16" height="16"></iconify-icon></a>
+                </div>
+              </article>
+
+            </div>
+
+            <aside class="blog-filter">
+              <div class="filter-head">
+                <iconify-icon icon="solar:filter-linear" width="18" height="18"></iconify-icon>
+                <span>Categories</span>
+              </div>
+              <div class="filter-chips" id="blog-categories"></div>
+            </aside>
+            </div>
+
+            <div class="empty-state">
+              <iconify-icon icon="solar:document-add-outline" width="48" height="48" style="opacity:.4"></iconify-icon>
+              <p>New articles land roughly every other week.</p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/app.js"></script>
+  <script src="assets/blogs.js"></script>
+</body>
+</html>

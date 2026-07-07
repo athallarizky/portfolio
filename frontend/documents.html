@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Documents — Portfolio</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/styles.css" />
+  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+</head>
+<body>
+  <div class="layout">
+    <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
+    <!-- ============ Sidebar ============ -->
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-top">
+        <div class="avatar-block">
+          <div class="avatar">AT</div>
+          <div class="avatar-meta">
+            <span class="avatar-name">Atha Tharizky</span>
+            <span class="avatar-role">Full-Stack Engineer</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="sidebar-section-title">Menu</div>
+        <a class="sidebar-link" data-page="index.html" href="index.html">
+          <iconify-icon icon="solar:user-id-outline" width="20" height="20"></iconify-icon>
+          <span class="label">Home</span>
+        </a>
+        <a class="sidebar-link" data-page="projects.html" href="projects.html">
+          <iconify-icon icon="solar:widget-5-bold-duotone" width="20" height="20"></iconify-icon>
+          <span class="label">Projects</span>
+        </a>
+        <a class="sidebar-link" data-page="blogs.html" href="blogs.html">
+          <iconify-icon icon="solar:document-text-outline" width="20" height="20"></iconify-icon>
+          <span class="label">Blogs</span>
+        </a>
+        <a class="sidebar-link is-active" data-page="documents.html" href="documents.html">
+          <iconify-icon icon="solar:folder-bold-duotone" width="20" height="20"></iconify-icon>
+          <span class="label">Documents</span>
+        </a>
+        <a class="sidebar-link" data-page="social.html" href="social.html">
+          <iconify-icon icon="solar:users-group-rounded-bold-duotone" width="20" height="20"></iconify-icon>
+          <span class="label">Socials</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Connect</div>
+        <a class="sidebar-link" href="https://github.com" target="_blank" rel="noopener">
+          <iconify-icon icon="mdi:github" width="20" height="20"></iconify-icon>
+          <span class="label">GitHub</span>
+        </a>
+        <a class="sidebar-link" href="https://www.linkedin.com" target="_blank" rel="noopener">
+          <iconify-icon icon="mdi:linkedin" width="20" height="20"></iconify-icon>
+          <span class="label">LinkedIn</span>
+        </a>
+        <a class="sidebar-link" href="mailto:hello@example.com">
+          <iconify-icon icon="solar:letter-outline" width="20" height="20"></iconify-icon>
+          <span class="label">Contact</span>
+        </a>
+      </div>
+
+      <div class="halation"></div>
+
+      <div class="sidebar-bottom">
+        <button id="theme-toggle" class="icon-btn" title="Toggle theme">
+          <iconify-icon icon="solar:moon-bold" width="20" height="20"></iconify-icon>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ============ Main ============ -->
+    <main class="main">
+      <header class="header">
+        <div class="header-left">
+          <button id="hamburger" class="icon-btn hamburger">
+            <iconify-icon icon="solar:hamburger-menu-outline" width="24" height="24"></iconify-icon>
+          </button>
+          <div class="header-title-row">
+            <div class="accent-bar"></div>
+            <span class="page-title" id="page-title">Documents</span>
+            <span style="display:inline-flex" class="sync-icon" title="Refresh">
+              <iconify-icon icon="fluent:arrow-sync-12-filled" width="20" height="20"></iconify-icon>
+            </span>
+          </div>
+        </div>
+        <div class="header-right">
+          <label class="search">
+            <iconify-icon icon="solar:magnifer-linear" width="16" height="16"></iconify-icon>
+            <input type="text" placeholder="Search documents…" />
+          </label>
+          <button class="icon-btn" title="Filter">
+            <iconify-icon icon="solar:filter-linear" width="22" height="22"></iconify-icon>
+          </button>
+        </div>
+      </header>
+
+      <div class="content-scroll">
+        <div class="layout-container">
+          <div class="corner-blob"></div>
+          <div class="content-inner">
+
+            <p class="text-desc text-sm mb-4">
+              Downloadable documents, grouped by what they're for.
+            </p>
+
+            <!-- Document cards are rendered here by assets/documents.js,
+                 grouped into registered categories (Pinned / Research / Other). -->
+            <div id="documents-root"></div>
+
+            <div class="empty-state">
+              <iconify-icon icon="solar:document-add-outline" width="48" height="48" style="opacity:.4"></iconify-icon>
+              <p>More documents are added as I publish write-ups and talks.</p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/app.js"></script>
+  <script src="assets/documents.js"></script>
+</body>
+</html>

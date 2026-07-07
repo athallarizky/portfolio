@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Running a Software Project With an AI Agent — Portfolio</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/styles.css" />
+  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+</head>
+<body>
+  <div class="layout">
+    <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
+    <!-- ============ Sidebar ============ -->
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-top">
+        <div class="avatar-block">
+          <div class="avatar">AT</div>
+          <div class="avatar-meta">
+            <span class="avatar-name">Atha Tharizky</span>
+            <span class="avatar-role">Full-Stack Engineer</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="sidebar-section-title">Menu</div>
+        <a class="sidebar-link" data-page="index.html" href="index.html">
+          <iconify-icon icon="solar:user-id-outline" width="20" height="20"></iconify-icon>
+          <span class="label">Home</span>
+        </a>
+        <a class="sidebar-link" data-page="projects.html" href="projects.html">
+          <iconify-icon icon="solar:widget-5-bold-duotone" width="20" height="20"></iconify-icon>
+          <span class="label">Projects</span>
+        </a>
+        <a class="sidebar-link is-active" data-page="blogs.html" href="blogs.html">
+          <iconify-icon icon="solar:document-text-outline" width="20" height="20"></iconify-icon>
+          <span class="label">Blogs</span>
+        </a>
+        <a class="sidebar-link" data-page="documents.html" href="documents.html">
+          <iconify-icon icon="solar:folder-bold-duotone" width="20" height="20"></iconify-icon>
+          <span class="label">Documents</span>
+        </a>
+        <a class="sidebar-link" data-page="social.html" href="social.html">
+          <iconify-icon icon="solar:users-group-rounded-bold-duotone" width="20" height="20"></iconify-icon>
+          <span class="label">Socials</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Connect</div>
+        <a class="sidebar-link" href="https://github.com" target="_blank" rel="noopener">
+          <iconify-icon icon="mdi:github" width="20" height="20"></iconify-icon>
+          <span class="label">GitHub</span>
+        </a>
+        <a class="sidebar-link" href="https://www.linkedin.com" target="_blank" rel="noopener">
+          <iconify-icon icon="mdi:linkedin" width="20" height="20"></iconify-icon>
+          <span class="label">LinkedIn</span>
+        </a>
+        <a class="sidebar-link" href="mailto:hello@example.com">
+          <iconify-icon icon="solar:letter-outline" width="20" height="20"></iconify-icon>
+          <span class="label">Contact</span>
+        </a>
+      </div>
+
+      <div class="halation"></div>
+
+      <div class="sidebar-bottom">
+        <button id="theme-toggle" class="icon-btn" title="Toggle theme">
+          <iconify-icon icon="solar:moon-bold" width="20" height="20"></iconify-icon>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ============ Main ============ -->
+    <main class="main">
+      <header class="header">
+        <div class="header-left">
+          <button id="hamburger" class="icon-btn hamburger">
+            <iconify-icon icon="solar:hamburger-menu-outline" width="24" height="24"></iconify-icon>
+          </button>
+          <div class="header-title-row">
+            <div class="accent-bar"></div>
+            <span class="page-title" id="page-title">Article</span>
+            <span style="display:inline-flex" class="sync-icon" title="Refresh">
+              <iconify-icon icon="fluent:arrow-sync-12-filled" width="20" height="20"></iconify-icon>
+            </span>
+          </div>
+        </div>
+        <div class="header-right">
+          <a class="back-link" href="blogs.html">
+            <iconify-icon icon="solar:alt-arrow-left-linear" width="16" height="16"></iconify-icon>
+            All articles
+          </a>
+        </div>
+      </header>
+
+      <div class="content-scroll">
+        <div class="layout-container">
+          <div class="corner-blob"></div>
+          <div class="content-inner article-layout">
+            <div class="article-main">
+
+            <!-- Article header -->
+            <div class="detail-header mt-4">
+              <div class="flex gap-2 flex-wrap mb-2">
+                <span class="tag is-secondary">AI</span>
+                <span class="tag is-secondary">Workflow</span>
+              </div>
+              <h1 class="detail-title">Running a Software Project With an AI Agent: PRD to Prod</h1>
+              <p class="detail-subtitle">
+                The sprint pattern I use to hand real software work off to an LLM —
+                phase 0 discovery, planning docs, phase reports, and AGENTS.md.
+              </p>
+              <div class="detail-meta">
+                <span class="flex items-center gap-1"><span class="avatar" style="width:22px; height:22px; font-size:10px;">AT</span> Atha Tharizky</span>
+                <span class="meta-item"><iconify-icon icon="solar:calendar-linear" width="16" height="16"></iconify-icon> Jul 7, 2026</span>
+                <span class="meta-item"><iconify-icon icon="solar:clock-circle-linear" width="16" height="16"></iconify-icon> 8 min read</span>
+                <span class="meta-item"><iconify-icon icon="solar:eye-linear" width="16" height="16"></iconify-icon> 1,204 views</span>
+              </div>
+            </div>
+
+            <!-- Banner -->
+            <div class="detail-banner" style="background: linear-gradient(135deg,#9936e6 0%,#5b21b6 50%,#1e1b4b 100%);">
+              <iconify-icon icon="solar:rocket-bold" width="64" height="64" class="banner-icon"></iconify-icon>
+            </div>
+
+            <!-- Article body -->
+            <article class="prose">
+              <p>
+                The first time I tried to hand a real feature to an LLM, it went sideways in
+                about fifteen minutes. The agent invented an import that didn't exist, "fixed"
+                a test by deleting it, and confidently declared the task done. Classic. The
+                problem wasn't the model — it was that I'd given it a vague paragraph and hoped
+                for the best.
+              </p>
+              <p>
+                After a year of running projects this way, I've landed on a pattern that
+                actually works. It's not fancy, and most of it is just <em>writing things down</em>.
+                But the shape of the writing matters.
+              </p>
+
+              <h2>The shape: phases, not prompts</h2>
+              <p>
+                The single biggest shift is thinking in <strong>phases</strong>, not prompts.
+                Each phase has a goal, a set of tasks with difficulties and dependencies, and
+                a report at the end. The agent never moves to the next phase until the current
+                one is verified working.
+              </p>
+
+              <pre><code>PRD / Idea
+    │
+    ▼
+Phase 0 — Discovery & Exploration
+Phase 1 — Foundation
+Phase 2 — Core feature
+Phase 3 — Integration
+...
+    │
+    ▼
+Retro / Ideas</code></pre>
+
+              <h2>The four files that make delegation work</h2>
+              <p>
+                Inside each <code>docs/sprint-N/</code> folder I keep four documents. These
+                are the things that turn a flailing agent into a reliable contributor.
+              </p>
+
+              <h3>1. tasks.md — the source of truth</h3>
+              <p>
+                Every task has an ID, a difficulty (Easy / Medium / Hard), dependencies, and
+                a status emoji: ⬜ pending, 🔵 in_progress, ✅ completed, ❌ blocked. Only one
+                task is in progress at a time. Nothing gets marked done until it's tested.
+              </p>
+              <blockquote>
+                If a task can't be marked ✅, it isn't done. "It compiles" is not done. Run it,
+                look at the output, then mark it done.
+              </blockquote>
+
+              <h3>2. architecture.md — the WHY</h3>
+              <p>
+                Tech stack decisions with a decision matrix and — more importantly — a
+                "rejected alternatives" table. Future-you (and future-agent) will thank you
+                for explaining why you didn't pick the obvious thing.
+              </p>
+
+              <h3>3. data-design.md — the shapes</h3>
+              <p>
+                Show the data at every pipeline stage. Real schemas, not prose. Note the
+                quirks: duplicate keys, mixed casing, the field that's suddenly null for no
+                reason. These are where agents trip hardest.
+              </p>
+
+              <h3>4. AGENTS.md — the handoff</h3>
+              <p>
+                This is the file you point another LLM at. It lists what already exists (do
+                NOT rebuild), the exact file structure to create, a numbered implementation
+                checklist, and "done criteria" so the agent can self-validate.
+              </p>
+
+              <h2>The communication loop</h2>
+              <ul>
+                <li>Ask before committing — "Confirm and I'll commit."</li>
+                <li>Test immediately after building. Run the code. Show the output.</li>
+                <li>Update docs after every phase — report + tasks.md update.</li>
+                <li>Document findings, not just results. What surprised you? What failed?</li>
+              </ul>
+
+              <h2>What this buys you</h2>
+              <p>
+                On my last project this workflow produced five services across three languages,
+                ~2,500 lines of documentation, and a working RAG pipeline — in a sprint I could
+                actually follow. More importantly, when I came back two weeks later, I could
+                pick up exactly where I left off because every decision was written down.
+              </p>
+              <p>
+                The agents didn't get smarter. I just got more disciplined about what I told them.
+              </p>
+            </article>
+
+            <!-- Tags + actions -->
+            <div class="flex items-center justify-between flex-wrap gap-2 mt-4 mb-2" style="max-width:760px;">
+              <div class="flex flex-wrap">
+                <span class="tag is-secondary">AI</span>
+                <span class="tag is-secondary">Workflow</span>
+                <span class="tag is-secondary">Sprint</span>
+                <span class="tag is-secondary">LLM</span>
+              </div>
+              <div class="flex gap-2">
+                <button class="btn btn-outline"><iconify-icon icon="solar:heart-linear" width="16" height="16"></iconify-icon> 42</button>
+                <button class="btn btn-outline"><iconify-icon icon="mdi:share-variant-outline" width="16" height="16"></iconify-icon> Share</button>
+              </div>
+            </div>
+
+            <!-- Author bio -->
+            <div class="author-card" style="max-width:760px;">
+              <div class="avatar">AT</div>
+              <div style="flex:1;">
+                <div style="font-weight:800; font-size:15px;">Atha Tharizky</div>
+                <div class="text-xs text-desc mb-2">Full-Stack Engineer · Backend · AI tooling</div>
+                <div class="text-sm" style="opacity:.85;">
+                  I write about backend systems, developer experience, and running software
+                  projects with AI agents. Follow along — new posts every other week.
+                </div>
+              </div>
+              <a class="btn btn-primary" href="index.html">Follow</a>
+            </div>
+
+            <!-- Next article -->
+            <a href="article.html" class="card is-hoverable" style="display:block; max-width:760px; text-decoration:none; color:inherit;">
+              <div class="text-xs text-desc mb-2">Next article</div>
+              <div class="card-title">Stop Building RAG From Scratch →</div>
+              <p class="card-excerpt mt-2">
+                Why a 200-line HNSW index and a single prompt usually beats the framework soup.
+              </p>
+            </a>
+            </div>
+
+            <aside class="related-articles">
+              <div class="related-head">Related articles</div>
+              <a class="related-item" href="article.html">
+                <span class="related-title">Stop Building RAG From Scratch</span>
+                <span class="related-meta">RAG · Jun 2026</span>
+              </a>
+              <a class="related-item" href="article.html">
+                <span class="related-title">From Postgres to Vector DB: When to Stop</span>
+                <span class="related-meta">AI · Mar 2026</span>
+              </a>
+              <a class="related-item" href="article.html">
+                <span class="related-title">tRPC Is the API Layer I Didn't Know I Needed</span>
+                <span class="related-meta">TypeScript · May 2026</span>
+              </a>
+              <a class="related-item" href="article.html">
+                <span class="related-title">Designing CLI Tools People Actually Want to Use</span>
+                <span class="related-meta">Go · Apr 2026</span>
+              </a>
+            </aside>
+
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/app.js"></script>
+</body>
+</html>

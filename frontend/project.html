@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NoteFlow — Project — Portfolio</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/styles.css" />
+  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+</head>
+<body>
+  <div class="layout">
+    <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
+    <!-- ============ Sidebar ============ -->
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-top">
+        <div class="avatar-block">
+          <div class="avatar">AT</div>
+          <div class="avatar-meta">
+            <span class="avatar-name">Atha Tharizky</span>
+            <span class="avatar-role">Full-Stack Engineer</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="sidebar-section-title">Menu</div>
+        <a class="sidebar-link" data-page="index.html" href="index.html">
+          <iconify-icon icon="solar:user-id-outline" width="20" height="20"></iconify-icon>
+          <span class="label">Home</span>
+        </a>
+        <a class="sidebar-link is-active" data-page="projects.html" href="projects.html">
+          <iconify-icon icon="solar:widget-5-bold-duotone" width="20" height="20"></iconify-icon>
+          <span class="label">Projects</span>
+        </a>
+        <a class="sidebar-link" data-page="blogs.html" href="blogs.html">
+          <iconify-icon icon="solar:document-text-outline" width="20" height="20"></iconify-icon>
+          <span class="label">Blogs</span>
+        </a>
+        <a class="sidebar-link" data-page="documents.html" href="documents.html">
+          <iconify-icon icon="solar:folder-bold-duotone" width="20" height="20"></iconify-icon>
+          <span class="label">Documents</span>
+        </a>
+        <a class="sidebar-link" data-page="social.html" href="social.html">
+          <iconify-icon icon="solar:users-group-rounded-bold-duotone" width="20" height="20"></iconify-icon>
+          <span class="label">Socials</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Connect</div>
+        <a class="sidebar-link" href="https://github.com" target="_blank" rel="noopener">
+          <iconify-icon icon="mdi:github" width="20" height="20"></iconify-icon>
+          <span class="label">GitHub</span>
+        </a>
+        <a class="sidebar-link" href="https://www.linkedin.com" target="_blank" rel="noopener">
+          <iconify-icon icon="mdi:linkedin" width="20" height="20"></iconify-icon>
+          <span class="label">LinkedIn</span>
+        </a>
+        <a class="sidebar-link" href="mailto:hello@example.com">
+          <iconify-icon icon="solar:letter-outline" width="20" height="20"></iconify-icon>
+          <span class="label">Contact</span>
+        </a>
+      </div>
+
+      <div class="halation"></div>
+
+      <div class="sidebar-bottom">
+        <button id="theme-toggle" class="icon-btn" title="Toggle theme">
+          <iconify-icon icon="solar:moon-bold" width="20" height="20"></iconify-icon>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ============ Main ============ -->
+    <main class="main">
+      <header class="header">
+        <div class="header-left">
+          <button id="hamburger" class="icon-btn hamburger">
+            <iconify-icon icon="solar:hamburger-menu-outline" width="24" height="24"></iconify-icon>
+          </button>
+          <div class="header-title-row">
+            <div class="accent-bar"></div>
+            <span class="page-title" id="page-title">NoteFlow</span>
+            <span style="display:inline-flex" class="sync-icon" title="Refresh">
+              <iconify-icon icon="fluent:arrow-sync-12-filled" width="20" height="20"></iconify-icon>
+            </span>
+          </div>
+        </div>
+        <div class="header-right">
+          <a class="back-link" href="projects.html">
+            <iconify-icon icon="solar:alt-arrow-left-linear" width="16" height="16"></iconify-icon>
+            All projects
+          </a>
+        </div>
+      </header>
+
+      <div class="content-scroll">
+        <div class="layout-container">
+          <div class="corner-blob"></div>
+          <div class="content-inner" style="max-width: 900px;">
+
+            <!-- Project header -->
+            <div class="detail-header mt-4">
+              <div class="flex gap-2 flex-wrap mb-2">
+                <span class="tag is-secondary">Personal</span>
+                <span class="tag is-secondary">Open Source</span>
+                <span class="tag">Active</span>
+              </div>
+              <h1 class="detail-title">NoteFlow</h1>
+              <p class="detail-subtitle">
+                A self-hosted, AI-assisted note-taking app. Markdown, tags, semantic search,
+                and a Tauri desktop build — think "Blinko, but mine."
+              </p>
+              <div class="detail-meta">
+                <span class="meta-item"><iconify-icon icon="solar:calendar-linear" width="16" height="16"></iconify-icon> Started Jan 2025</span>
+                <span class="meta-item"><iconify-icon icon="solar:users-group-rounded-linear" width="16" height="16"></iconify-icon> Solo + 2 contributors</span>
+                <span class="meta-item"><iconify-icon icon="solar:star-line-duotone" width="16" height="16"></iconify-icon> 480 GitHub stars</span>
+                <span class="meta-item"><iconify-icon icon="mdi:git-branch" width="16" height="16"></iconify-icon> v1.4.2</span>
+              </div>
+              <div class="flex gap-2 flex-wrap mt-4">
+                <a class="btn btn-primary" href="#" target="_blank" rel="noopener">
+                  <iconify-icon icon="mdi:github" width="16" height="16"></iconify-icon> View Source
+                </a>
+                <a class="btn btn-outline" href="#" target="_blank" rel="noopener">
+                  <iconify-icon icon="solar:link-circle-bold" width="16" height="16"></iconify-icon> Live Demo
+                </a>
+                <a class="btn btn-ghost" href="article.html">
+                  <iconify-icon icon="solar:document-text-outline" width="16" height="16"></iconify-icon> Read Writeup
+                </a>
+              </div>
+            </div>
+
+            <!-- Banner -->
+            <div class="detail-banner" style="height: 280px; background: linear-gradient(135deg,#9936e6 0%,#5b21b6 50%,#1e1b4b 100%);">
+              <iconify-icon icon="solar:rocket-bold" width="80" height="80" class="banner-icon"></iconify-icon>
+            </div>
+
+            <!-- Overview -->
+            <div class="project-section">
+              <h3>Overview</h3>
+              <div class="prose">
+                <p>
+                  NoteFlow is a self-hosted note-taking app I built to scratch my own itch —
+                  I wanted something fast for capturing fleeting ideas, with the kind of AI
+                  search that actually understands what I meant three months later. It runs
+                  entirely on your own infrastructure, so your notes never leave your machine
+                  unless you want them to.
+                </p>
+                <p>
+                  The web frontend is a React + Vite + Tailwind app. The backend is tRPC over
+                  Express, with Prisma on Postgres. The desktop build ships via Tauri so the
+                  whole thing fits in a ~15MB binary. Semantic search uses a pluggable provider
+                  pattern (OpenAI, Ollama, local embeddings) backed by an HNSW index.
+                </p>
+              </div>
+            </div>
+
+            <!-- Tech stack -->
+            <div class="project-section">
+              <h3>Tech Stack</h3>
+              <div class="flex flex-wrap">
+                <span class="tag is-secondary">TypeScript</span>
+                <span class="tag is-secondary">React 18</span>
+                <span class="tag is-secondary">Vite</span>
+                <span class="tag is-secondary">TailwindCSS</span>
+                <span class="tag is-secondary">tRPC</span>
+                <span class="tag is-secondary">Express</span>
+                <span class="tag is-secondary">Prisma</span>
+                <span class="tag is-secondary">PostgreSQL</span>
+                <span class="tag is-secondary">Tauri</span>
+                <span class="tag is-secondary">OpenAI / Ollama</span>
+                <span class="tag is-secondary">HNSW</span>
+                <span class="tag is-secondary">MobX</span>
+              </div>
+            </div>
+
+            <!-- Features -->
+            <div class="project-section">
+              <h3>Key Features</h3>
+              <ul class="feature-list">
+                <li>
+                  <iconify-icon icon="solar:bolt-linear" width="20" height="20"></iconify-icon>
+                  <span><strong>Instant capture.</strong> Global hotkey opens a quick-note window; the note is saved before you finish your coffee sip.</span>
+                </li>
+                <li>
+                  <iconify-icon icon="solar:database-linear" width="20" height="20"></iconify-icon>
+                  <span><strong>Semantic search.</strong> Natural-language queries over every note you've ever written, powered by a local HNSW index.</span>
+                </li>
+                <li>
+                  <iconify-icon icon="solar:chat-round-dots-linear" width="20" height="20"></iconify-icon>
+                  <span><strong>AI chat with your notes.</strong> RAG-backed conversations that cite the source note for every claim.</span>
+                </li>
+                <li>
+                  <iconify-icon icon="solar:tag-bold-duotone" width="20" height="20"></iconify-icon>
+                  <span><strong>Tags & references.</strong> Wiki-style <code>[[links]]</code> between notes, plus nested tags for organization.</span>
+                </li>
+                <li>
+                  <iconify-icon icon="solar:smartphone-linear" width="20" height="20"></iconify-icon>
+                  <span><strong>Cross-platform.</strong> Web, macOS, Windows, Linux, and Android — all from one codebase via Tauri.</span>
+                </li>
+                <li>
+                  <iconify-icon icon="solar:lock-keyhole-minimalistic-linear" width="20" height="20"></iconify-icon>
+                  <span><strong>Self-hosted & private.</strong> Your data never leaves your server. Optional end-to-end encryption.</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Screenshots -->
+            <div class="project-section">
+              <h3>Screenshots</h3>
+              <div class="screenshot-row">
+                <div class="shot" style="background: linear-gradient(135deg,#9936e6,#5b21b6);">
+                  <iconify-icon icon="solar:widget-5-bold-duotone" width="40" height="40"></iconify-icon>
+                </div>
+                <div class="shot" style="background: linear-gradient(135deg,#3b82f6,#1e3a8a);">
+                  <iconify-icon icon="solar:chat-round-dots-linear" width="40" height="40"></iconify-icon>
+                </div>
+                <div class="shot" style="background: linear-gradient(135deg,#22c55e,#15803d);">
+                  <iconify-icon icon="solar:document-text-outline" width="40" height="40"></iconify-icon>
+                </div>
+                <div class="shot" style="background: linear-gradient(135deg,#f97316,#831843);">
+                  <iconify-icon icon="solar:magnifer-linear" width="40" height="40"></iconify-icon>
+                </div>
+              </div>
+            </div>
+
+            <!-- Architecture -->
+            <div class="project-section">
+              <h3>Architecture</h3>
+              <div class="prose">
+                <p>
+                  The codebase is a Bun-managed monorepo with three workspaces:
+                  <code>app/</code> (React frontend + Tauri shell), <code>server/</code>
+                  (tRPC + Express + AI providers), and <code>shared/</code> (types, schemas,
+                  helpers). The AI layer uses a factory pattern so new providers are ~one file.
+                </p>
+                <pre><code>noteflow/
+├── app/           # React + Vite + Tauri
+│   ├── src/
+│   └── src-tauri/
+├── server/        # tRPC + Express + AI
+│   ├── routerTrpc/
+│   └── aiServer/
+├── shared/        # types & helpers
+└── prisma/        # schema & migrations</code></pre>
+              </div>
+            </div>
+
+            <!-- Stats footer -->
+            <div class="project-section">
+              <h3>By the Numbers</h3>
+              <div class="grid-3" style="gap:12px;">
+                <div class="card">
+                  <div style="font-size:24px; font-weight:900;">480</div>
+                  <div class="text-xs text-desc">GitHub stars</div>
+                </div>
+                <div class="card">
+                  <div style="font-size:24px; font-weight:900;">~12k</div>
+                  <div class="text-xs text-desc">Lines of code</div>
+                </div>
+                <div class="card">
+                  <div style="font-size:24px; font-weight:900;">15MB</div>
+                  <div class="text-xs text-desc">Desktop binary</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Next project -->
+            <a href="project.html" class="card is-hoverable" style="display:block; text-decoration:none; color:inherit;">
+              <div class="text-xs text-desc mb-2">Next project</div>
+              <div class="card-title">Rent-House-AI →</div>
+              <p class="card-excerpt mt-2">
+                Listing scraper → RAG pipeline → semantic search across rental listings.
+              </p>
+            </a>
+
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/app.js"></script>
+</body>
+</html>

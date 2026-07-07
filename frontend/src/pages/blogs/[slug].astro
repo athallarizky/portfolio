@@ -1,0 +1,72 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { articles } from '../../data/articles';
+import { renderLexical } from '../../lib/render-lexical';
+
+export function getStaticPaths() {
+  return articles.docs
+    .filter(a => a.status === 'published')
+    .map(a => ({ params: { slug: a.slug }, props: { article: a } }));
+}
+
+const { article } = Astro.props;
+const relatedSlugs = article.relatedArticles
+  .map(id => articles.docs.find(a => a.id === id))
+  .filter(Boolean);
+
+const bannerColor = article.bannerColor || 'linear-gradient(135deg,#9936e6,#5b21b6)';
+const bannerIcon = article.bannerIcon || 'solar:rocket-bold';
+---
+
+<BaseLayout title={article.title} pageTitle={article.title} activeNav="/blogs">
+  <a class="back-link" href="/blogs" slot="headerRight">
+    <iconify-icon icon="solar:alt-arrow-left-linear" width="16" height="16"></iconify-icon>
+    All articles
+  </a>
+
+  <div class="article-layout mt-4">
+    <div class="article-main">
+      <div class="detail-header">
+        <div style={`height: 180px; border-radius: 16px; background: ${bannerColor}; display:flex; align-items:center; justify-content:center;`}>
+          <iconify-icon icon={bannerIcon} width="72" height="72" style="color:#fff; opacity:.7"></iconify-icon>
+        </div>
+        <div class="detail-meta" style="margin-top:1rem">
+          <span class="detail-title">{article.title}</span>
+          <span class="detail-subtitle">
+            {new Date(article.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+            {article.readMinutes ? ` · ${article.readMinutes} min read` : ''}
+          </span>
+        </div>
+        <div class="flex flex-wrap gap-1 mt-2">
+          {article.tags.map((t) => (
+            <span class="tag is-secondary">{t.name}</span>
+          ))}
+        </div>
+      </div>
+
+      <div class="prose mt-4" set:html={renderLexical(article.body)}></div>
+
+      <div class="author-card mt-4">
+        <div class="avatar">{article.author.initials}</div>
+        <div>
+          <div class="font-bold">{article.author.name}</div>
+          {article.author.role && <div class="text-desc text-sm">{article.author.role}</div>}
+          {article.author.bio && <div class="text-desc text-sm mt-1">{article.author.bio}</div>}
+        </div>
+      </div>
+    </div>
+
+    <aside class="related-articles">
+      <h3 class="filter-head">
+        <iconify-icon icon="solar:document-text-outline" width="16" height="16"></iconify-icon>
+        Related articles
+      </h3>
+      {relatedSlugs.map((related) => (
+        <a class="related-item" href={`/blogs/${related.slug}`}>
+          <span class="card-title" style="font-size:.875rem;">{related.title}</span>
+          <span class="text-desc text-xs">{new Date(related.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+        </a>
+      ))}
+    </aside>
+  </div>
+</BaseLayout>

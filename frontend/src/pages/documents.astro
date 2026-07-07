@@ -1,0 +1,64 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { documentCategories } from '../data/document-categories';
+import { documents } from '../data/documents';
+
+const categories = documentCategories.docs.sort((a, b) => a.order - b.order);
+
+function fileExt(filename: string | null): string {
+  if (!filename) return 'FILE';
+  const dot = filename.lastIndexOf('.');
+  return dot > -1 ? filename.slice(dot + 1).toUpperCase() : 'FILE';
+}
+
+function fmtSize(bytes: number | null): string {
+  if (!bytes) return '';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1048576) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / 1048576).toFixed(1)} MB`;
+}
+---
+
+<BaseLayout title="Documents" pageTitle="Documents" activeNav="/documents">
+  {
+    categories.map((cat) => {
+      const docs = documents.docs.filter((d) => d.category.id === cat.id);
+      if (docs.length === 0) return null;
+
+      return (
+        <section class="doc-group">
+          <div class="doc-group-head">
+            <iconify-icon icon={cat.icon} width="18" height="18"></iconify-icon>
+            <h2 class="doc-group-title">{cat.label}</h2>
+            <span class="doc-group-count">{docs.length}</span>
+          </div>
+          {cat.hint && <p class="doc-group-hint text-desc text-sm">{cat.hint}</p>}
+          <div class="grid-2">
+            {docs.map((doc) => (
+              <article class="card is-hoverable doc-card">
+                <div class="doc-icon">
+                  <iconify-icon icon="solar:file-bold-duotone" width="22" height="22"></iconify-icon>
+                </div>
+                <div class="doc-info">
+                  <div class="card-header">
+                    <span class="card-title">{doc.title}</span>
+                    <span class="tag is-secondary">{fileExt(doc.filename)}</span>
+                  </div>
+                  <p class="card-excerpt">{doc.excerpt}</p>
+                  <div class="doc-meta">
+                    <span class="text-xs text-desc">Updated {doc.updated}</span>
+                    <span class="text-xs text-desc dot">·</span>
+                    <span class="text-xs text-desc">{fmtSize(doc.filesize)}</span>
+                  </div>
+                </div>
+                <a class="icon-btn doc-download" href={doc.url || '#'} download={doc.filename || undefined} title={`Download ${doc.title}`}>
+                  <iconify-icon icon="solar:download-bold" width="18" height="18"></iconify-icon>
+                </a>
+              </article>
+            ))}
+          </div>
+        </section>
+      );
+    })
+  }
+</BaseLayout>

@@ -1,0 +1,30 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SearchFilter from '../components/ui/SearchFilter.svelte';
+import { socialProfiles } from '../data/social-profiles';
+---
+
+<BaseLayout title="Socials" pageTitle="Socials" activeNav="/social">
+  <p class="text-desc text-sm mb-4">
+    Find me across the web — here's where I'm active.
+  </p>
+
+  <SearchFilter client:load placeholder="Search profiles…" selector=".grid-3 > a" />
+
+  <div class="grid-3">
+    {socialProfiles.docs.map((p) => (
+      <a href={p.url} target="_blank" rel="noopener" class="card is-hoverable social-card" style="text-decoration:none; color:inherit;">
+        <div class="social-icon">
+          <iconify-icon icon={p.icon} width="28" height="28"></iconify-icon>
+        </div>
+        <div class="social-info">
+          <span class="card-title">{p.platform}</span>
+          <span class="social-handle text-desc text-sm">{p.handle}</span>
+        </div>
+        <span class="social-ext">
+          <iconify-icon icon="solar:arrow-right-up-linear" width="16" height="16"></iconify-icon>
+        </span>
+      </a>
+    ))}
+  </div>
+</BaseLayout>

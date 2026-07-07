@@ -1,0 +1,105 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { projects } from '../../data/projects';
+import { renderLexical } from '../../lib/render-lexical';
+
+export function getStaticPaths() {
+  return projects.docs
+    .filter(p => p.status === 'published')
+    .map(p => ({ params: { slug: p.slug }, props: { project: p } }));
+}
+
+const { project } = Astro.props;
+const nextProject = projects.docs.find(p => p.order === project.order + 1);
+---
+
+<BaseLayout title={project.title} pageTitle={project.title} activeNav="/projects">
+  <a class="back-link" href="/projects" slot="headerRight">
+    <iconify-icon icon="solar:alt-arrow-left-linear" width="16" height="16"></iconify-icon>
+    All projects
+  </a>
+
+  <div class="detail-header mt-4">
+    <div style={`height: 180px; border-radius: 16px; background: ${project.bannerColor}; display:flex; align-items:center; justify-content:center;`}>
+      <iconify-icon icon={project.bannerIcon || 'solar:rocket-bold'} width="72" height="72" style="color:#fff; opacity:.7"></iconify-icon>
+    </div>
+    <div class="detail-meta" style="margin-top:1rem">
+      <span class="detail-title">{project.title}</span>
+      <span class="detail-subtitle">{project.descriptor} · {project.year}</span>
+    </div>
+    <div class="flex flex-wrap gap-1 mt-2">
+      {project.techTags.map((t) => (
+        <span class="tag is-secondary">{t.name}</span>
+      ))}
+    </div>
+    <div class="flex gap-2 mt-2">
+      {project.links.map((l) => (
+        <a class="btn btn-outline" href={l.url || '#'} target="_blank" rel="noopener">
+          <iconify-icon icon={l.icon || 'solar:link-circle-bold'} width="16" height="16"></iconify-icon>
+          {l.label}
+        </a>
+      ))}
+    </div>
+  </div>
+
+  <div class="prose mt-4" set:html={renderLexical(project.body)}></div>
+
+  {project.features.length > 0 && (
+    <section class="project-section mt-4">
+      <h3>Features</h3>
+      <ul class="feature-list grid-2">
+        {project.features.map((f) => (
+          <li>
+            <iconify-icon icon={f.icon || 'solar:check-circle-linear'} width="20" height="20"></iconify-icon>
+            <div>
+              <strong>{f.heading}</strong>
+              <p class="text-desc text-sm">{f.description}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+
+  {project.screenshots.length > 0 && (
+    <section class="project-section mt-4">
+      <h3>Screenshots</h3>
+      <div class="screenshot-row">
+        {project.screenshots.map((s) => (
+          <div style={`height: 160px; border-radius: 12px; background: ${s.bannerColor}; display:flex; align-items:center; justify-content:center;`}>
+            <iconify-icon icon={s.icon || 'solar:gallery-linear'} width="48" height="48" style="color:#fff; opacity:.6"></iconify-icon>
+          </div>
+        ))}
+      </div>
+    </section>
+  )}
+
+  {project.statsFooter.length > 0 && (
+    <div class="card mt-4" style="padding:1.25rem; display:flex; gap:2rem; flex-wrap:wrap;">
+      {project.statsFooter.map((s) => (
+        <div>
+          <div class="stat-value" style="font-size:1.5rem; font-weight:700;">{s.value}</div>
+          <span class="text-desc text-sm">{s.label}</span>
+        </div>
+      ))}
+    </div>
+  )}
+
+  {project.architecture && (
+    <section class="project-section mt-4">
+      <h3>Architecture</h3>
+      <pre class="card" style="padding:1rem; overflow-x:auto; font-family:ui-monospace,monospace; font-size:.8125rem;">
+        <code>{project.architecture}</code>
+      </pre>
+    </section>
+  )}
+
+  {nextProject && (
+    <div class="mt-4" style="text-align:right;">
+      <a class="btn btn-ghost" href={`/projects/${nextProject.slug}`}>
+        Next project: {nextProject.title}
+        <iconify-icon icon="solar:alt-arrow-right-linear" width="16" height="16"></iconify-icon>
+      </a>
+    </div>
+  )}
+</BaseLayout>

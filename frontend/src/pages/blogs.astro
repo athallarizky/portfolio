@@ -1,0 +1,13 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import BlogFilter from '../components/blog/BlogFilter.svelte';
+import { articles } from '../data/articles';
+---
+
+<BaseLayout title="Blogs" pageTitle="Blogs" activeNav="/blogs">
+  <p class="text-desc text-sm mb-4">
+    Notes on backend systems, AI tooling, and how I run software projects with AI agents.
+  </p>
+
+  <BlogFilter client:load articles={articles.docs} />
+</BaseLayout>

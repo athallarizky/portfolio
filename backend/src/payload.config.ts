@@ -14,6 +14,7 @@ import { Articles } from './collections/Articles'
 import { Technologies } from './collections/Technologies'
 import { Projects } from './collections/Projects'
 import { SocialProfiles } from './collections/SocialProfiles'
+import { ContactMessages } from './collections/ContactMessages'
 
 import { SiteConfig } from './globals/SiteConfig'
 import { Home } from './globals/Home'
@@ -32,7 +33,7 @@ export default buildConfig({
     user: Users.slug,
     importMap: { baseDir: path.resolve(dirname) },
   },
-  collections: [Users, DocumentCategories, Documents, Tags, Authors, Articles, Technologies, Projects, SocialProfiles],
+  collections: [Users, DocumentCategories, Documents, Tags, Authors, Articles, Technologies, Projects, SocialProfiles, ContactMessages],
   globals: [SiteConfig, Home, Nav],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || 'dev-secret-change-me',

@@ -118,12 +118,19 @@ const homeProfiles = socialProfiles.docs.filter(p => p.showOnHome);
       </section>
     </div>
 
+    <!-- CONTACT CTA -->
+    <div class="card is-hoverable reveal contact-cta mt-4" style="--d:.64s">
+      <iconify-icon icon="solar:chat-round-dots-linear" width="32" height="32" style="color:var(--secondary);"></iconify-icon>
+      <h3 class="contact-cta-title">Let's talk</h3>
+      <p class="text-desc text-sm contact-cta-sub">Have a project in mind or just want to say hi? My inbox is open.</p>
+      <a class="btn btn-primary" href="/contact">
+        <iconify-icon icon="solar:letter-outline" width="16" height="16"></iconify-icon>
+        Get in touch
+      </a>
+    </div>
+
     <div class="home-foot mt-4 text-center text-desc text-sm">
       Made with <iconify-icon icon="solar:heart-bold" width="14" height="14" style="color:var(--secondary); vertical-align:middle;"></iconify-icon> by {siteConfig.name}
-    </div>
-  </div>
-</BaseLayout>
-ame}
     </div>
   </div>
 </BaseLayout>

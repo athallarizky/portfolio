@@ -24,6 +24,7 @@ build/
 # AI tooling
 .claude
 .commandcode
+.zcode
 
 # Downloadable documents (personal files)
 frontend/assets/documents/*

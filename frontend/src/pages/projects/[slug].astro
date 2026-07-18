@@ -1,22 +1,23 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { renderLexical } from '../../lib/render-lexical';
-import type { Project } from '../../lib/api-types';
+import { safeFetch } from '../../lib/api';
+import type { Project, PaginatedResponse } from '../../lib/api-types';
 
 export const prerender = false;
 
-const API = 'http://localhost:3000/api';
 const { slug } = Astro.params;
 
-const allRes = await fetch(`${API}/projects?sort=order&depth=1`);
-const allData = await allRes.json();
-const project = allData.docs.find((p: Project) => p.slug === slug);
+const allData = await safeFetch<PaginatedResponse<Project>>('/projects?sort=order&depth=1');
+const project = (allData.docs || []).find((p: Project) => p.slug === slug);
 
 if (!project) {
-  return Astro.redirect('/projects');
+  return Astro.redirect('/404');
 }
 
-const nextProject = allData.docs.find((p: Project) => p.order === project.order + 1) || null;
+const nextProject = (allData.docs || [])
+  .filter((p: Project) => p.order > project.order)
+  .sort((a: Project, b: Project) => a.order - b.order)[0] || null;
 ---
 
 <BaseLayout title={project.title} pageTitle={project.title} activeNav="/projects">

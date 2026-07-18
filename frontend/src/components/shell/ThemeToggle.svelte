@@ -5,6 +5,6 @@
   $: iconName = $theme === 'dark' ? 'solar:sun-bold' : 'solar:moon-bold';
 </script>
 
-<button id="theme-toggle" class="icon-btn" title="Toggle theme" on:click={toggleTheme}>
+<button id="theme-toggle" class="icon-btn" title="Toggle theme" on:click={toggleTheme} aria-label="Toggle theme">
   <Icon icon={iconName} width={20} height={20} />
 </button>

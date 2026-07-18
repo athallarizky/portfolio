@@ -792,6 +792,14 @@ export interface SiteConfig {
    * e.g. "Remote · UTC+7"
    */
   location?: string | null;
+  /**
+   * Show the contact form and accept submissions
+   */
+  contactFormEnabled?: boolean | null;
+  /**
+   * Show the documents/downloads page
+   */
+  documentsEnabled?: boolean | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -832,6 +840,13 @@ export interface Home {
         id?: string | null;
       }[]
     | null;
+  roles?:
+    | {
+        label: string;
+        id?: string | null;
+      }[]
+    | null;
+  showItems?: ('hero' | 'stats' | 'about' | 'currently' | 'skills' | 'findMe' | 'contactCta')[] | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -874,6 +889,8 @@ export interface SiteConfigSelect<T extends boolean = true> {
   status?: T;
   timezone?: T;
   location?: T;
+  contactFormEnabled?: T;
+  documentsEnabled?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -916,6 +933,13 @@ export interface HomeSelect<T extends boolean = true> {
         name?: T;
         id?: T;
       };
+  roles?:
+    | T
+    | {
+        label?: T;
+        id?: T;
+      };
+  showItems?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

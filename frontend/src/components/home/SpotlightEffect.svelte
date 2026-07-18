@@ -15,4 +15,4 @@
   });
 </script>
 
-<div class="hero-spotlight"></div>
+<div class="hero-spotlight" bind:this={heroEl}></div>

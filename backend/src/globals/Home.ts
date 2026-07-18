@@ -48,5 +48,27 @@ export const Home: GlobalConfig = {
         { name: 'name', type: 'text', required: true },
       ],
     },
+    {
+      name: 'roles',
+      type: 'array',
+      fields: [
+        { name: 'label', type: 'text', required: true },
+      ],
+    },
+    {
+      name: 'showItems',
+      type: 'select',
+      hasMany: true,
+      options: [
+        { label: 'Hero', value: 'hero' },
+        { label: 'Stats', value: 'stats' },
+        { label: 'About', value: 'about' },
+        { label: 'Currently', value: 'currently' },
+        { label: 'Skills', value: 'skills' },
+        { label: 'Find me', value: 'findMe' },
+        { label: "Let's talk (CTA)", value: 'contactCta' },
+      ],
+      defaultValue: ['hero', 'stats', 'about', 'currently', 'skills', 'findMe', 'contactCta'],
+    },
   ],
 }

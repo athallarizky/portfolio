@@ -1,14 +1,10 @@
 <script lang="ts">
   import { onMount } from 'svelte';
 
-  const ROLES = [
-    'Full-Stack Engineer',
-    'Backend-leaning builder',
-    'AI-tooling tinkerer',
-    'TypeScript · Go · Python',
-  ];
+  export let roles: { label: string }[] = [];
 
-  let roleText = ROLES[0];
+  let ROLES = roles.map((r) => r.label);
+  let roleText = ROLES[0] ?? '';
   let reduce = false;
 
   onMount(() => {

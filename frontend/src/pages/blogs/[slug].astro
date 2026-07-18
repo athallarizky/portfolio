@@ -1,25 +1,25 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { renderLexical } from '../../lib/render-lexical';
-import type { Article } from '../../lib/api-types';
+import { safeFetch } from '../../lib/api';
+import type { Article, PaginatedResponse } from '../../lib/api-types';
 
 export const prerender = false;
 
-const API = 'http://localhost:3000/api';
 const { slug } = Astro.params;
 
-const res = await fetch(`${API}/articles?where[slug][equals]=${slug}&depth=0`);
-const data = await res.json();
-const article = data.docs[0];
+const data = await safeFetch<PaginatedResponse<Article>>(`/articles?where[slug][equals]=${slug}&depth=1`);
+const article = data.docs?.[0];
 
 if (!article) {
-  return Astro.redirect('/blogs');
+  return Astro.redirect('/404');
 }
 
 const relIds = article.relatedArticles || [];
-const relatedArticles = relIds.length > 0
-  ? (await (await fetch(`${API}/articles?where[id][in]=${relIds.join(',')}&depth=0`)).json()).docs
-  : [];
+const relatedData = relIds.length > 0
+  ? await safeFetch<PaginatedResponse<Article>>(`/articles?where[id][in]=${relIds.join(',')}&depth=1`)
+  : { docs: [] };
+const relatedArticles = relatedData.docs || [];
 
 const bannerColor = article.bannerColor || 'linear-gradient(135deg,#9936e6,#5b21b6)';
 const bannerIcon = article.bannerIcon || 'solar:rocket-bold';

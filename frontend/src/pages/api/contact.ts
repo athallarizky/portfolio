@@ -1,8 +1,15 @@
 import type { APIRoute } from 'astro';
-
-const API = 'http://localhost:3000/api';
+import { API, safeFetch } from '../../lib/api';
+import type { SiteConfig } from '../../lib/api-types';
 
 export const POST: APIRoute = async ({ request }) => {
+  const sc = await safeFetch<SiteConfig>('/globals/site-config');
+  if (!sc.contactFormEnabled) {
+    return new Response(
+      JSON.stringify({ error: 'Contact form is temporarily unavailable' }),
+      { status: 503, headers: { 'Content-Type': 'application/json' } },
+    );
+  }
   let body: { name?: string; email?: string; message?: string };
   try {
     body = await request.json();

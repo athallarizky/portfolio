@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Article } from '../../lib/api-types';
   import Icon from '../ui/Icon.svelte';
+  import SearchInput from '../ui/SearchInput.svelte';
 
   export let articles: Article[];
 
@@ -40,10 +41,7 @@
 
 <div class="blog-layout">
   <div class="blog-list">
-    <label class="search" style="max-width:100%; margin-bottom:1rem;">
-      <Icon icon="solar:magnifer-linear" width={16} height={16} />
-      <input type="text" bind:value={searchQuery} placeholder="Search articles…" />
-    </label>
+    <SearchInput bind:value={searchQuery} placeholder="Search articles\u2026" maxWidth="100%" />
 
     {#each filteredArticles as article}
       <article class="card is-hoverable">

@@ -122,6 +122,8 @@ export interface Home {
   about: { paragraph: string }[];
   currently: { icon: string | null; text: string }[];
   skills: { name: string }[];
+  roles: { label: string }[];
+  showItems: string[];
 }
 
 export interface Nav {

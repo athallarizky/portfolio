@@ -366,7 +366,7 @@ async function seed() {
   // Globals
   await payload.updateGlobal({
     slug: 'site-config',
-    data: { name: 'Atha Tharizky', initials: 'AT', role: 'Full-Stack Engineer', bioShort: "I'm a full-stack engineer who likes shipping calm, reliable products. Most of my work lives at the intersection of backend systems, developer experience, and AI tooling.", status: 'Open to side-projects', timezone: 'UTC+7', location: 'Remote · UTC+7' },
+    data: { name: 'Atha Tharizky', initials: 'AT', role: 'Full-Stack Engineer', bioShort: "I'm a full-stack engineer who likes shipping calm, reliable products. Most of my work lives at the intersection of backend systems, developer experience, and AI tooling.", status: 'Open to side-projects', timezone: 'UTC+7', location: 'Remote · UTC+7', contactFormEnabled: true, documentsEnabled: true },
   })
   console.log('✅ Global: site-config')
 
@@ -392,6 +392,12 @@ async function seed() {
       skills: [
         'TypeScript', 'React', 'Next.js', 'Node.js', 'Go', 'Python', 'PostgreSQL', 'Prisma', 'Docker', 'tRPC', 'TailwindCSS', 'OpenAI / RAG',
       ].map((name) => ({ name })),
+      roles: [
+        'Full-Stack Engineer',
+        'Backend-leaning builder',
+        'AI-tooling tinkerer',
+        'TypeScript · Go · Python',
+      ].map((label) => ({ label })),
     },
   })
   console.log('✅ Global: home')

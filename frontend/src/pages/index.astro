@@ -4,37 +4,41 @@ import TypedRole from '../components/home/TypedRole.svelte';
 import CountUpStats from '../components/home/CountUpStats.svelte';
 import SpotlightEffect from '../components/home/SpotlightEffect.svelte';
 import LiveClock from '../components/home/LiveClock.svelte';
+import { safeFetch } from '../lib/api';
+import type { Home, SiteConfig, SocialProfile, PaginatedResponse } from '../lib/api-types';
 
-const API = 'http://localhost:3000/api';
+const home = await safeFetch<Home>('/globals/home');
+const siteConfig = await safeFetch<SiteConfig>('/globals/site-config');
+const socialProfiles = await safeFetch<PaginatedResponse<SocialProfile>>('/social-profiles?sort=order');
 
-const [homeRes, siteRes, socialRes] = await Promise.all([
-  fetch(`${API}/globals/home`),
-  fetch(`${API}/globals/site-config`),
-  fetch(`${API}/social-profiles?sort=order`),
-]);
-const home = await homeRes.json();
-const siteConfig = await siteRes.json();
-const socialProfiles = await socialRes.json();
+const homeProfiles = (socialProfiles.docs || []).filter((p: SocialProfile) => p.showOnHome);
 
-const homeProfiles = socialProfiles.docs.filter(p => p.showOnHome);
+const visible = new Set(home.showItems || ['hero', 'stats', 'about', 'currently', 'skills']);
+
+const hero = home.hero || { eyebrow: '', name: 'Portfolio' };
+const about = home.about || [];
+const currently = home.currently || [];
+const skills = home.skills || [];
+const stats = home.stats || [];
 ---
 
 <BaseLayout title="Home" pageTitle="Home" activeNav="/">
   <div class="home">
     <!-- HERO -->
+    {visible.has('hero') && (
     <section class="hero reveal" id="hero" style="--d:.04s">
       <div class="hero-grid"></div>
       <SpotlightEffect client:visible />
       <div class="hero-row">
         <div class="hero-avatar">
-          <div class="avatar hero-avatar-face">{siteConfig.initials}</div>
+          <div class="avatar hero-avatar-face">{siteConfig.initials || '??'}</div>
           <span class="hero-status-dot" title="Available"></span>
         </div>
         <div class="hero-intro">
-          <span class="hero-eyebrow">{home.hero.eyebrow}</span>
-          <h1 class="hero-name">{home.hero.name}</h1>
+          <span class="hero-eyebrow">{hero.eyebrow}</span>
+          <h1 class="hero-name">{hero.name}</h1>
           <p class="hero-role">
-            <TypedRole client:visible /><!-- renders typed text + caret -->
+            <TypedRole client:visible roles={home.roles || []} />
           </p>
           <div class="hero-meta">
             {siteConfig.status && (
@@ -58,50 +62,65 @@ const homeProfiles = socialProfiles.docs.filter(p => p.showOnHome);
         </a>
       </div>
     </section>
+    )}
 
     <!-- STATS -->
-    <CountUpStats client:visible stats={home.stats} />
+    {visible.has('stats') && <CountUpStats client:visible stats={stats} />}
 
     <!-- ABOUT + CURRENTLY -->
-    <div class="grid-2">
-      <section class="card is-hoverable reveal" style="--d:.24s">
-        <div class="card-header">
-          <iconify-icon icon="solar:user-id-outline" width="18" height="18"></iconify-icon>
-          <span class="card-title">About</span>
-        </div>
-        {home.about.map((p) => (
-          <p class="text-desc text-sm" style="margin-top:.5rem">{p.paragraph}</p>
-        ))}
-      </section>
-      <section class="card is-hoverable reveal" style="--d:.34s">
-        <div class="card-header">
-          <iconify-icon icon="solar:planet-3-linear" width="18" height="18"></iconify-icon>
-          <span class="card-title">Currently</span>
-        </div>
-        <ul class="now-list">
-          {home.currently.map((item) => (
-            <li>
-              <iconify-icon icon={item.icon || 'solar:book-2-linear'} width="16" height="16"></iconify-icon>
-              <span class="text-desc text-sm">{item.text}</span>
-            </li>
+    {(visible.has('about') || visible.has('currently')) && (
+      <div class="grid-2">
+
+        {/* ABOUT */}
+        {visible.has('about') && (
+        <section class="card is-hoverable reveal" style="--d:.24s">
+          <div class="card-header">
+            <iconify-icon icon="solar:user-id-outline" width="18" height="18"></iconify-icon>
+            <span class="card-title">About</span>
+          </div>
+          {about.map((p) => (
+            <p class="text-desc text-sm" style="margin-top:.5rem">{p.paragraph}</p>
           ))}
-        </ul>
-      </section>
-    </div>
+        </section>
+        )}
+
+        {/* CURRENTLY */}
+        {visible.has('currently') && (
+        <section class="card is-hoverable reveal" style="--d:.34s">
+          <div class="card-header">
+            <iconify-icon icon="solar:planet-3-linear" width="18" height="18"></iconify-icon>
+            <span class="card-title">Currently</span>
+          </div>
+          <ul class="now-list">
+            {currently.map((item) => (
+              <li>
+                <iconify-icon icon={item.icon || 'solar:book-2-linear'} width="16" height="16"></iconify-icon>
+                <span class="text-desc text-sm">{item.text}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+        )}
+      </div>
+    )}
 
     <!-- SKILLS + FIND ME -->
-    <div class="grid-2 mt-4">
+    {(visible.has('skills') || visible.has('findMe')) && (
+    <div class="grid-2">
+      {visible.has('skills') && (
       <section class="card is-hoverable reveal" style="--d:.44s">
         <div class="card-header">
           <iconify-icon icon="solar:code-bold-duotone" width="18" height="18"></iconify-icon>
           <span class="card-title">Skills</span>
         </div>
         <div class="flex flex-wrap gap-1 mt-2">
-          {home.skills.map((s) => (
+          {skills.map((s) => (
             <span class="tag is-secondary">{s.name}</span>
           ))}
         </div>
       </section>
+      )}
+      {visible.has('findMe') && (
       <section class="card is-hoverable reveal" style="--d:.54s">
         <div class="card-header">
           <iconify-icon icon="solar:link-circle-bold" width="18" height="18"></iconify-icon>
@@ -116,9 +135,12 @@ const homeProfiles = socialProfiles.docs.filter(p => p.showOnHome);
           ))}
         </div>
       </section>
+      )}
     </div>
+    )}
 
     <!-- CONTACT CTA -->
+    {visible.has('contactCta') && (
     <div class="card is-hoverable reveal contact-cta mt-4" style="--d:.64s">
       <iconify-icon icon="solar:chat-round-dots-linear" width="32" height="32" style="color:var(--secondary);"></iconify-icon>
       <h3 class="contact-cta-title">Let's talk</h3>
@@ -128,6 +150,7 @@ const homeProfiles = socialProfiles.docs.filter(p => p.showOnHome);
         Get in touch
       </a>
     </div>
+    )}
 
     <div class="home-foot mt-4 text-center text-desc text-sm">
       Made with <iconify-icon icon="solar:heart-bold" width="14" height="14" style="color:var(--secondary); vertical-align:middle;"></iconify-icon> by {siteConfig.name}

@@ -1,11 +1,10 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SearchFilter from '../components/ui/SearchFilter.svelte';
+import { safeFetch } from '../lib/api';
+import type { SocialProfile, PaginatedResponse } from '../lib/api-types';
 
-const API = 'http://localhost:3000/api';
-
-const res = await fetch(`${API}/social-profiles?sort=order`);
-const socialProfiles = await res.json();
+const socialProfiles = await safeFetch<PaginatedResponse<SocialProfile>>('/social-profiles?sort=order');
 ---
 
 <BaseLayout title="Socials" pageTitle="Socials" activeNav="/social">
@@ -15,8 +14,8 @@ const socialProfiles = await res.json();
 
   <SearchFilter client:load placeholder="Search profiles…" selector=".grid-3 > a" />
 
-  <div class="grid-3">
-    {socialProfiles.docs.map((p) => (
+  <div class="grid-3 mt-4">
+    {(socialProfiles.docs || []).map((p) => (
       <a href={p.url} target="_blank" rel="noopener" class="card is-hoverable social-card" style="text-decoration:none; color:inherit;">
         <div class="social-icon">
           <iconify-icon icon={p.icon} width="28" height="28"></iconify-icon>
@@ -30,5 +29,10 @@ const socialProfiles = await res.json();
         </span>
       </a>
     ))}
+    {(socialProfiles.docs || []).length === 0 && (
+      <div class="empty-state">
+        <p class="text-desc text-sm">No social profiles to show right now.</p>
+      </div>
+    )}
   </div>
 </BaseLayout>

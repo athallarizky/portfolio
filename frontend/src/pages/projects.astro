@@ -1,11 +1,11 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import SearchFilter from '../components/ui/SearchFilter.svelte';
+import ProjectGrid from '../components/projects/ProjectGrid.svelte';
+import { safeFetch } from '../lib/api';
+import type { Project, PaginatedResponse } from '../lib/api-types';
 
-const API = 'http://localhost:3000/api';
-
-const res = await fetch(`${API}/projects?sort=order&depth=1`);
-const projects = await res.json();
+const data = await safeFetch<PaginatedResponse<Project>>('/projects?sort=order&depth=1&limit=100');
+const projects = data.docs || [];
 ---
 
 <BaseLayout title="Projects" pageTitle="Projects" activeNav="/projects">
@@ -13,37 +13,5 @@ const projects = await res.json();
     A selection of things I've built — side projects, tooling, and the occasional over-engineered experiment.
   </p>
 
-  <SearchFilter client:load placeholder="Search projects…" selector=".grid-3 > article" />
-
-  <div class="grid-3">
-    {projects.docs.map((p) => (
-      <article class="card is-hoverable">
-        <a href={`/projects/${p.slug}`} style="display:block; text-decoration:none; color:inherit;">
-          <div style={`height: 140px; border-radius: 12px; background: ${p.bannerColor}; display:flex; align-items:center; justify-content:center; margin-bottom:12px;`}>
-            <iconify-icon icon={p.bannerIcon || 'solar:rocket-bold'} width="48" height="48" style="color:#fff; opacity:.85"></iconify-icon>
-          </div>
-          <div class="card-header">
-            <span class="card-title">{p.title}</span>
-            <span class="card-date">{p.year}</span>
-          </div>
-          <p class="card-excerpt">{p.excerpt}</p>
-          <div class="flex flex-wrap mt-2">
-            {p.techTags.slice(0, 3).map((t) => (
-              <span class="tag is-secondary">{t.name}</span>
-            ))}
-          </div>
-        </a>
-        <div class="card-footer">
-          <span class="text-xs text-desc">{p.descriptor}</span>
-          <div class="flex gap-2">
-            {p.links.map((l) => (
-              <a class="icon-btn" href={l.url || '#'} title={l.label} target="_blank" rel="noopener">
-                <iconify-icon icon={l.icon || 'solar:link-circle-bold'} width="18" height="18"></iconify-icon>
-              </a>
-            ))}
-          </div>
-        </div>
-      </article>
-    ))}
-  </div>
+  <ProjectGrid client:load {projects} pageSize={9} />
 </BaseLayout>

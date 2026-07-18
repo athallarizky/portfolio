@@ -1,23 +1,35 @@
 <script lang="ts">
-  import Icon from './Icon.svelte';
+  import SearchInput from './SearchInput.svelte';
 
-  export let placeholder = 'Search…';
+  export let placeholder = 'Search\u2026';
   export let selector = '.grid-3 > article, .grid-3 > a';
+  export let maxWidth = '100%';
 
   let query = '';
+  let noResults = false;
 
   function filter() {
     const q = query.toLowerCase();
     const container = document.querySelector('.content-inner');
     if (!container) return;
+    let visible = 0;
     container.querySelectorAll(selector).forEach((card) => {
       const text = card.textContent?.toLowerCase() || '';
-      (card as HTMLElement).style.display = q ? (text.includes(q) ? '' : 'none') : '';
+      if (q) {
+        const match = text.includes(q);
+        (card as HTMLElement).style.display = match ? '' : 'none';
+        if (match) visible++;
+      } else {
+        (card as HTMLElement).style.display = '';
+        visible++;
+      }
     });
+    noResults = q.length > 0 && visible === 0;
   }
 </script>
 
-<label class="search" style="max-width:320px;">
-  <Icon icon="solar:magnifer-linear" width={16} height={16} />
-  <input type="text" bind:value={query} on:input={filter} {placeholder} />
-</label>
+<SearchInput bind:value={query} on:input={filter} {placeholder} maxWidth={maxWidth} />
+
+{#if noResults}
+  <p class="text-desc text-sm" style="margin-top:1rem;">No results match your search.</p>
+{/if}

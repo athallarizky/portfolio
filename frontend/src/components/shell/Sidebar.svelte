@@ -30,9 +30,24 @@
     return () => window.removeEventListener('resize', onResize);
   });
 
+  function onKeydown(e: KeyboardEvent) {
+    if (e.key === 'Escape') {
+      closeDrawer();
+    }
+  }
+
+  $: if (typeof window !== 'undefined') {
+    if ($mobileDrawerOpen) {
+      window.addEventListener('keydown', onKeydown);
+    } else {
+      window.removeEventListener('keydown', onKeydown);
+    }
+  }
+
   function isActive(href: string): boolean {
-    if (activeNav === '/' && href === '/') return true;
-    if (activeNav !== '/' && href !== '/' && activeNav.startsWith(href)) return true;
+    const normalised = href.startsWith('/') ? href : '/' + href;
+    if (activeNav === normalised) return true;
+    if (normalised !== '/' && activeNav.startsWith(normalised + '/')) return true;
     return false;
   }
 </script>
@@ -50,6 +65,8 @@
   class="sidebar"
   class:is-open={$mobileDrawerOpen}
   class:is-collapsed={$sidebarCollapsed}
+  role={$mobileDrawerOpen ? 'dialog' : undefined}
+  aria-modal={$mobileDrawerOpen ? 'true' : undefined}
   bind:this={sidebarEl}
 >
   <div class="sidebar-top">
@@ -62,7 +79,7 @@
     </div>
   </div>
 
-  <nav class="sidebar-nav">
+  <nav class="sidebar-nav" aria-label="Main navigation">
     <div class="sidebar-section-title">Menu</div>
     {#each menuItems.sort((a, b) => a.order - b.order) as item}
       <a
@@ -100,6 +117,7 @@
       id="sidebar-collapse"
       class="icon-btn"
       title={$sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+      aria-label={$sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
       on:click={toggleSidebarCollapsed}
     >
       <Icon icon="solar:alt-arrow-left-linear" width={18} height={18} />

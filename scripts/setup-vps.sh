@@ -58,11 +58,11 @@ if [ ! -f .env ]; then
   cp .env.example .env
   # Generate random PAYLOAD_SECRET
   SECRET=$(openssl rand -base64 32)
-  # Use sed with a portable delimiter
+  # Use # delimiter to avoid base64 chars clashing with sed
   if [[ "$OSTYPE" == "darwin"* ]]; then
-    sed -i '' "s/PAYLOAD_SECRET=.*/PAYLOAD_SECRET=$SECRET/" .env
+    sed -i '' "s#PAYLOAD_SECRET=.*#PAYLOAD_SECRET=$SECRET#" .env
   else
-    sed -i "s/PAYLOAD_SECRET=.*/PAYLOAD_SECRET=$SECRET/" .env
+    sed -i "s#PAYLOAD_SECRET=.*#PAYLOAD_SECRET=$SECRET#" .env
   fi
   # Update CORS for production
   echo "PAYLOAD_PUBLIC_CORS=https://$DOMAIN" >> .env

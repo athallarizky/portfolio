@@ -16,12 +16,16 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             set -e
+
+            if [ ! -d ~/portfolio ]; then
+              echo "❌ Repo not found at ~/portfolio"
+              echo "   Run on VPS first: bash scripts/setup-vps.sh"
+              exit 1
+            fi
             cd ~/portfolio
 
-            # Pull latest code, excluding /docs
             git fetch origin main
             git reset --hard origin/main
             rm -rf docs/
 
-            # Run deploy (build + restart, no seed)
             bash scripts/deploy.sh

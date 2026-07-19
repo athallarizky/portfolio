@@ -2,7 +2,7 @@
 
 > **For:** any LLM agent working on this repo in a fresh session.
 > **Read this first**, then the latest sprint record in [`docs/sprint-N/`](docs/)
-> (currently sprint-10 → [`docs/sprint-10/final-report.md`](docs/sprint-10/final-report.md)).
+> (currently sprint-12 → [`docs/sprint-12/final-report.md`](docs/sprint-12/final-report.md)).
 > **Owner:** Atha Thizky — Full-Stack Engineer (backend-leaning · TS/Go/Python · AI tooling).
 
 ---
@@ -155,9 +155,10 @@ Toggle via the sidebar button; persisted in `localStorage['portfolio-theme']`;
 | 7–8 | Polish (SEO, contact form, documents, etc.) |
 | 9 | VPS provisioning: nginx + SSL + deploy pipeline |
 | 10 | **Home page redesign** per Notion `DESIGN.md`: `--n-*` tokens, Selected work + Latest writing sections, glow/magnetic/reveal/stagger interactions |
-| 11 | Deploy workflow (manual trigger) |
+| 11 | Deploy workflow (manual trigger) — fixed SSH auth, repo path (`/root/portfolio`), `PAYLOAD_SECRET` ([RCAs](docs/sprint-11/rca/)) |
+| 12 | **Deploy OOM-proofing** — build moved to the GitHub runner + rsync; VPS only restarts. 2 GB swap added. ([final-report](docs/sprint-12/final-report.md), [architecture](docs/sprint-12/resources/architecture.md)) |
 
-Latest detail: [`docs/sprint-10/final-report.md`](docs/sprint-10/final-report.md).
+Latest detail: [`docs/sprint-12/final-report.md`](docs/sprint-12/final-report.md).
 
 ---
 
@@ -182,7 +183,38 @@ check `prefers-reduced-motion` and touch/no-hover behavior.
 
 ---
 
-## 8. Working style (from [`docs/GUIDE.md`](docs/GUIDE.md))
+## 8. Deploy (production)
+
+> Live at **https://athallarizky.com** (Tencent Lighthouse VPS, ~2 GB RAM).
+> Full design + concepts: [`docs/sprint-12/resources/architecture.md`](docs/sprint-12/resources/architecture.md).
+
+**Flow (build-on-runner, sprint-12):** the GitHub Actions runner compiles
+backend + frontend with ~7 GB RAM, **rsyncs** artifacts to the VPS, and the VPS
+only runs `npm ci --omit=dev` + `pm2 restart`. **The VPS never compiles** (a 2 GB
+box OOM'd and locked us out before — see the [sprint-11 RCA](docs/sprint-11/rca/2026-07-19-deploy-build-oom-lockout.md)).
+
+- **Deploy user:** `root`. Repo at **`/root/portfolio`**. PM2 + nginx run as root.
+  → GitHub secret `VPS_USER` **must be `root`** (it owns the repo + PM2).
+- **Secrets:** `VPS_HOST` (IP), `VPS_USER` (`root`), `VPS_SSH_KEY` (private key;
+  its public half is in `/root/.ssh/authorized_keys`).
+- **Dispatch:** GitHub → Actions → "Deploy to VPS" → Run workflow (branch `main`).
+  **You must push workflow edits before dispatching** (GitHub runs the remote copy).
+- **VPS-only files — NEVER overwrite:** `backend/.env` (holds `PAYLOAD_SECRET`),
+  `backend/payload.db` (SQLite DB), and `backend/documents/` (Payload uploads).
+  These are protected by rsync `--exclude` in the workflow — **do not remove those
+  excludes** (a stray `--delete-excluded` would wipe the DB or uploads).
+- **Swap:** 2 GB swap is active on the VPS (4 GB effective). Baked into
+  [`scripts/setup-vps.sh`](scripts/setup-vps.sh) step 2.
+- **Files:** `.github/workflows/deploy.yml` (the 8-step build-on-runner workflow),
+  [`scripts/deploy.sh`](scripts/deploy.sh) (VPS-side restart helper — no compile),
+  `ecosystem.config.cjs` (PM2 entries — `next start` + `dist/server/entry.mjs`, unchanged).
+- **Out-of-band recovery** (if SSH is unreachable — OOM/hang): Tencent Lighthouse
+  console → **Reboot** (or VNC), *not* the "one-click login" (needs the OrcaTerm
+  agent, which isn't installed). PM2 auto-resurrects via `pm2 startup`. See RCA §4.
+
+---
+
+## 9. Working style (from [`docs/GUIDE.md`](docs/GUIDE.md))
 
 - Follow the phased workflow: plan → build → **verify by running it** → write a
   phase report → update `tasks.md` → ask before committing.
@@ -192,7 +224,7 @@ check `prefers-reduced-motion` and touch/no-hover behavior.
 - `temp/blinko/` is reference only — copy patterns, don't ship its files.
 - **Git:** the owner handles all commits. Do not commit unless asked.
 
-## 9. Done criteria (self-check before claiming done)
+## 10. Done criteria (self-check before claiming done)
 
 - [ ] Matches the dashboard aesthetic (sidebar, header, cards, accent)
 - [ ] Works in **light + dark** and on **mobile** (drawer, grids collapse)

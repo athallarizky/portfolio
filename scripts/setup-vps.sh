@@ -22,11 +22,29 @@ echo "Repo:   $REPO_DIR"
 echo ""
 
 # ── 1. System update ──────────────────────────
-echo -e "${YELLOW}[1/10] Updating system packages...${NC}"
+echo -e "${YELLOW}[1/12] Updating system packages...${NC}"
 sudo apt update -qq && sudo apt upgrade -y -qq
 
-# ── 2. Install Node.js 22.x ───────────────────
-echo -e "${YELLOW}[2/10] Installing Node.js 22.x...${NC}"
+# ── 2. Add 2 GB swap (OOM protection) ─────────
+# A 2 GB VPS OOM-kills a Next.js + PayloadCMS build (peaks >2 GB) and can lock
+# you out of the box. Swap is overflow RAM — slower, but prevents OOM-kills.
+# (Even though sprint-12 moved the build to the GitHub runner, swap is kept as
+# defense-in-depth for any on-VPS npm/next activity.) Runbook: RCA §5.1.
+echo -e "${YELLOW}[2/12] Adding 2 GB swap (OOM protection)...${NC}"
+if swapon --show | grep -q '/swapfile'; then
+  echo "Swap already active — skipping"
+else
+  sudo fallocate -l 2G /swapfile            # allocate a 2 GB file (fallback: dd if=/dev/zero of=/swapfile bs=1M count=2048)
+  sudo chmod 600 /swapfile                  # owner-only; required or mkswap refuses
+  sudo mkswap /swapfile                     # format the file as swap space
+  sudo swapon /swapfile                     # enable it now
+  grep -q '/swapfile' /etc/fstab || echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab >/dev/null  # auto-load on boot
+  sudo sysctl -w vm.swappiness=10 >/dev/null                                  # prefer RAM; spill to swap only under pressure
+  echo -e "${GREEN}Swap enabled (2 GB), swappiness=10${NC}"
+fi
+
+# ── 3. Install Node.js 22.x ───────────────────
+echo -e "${YELLOW}[3/12] Installing Node.js 22.x...${NC}"
 if ! command -v node &> /dev/null; then
   curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
   sudo apt install -y nodejs
@@ -35,12 +53,12 @@ else
   echo "Node.js $(node -v) already installed"
 fi
 
-# ── 3. Install system packages ────────────────
-echo -e "${YELLOW}[3/10] Installing git, nginx, certbot, ufw...${NC}"
+# ── 4. Install system packages ────────────────
+echo -e "${YELLOW}[4/12] Installing git, nginx, certbot, ufw...${NC}"
 sudo apt install -y git nginx certbot python3-certbot-nginx ufw
 
-# ── 4. Clone repo ─────────────────────────────
-echo -e "${YELLOW}[4/10] Setting up repository...${NC}"
+# ── 5. Clone repo ─────────────────────────────
+echo -e "${YELLOW}[5/12] Setting up repository...${NC}"
 if [ -d "$REPO_DIR" ]; then
   echo "Repo already exists at $REPO_DIR, pulling latest..."
   cd "$REPO_DIR"
@@ -51,8 +69,8 @@ else
   cd "$REPO_DIR"
 fi
 
-# ── 5. Configure backend .env ─────────────────
-echo -e "${YELLOW}[5/10] Configuring backend .env...${NC}"
+# ── 6. Configure backend .env ─────────────────
+echo -e "${YELLOW}[6/12] Configuring backend .env...${NC}"
 cd "$REPO_DIR/backend"
 if [ ! -f .env ]; then
   cp .env.example .env
@@ -71,19 +89,19 @@ else
   echo "backend/.env already exists, skipping"
 fi
 
-# ── 6. Build backend ──────────────────────────
-echo -e "${YELLOW}[6/10] Building backend...${NC}"
+# ── 7. Build backend ──────────────────────────
+echo -e "${YELLOW}[7/12] Building backend...${NC}"
 npm install
 npm run build
 
-# ── 7. Build frontend ─────────────────────────
-echo -e "${YELLOW}[7/10] Building frontend...${NC}"
+# ── 8. Build frontend ─────────────────────────
+echo -e "${YELLOW}[8/12] Building frontend...${NC}"
 cd "$REPO_DIR/frontend"
 npm install
 PUBLIC_API_URL="http://localhost:3000/api" npx astro build
 
-# ── 8. Configure firewall ─────────────────────
-echo -e "${YELLOW}[8/10] Configuring firewall (ufw)...${NC}"
+# ── 9. Configure firewall ─────────────────────
+echo -e "${YELLOW}[9/12] Configuring firewall (ufw)...${NC}"
 sudo ufw --force reset
 sudo ufw allow 22/tcp
 sudo ufw allow 80/tcp
@@ -91,8 +109,8 @@ sudo ufw allow 443/tcp
 sudo ufw --force enable
 echo -e "${GREEN}UFW enabled: SSH (22), HTTP (80), HTTPS (443)${NC}"
 
-# ── 9. Configure nginx ────────────────────────
-echo -e "${YELLOW}[9/10] Configuring nginx...${NC}"
+# ── 10. Configure nginx ───────────────────────
+echo -e "${YELLOW}[10/12] Configuring nginx...${NC}"
 sudo cp "$REPO_DIR/scripts/nginx/portfolio.conf" "/etc/nginx/sites-available/portfolio"
 sudo ln -sf "/etc/nginx/sites-available/portfolio" "/etc/nginx/sites-enabled/portfolio"
 
@@ -107,8 +125,8 @@ else
   exit 1
 fi
 
-# ── 10. Install PM2 & start services ──────────
-echo -e "${YELLOW}[10/10] Installing PM2 and starting services...${NC}"
+# ── 11. Install PM2 & start services ──────────
+echo -e "${YELLOW}[11/12] Installing PM2 and starting services...${NC}"
 cd "$REPO_DIR"
 
 if ! command -v pm2 &> /dev/null; then
@@ -123,9 +141,9 @@ echo ""
 echo -e "${GREEN}=== Services started ===${NC}"
 pm2 status
 
-# ── 11. Request SSL certificate ───────────────
+# ── 12. Request SSL certificate ───────────────
 echo ""
-echo -e "${YELLOW}[11] Requesting SSL certificate via certbot...${NC}"
+echo -e "${YELLOW}[12/12] Requesting SSL certificate via certbot...${NC}"
 if sudo certbot certificates 2>/dev/null | grep -q "$DOMAIN"; then
   echo "SSL certificate already exists for $DOMAIN, skipping"
 else

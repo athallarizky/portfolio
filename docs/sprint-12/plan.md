@@ -1,6 +1,6 @@
 # Sprint-12 Plan — Kill deploy OOM (build-on-runner)
 
-> Status: 🟡 Design — Option **B chosen**, ready to implement | Created: 2026-07-19
+> Status: ✅ Delivered — Option B shipped + verified by dispatch | Created: 2026-07-19
 > Trigger: [`../sprint-11/rca/2026-07-19-deploy-build-oom-lockout.md`](../sprint-11/rca/2026-07-19-deploy-build-oom-lockout.md)
 > Companion: [`tasks.md`](./tasks.md) · **architecture: [`resources/architecture.md`](./resources/architecture.md)** (concepts + 3 options + flowcharts + B design) · root [`../../AGENTS.md`](../../AGENTS.md)
 >

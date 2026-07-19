@@ -1,6 +1,6 @@
 # Task Breakdown — Sprint-12: Kill deploy OOM
 
-> Status: 🟡 Design — Option **B chosen** (see [`resources/architecture.md`](./resources/architecture.md)); Phase 1.1 (swap) ✅ done. | Created: 2026-07-19
+> Status: ✅ Delivered — Option B shipped + verified by dispatch | Created: 2026-07-19
 > Plan: [`plan.md`](./plan.md) · architecture: [`resources/architecture.md`](./resources/architecture.md) · trigger RCA: [`../sprint-11/rca/2026-07-19-deploy-build-oom-lockout.md`](../sprint-11/rca/2026-07-19-deploy-build-oom-lockout.md)
 >
 > Status legend: ⬜ pending | 🔵 in_progress | ✅ completed | ❌ blocked | ↩️ fallback
@@ -37,7 +37,7 @@
 | 2.3 | Rewrite `.github/workflows/deploy.yml`: runner checkout → setup Node → build BE+FE → configure SSH key → rsync artifacts → SSH `deploy.sh`. | Hard | 2.1, 2.2 | ✅ |
 | 2.4 | Simplify `scripts/deploy.sh` to a VPS-side restart helper: `npm ci --omit=dev` (BE+FE) + `pm2 restart`. No compile. `ecosystem.config.cjs` **unchanged**. | Medium | 2.3 | ✅ |
 | 2.5 | rsync `--exclude` safety rail: never overwrite `backend/.env`, `backend/payload.db*`, `*.bak`, `node_modules` (architecture.md §7.5). | Easy | 2.3 | ✅ |
-| 2.6 | Verify: dispatch → no `next build` on VPS, RAM flat, `pm2 list` online, `/admin` 200, Payload DB intact. | Easy | 2.3–2.5 | ⬜ |
+| 2.6 | Verify: dispatch → no `next build` on VPS, RAM flat, `pm2 list` online, `/admin` 200, Payload DB intact. | Easy | 2.3–2.5 | ✅ |
 
 > 📄 Report: [`reports/phase-2-report.md`](./reports/phase-2-report.md)
 
@@ -47,10 +47,10 @@
 
 | ID  | Task | Difficulty | Dependencies | Status |
 |-----|------|-----------|--------------|--------|
-| 3.1 | Bake swap provisioning into `scripts/setup-vps.sh` | Easy | 1.1 | ⬜ |
-| 3.2 | Update `AGENTS.md` deploy section (deploy user = `root`, repo at `/root/portfolio`, build-on-runner flow) | Easy | 2.3 | ⬜ |
-| 3.3 | Write out-of-band recovery runbook (Lighthouse Reboot / VNC; not one-click login) | Easy | — | ⬜ |
-| 3.4 | Final report + tasks status update | Easy | 3.1–3.3 | ⬜ |
+| 3.1 | Bake swap provisioning into `scripts/setup-vps.sh` | Easy | 1.1 | ✅ |
+| 3.2 | Update `AGENTS.md` deploy section (deploy user = `root`, repo at `/root/portfolio`, build-on-runner flow) | Easy | 2.3 | ✅ |
+| 3.3 | Write out-of-band recovery runbook (Lighthouse Reboot / VNC; not one-click login) | Easy | — | ✅ |
+| 3.4 | Final report + tasks status update | Easy | 3.1–3.3 | ✅ |
 
 > 📄 Report: [`reports/phase-3-report.md`](./reports/phase-3-report.md)
 
@@ -79,9 +79,9 @@ Phase 3 (docs)
 | Phase | Tasks | Difficulty mix | Status |
 |-------|-------|----------------|--------|
 | 1 — Bridge (swap + orphan-kill) | 5 | 5 E | ↩️ fallback (1.1 done) |
-| 2 — Build-on-runner | 6 | 1 H, 2 M, 3 E | 🔵 in progress (2.1, 2.2 decided) |
-| 3 — Docs & hardening | 4 | 4 E | ⬜ |
-| **Total** | **15** | **1 H, 2 M, 12 E** | 🟡 |
+| 2 — Build-on-runner | 6 | 1 H, 2 M, 3 E | ✅ delivered + verified |
+| 3 — Docs & hardening | 4 | 4 E | ✅ |
+| **Total** | **15** | **1 H, 2 M, 12 E** | ✅ done |
 
 ## Notes for the implementing session
 

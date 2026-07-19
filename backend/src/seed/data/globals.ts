@@ -25,7 +25,6 @@ export const HOME = {
   currently: [
     { icon: 'solar:bot-outline', text: 'Building internal AI tooling & dev platforms' },
     { icon: 'solar:magic-stick-2-line-duotone', text: 'Exploring agentic workflows & retrieval' },
-    { icon: 'solar:clock-circle-linear', text: 'Local time {time}' },
   ],
   skills: [
     'TypeScript', 'React', 'Next.js', 'Node.js', 'Go', 'Python', 'PostgreSQL', 'Prisma', 'Docker', 'tRPC', 'TailwindCSS', 'OpenAI / RAG',

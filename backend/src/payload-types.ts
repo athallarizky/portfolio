@@ -357,6 +357,10 @@ export interface Project {
   status?: ('draft' | 'published') | null;
   order?: number | null;
   /**
+   * Feature in the Home "Selected work" strip
+   */
+  showOnHome?: boolean | null;
+  /**
    * SEO metadata
    */
   seo?: {
@@ -377,13 +381,6 @@ export interface Project {
         label?: string | null;
         bannerColor?: string | null;
         icon?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  statsFooter?:
-    | {
-        value: string;
-        label: string;
         id?: string | null;
       }[]
     | null;
@@ -671,6 +668,7 @@ export interface ProjectsSelect<T extends boolean = true> {
   body?: T;
   status?: T;
   order?: T;
+  showOnHome?: T;
   seo?:
     | T
     | {
@@ -692,13 +690,6 @@ export interface ProjectsSelect<T extends boolean = true> {
         label?: T;
         bannerColor?: T;
         icon?: T;
-        id?: T;
-      };
-  statsFooter?:
-    | T
-    | {
-        value?: T;
-        label?: T;
         id?: T;
       };
   architecture?: T;
@@ -846,7 +837,19 @@ export interface Home {
         id?: string | null;
       }[]
     | null;
-  showItems?: ('hero' | 'stats' | 'about' | 'currently' | 'skills' | 'findMe' | 'contactCta')[] | null;
+  showItems?:
+    | (
+        | 'hero'
+        | 'stats'
+        | 'featuredProjects'
+        | 'latestWriting'
+        | 'about'
+        | 'currently'
+        | 'skills'
+        | 'findMe'
+        | 'contactCta'
+      )[]
+    | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }

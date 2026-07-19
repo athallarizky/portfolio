@@ -62,13 +62,15 @@ export const Home: GlobalConfig = {
       options: [
         { label: 'Hero', value: 'hero' },
         { label: 'Stats', value: 'stats' },
+        { label: 'Featured projects', value: 'featuredProjects' },
+        { label: 'Latest writing', value: 'latestWriting' },
         { label: 'About', value: 'about' },
         { label: 'Currently', value: 'currently' },
         { label: 'Skills', value: 'skills' },
         { label: 'Find me', value: 'findMe' },
         { label: "Let's talk (CTA)", value: 'contactCta' },
       ],
-      defaultValue: ['hero', 'stats', 'about', 'currently', 'skills', 'findMe', 'contactCta'],
+      defaultValue: ['hero', 'stats', 'featuredProjects', 'latestWriting', 'about', 'currently', 'skills', 'findMe', 'contactCta'],
     },
   ],
 }

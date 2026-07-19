@@ -15,20 +15,23 @@ export async function seedProjects(payload: Payload) {
   }
 
   for (const proj of PROJECTS) {
-    const existing = await payload.find({ collection: 'projects', where: { slug: { equals: proj.slug } }, limit: 1 })
-    if (existing.totalDocs > 0) continue
     const techIds = proj.techNames.map((t) => techMap.get(t)).filter((id): id is number => id !== undefined)
     const body = PROJECT_BODIES[proj.slug] ? lexicalBody(PROJECT_BODIES[proj.slug]) : lexicalBody([lexicalParagraph(proj.excerpt)])
-    await payload.create({
-      collection: 'projects',
-      data: {
-        title: proj.title, slug: proj.slug, year: proj.year, excerpt: proj.excerpt,
-        descriptor: proj.descriptor, bannerColor: proj.bannerColor, bannerIcon: proj.bannerIcon,
-        techTags: techIds, links: proj.links, body, status: 'published', order: proj.order,
-        features: proj.features, screenshots: proj.screenshots, statsFooter: proj.statsFooter,
-        architecture: proj.architecture,
-      } as any,
-    })
-    console.log(`✅ Project: ${proj.title}`)
+    const data = {
+      title: proj.title, slug: proj.slug, year: proj.year, excerpt: proj.excerpt,
+      descriptor: proj.descriptor, bannerColor: proj.bannerColor, bannerIcon: proj.bannerIcon,
+      techTags: techIds, links: proj.links, body, status: 'published', order: proj.order,
+      showOnHome: proj.showOnHome ?? false,
+      features: proj.features, screenshots: proj.screenshots,
+      architecture: proj.architecture,
+    } as any
+    const existing = await payload.find({ collection: 'projects', where: { slug: { equals: proj.slug } }, limit: 1 })
+    if (existing.totalDocs > 0) {
+      await payload.update({ collection: 'projects', id: (existing.docs[0] as any).id, data })
+      console.log(`🔄 Project updated: ${proj.title}`)
+    } else {
+      await payload.create({ collection: 'projects', data })
+      console.log(`✅ Project created: ${proj.title}`)
+    }
   }
 }

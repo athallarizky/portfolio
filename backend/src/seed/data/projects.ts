@@ -1,4 +1,4 @@
-import { lexicalHeading, lexicalParagraph, lexicalCode, lexicalBody } from '../lib/lexical'
+import { lexicalHeading, lexicalParagraph, lexicalBody } from '../lib/lexical'
 import type { LexicalNode } from '../lib/lexical'
 
 export interface SeedProject {
@@ -13,9 +13,9 @@ export interface SeedProject {
   links: { label: string; icon: string; url: string }[]
   features: { icon: string; heading: string; description: string }[]
   screenshots?: { bannerColor: string; icon: string }[]
-  statsFooter?: { value: string; label: string }[]
   architecture?: string
   order: number
+  showOnHome?: boolean
 }
 
 export const PROJECTS: SeedProject[] = [
@@ -38,9 +38,9 @@ export const PROJECTS: SeedProject[] = [
       { bannerColor: 'linear-gradient(135deg,#22c55e,#15803d)', icon: 'solar:document-text-outline' },
       { bannerColor: 'linear-gradient(135deg,#f97316,#831843)', icon: 'solar:magnifer-linear' },
     ],
-    statsFooter: [{ value: '480', label: 'GitHub stars' }, { value: '~12k', label: 'Lines of code' }, { value: '15MB', label: 'Desktop binary' }],
     architecture: `noteflow/\n├── app/           # React + Vite + Tauri\n│   ├── src/\n│   └── src-tauri/\n├── server/        # tRPC + Express + AI\n│   ├── routerTrpc/\n│   └── aiServer/\n├── shared/        # types & helpers\n└── prisma/        # schema & migrations`,
     order: 1,
+    showOnHome: true,
   },
   {
     title: 'Rent-House-AI', slug: 'rent-house-ai', year: 2025, excerpt: 'Listing scraper → RAG pipeline → semantic search across rental listings. Five services across Go, Node, and Python.',
@@ -52,9 +52,9 @@ export const PROJECTS: SeedProject[] = [
       { icon: 'solar:chat-round-dots-linear', heading: 'RAG pipeline', description: 'Embedding → vector store → semantic search, powered by FastAPI + pgvector.' },
       { icon: 'solar:bolt-linear', heading: 'Five services', description: 'Go scraper, Python embeddings, Node gateway, Redis cache, Postgres store.' },
     ],
-    statsFooter: [{ value: '5', label: 'Services' }, { value: '3', label: 'Languages' }, { value: '~20ms', label: 'Search latency' }],
     architecture: `rent-house-ai/\n├── scraper/       # Go — concurrent listing fetcher\n├── embeddings/    # Python/FastAPI — chunk + embed\n├── gateway/       # Node.js — public API\n├── redis/         # cache layer\n└── postgres/      # pgvector store`,
     order: 2,
+    showOnHome: true,
   },
   {
     title: 'DevPlatform CLI', slug: 'devplatform-cli', year: 2024, excerpt: 'Internal CLI that scaffolds services, manages secrets, and boots a full dev cluster locally in under 30s.',
@@ -66,9 +66,9 @@ export const PROJECTS: SeedProject[] = [
       { icon: 'solar:lock-keyhole-minimalistic-linear', heading: 'Secret management', description: 'Encrypt and inject secrets at dev time — never store plaintext in .env.' },
       { icon: 'solar:database-linear', heading: 'Local cluster', description: 'Boot Postgres + Redis + MinIO + the full service graph in <30s with docker-compose under the hood.' },
     ],
-    statsFooter: [{ value: '<30s', label: 'Cluster boot' }, { value: '12', label: 'Services managed' }, { value: 'Go', label: 'Language' }],
     architecture: `devplatform/\n├── cmd/           # CLI entry points\n├── internal/\n│   ├── scaffold/  # service templates\n│   ├── secrets/   # encryption + injection\n│   └── compose/   # docker-compose generator\n└── templates/     # project scaffolds`,
     order: 3,
+    showOnHome: true,
   },
   {
     title: 'Realtime Polls', slug: 'realtime-polls', year: 2024, excerpt: 'Real-time polling widget for live streams. SSE fan-out, Redis-stream aggregator, sub-100ms updates.',
@@ -80,7 +80,6 @@ export const PROJECTS: SeedProject[] = [
       { icon: 'solar:graph-up-linear', heading: 'Aggregation', description: 'Redis Streams aggregate vote totals and fan results to every poll instance.' },
       { icon: 'solar:eye-linear', heading: 'Embeddable widget', description: 'Single <script> embed — works on any page with no framework dependency.' },
     ],
-    statsFooter: [{ value: '<100ms', label: 'Update latency' }, { value: 'Node.js', label: 'Runtime' }],
     order: 4,
   },
   {
@@ -105,7 +104,6 @@ export const PROJECTS: SeedProject[] = [
       { icon: 'solar:gallery-linear', heading: 'Zero-alloc resize', description: 'Image processing pipeline with zero heap allocations — all buffers pre-allocated.' },
       { icon: 'solar:globe-linear', heading: 'Edge-native', description: 'Deployed to 200+ Cloudflare edge locations. Image is resized closest to the user.' },
     ],
-    statsFooter: [{ value: '<5ms', label: 'Cold-start' }, { value: '<200KB', label: 'Binary size' }, { value: '200+', label: 'Edge nodes' }],
     order: 6,
   },
 ]
@@ -115,16 +113,12 @@ export const PROJECT_BODIES: Record<string, LexicalNode[]> = {
     lexicalHeading('Overview', 'h2'),
     lexicalParagraph('NoteFlow is a self-hosted note-taking app I built to scratch my own itch — I wanted something fast for capturing fleeting ideas, with the kind of AI search that actually understands what I meant three months later. It runs entirely on your own infrastructure, so your notes never leave your machine unless you want them to.'),
     lexicalParagraph('The web frontend is a React + Vite + Tailwind app. The backend is tRPC over Express, with Prisma on Postgres. The desktop build ships via Tauri so the whole thing fits in a ~15MB binary. Semantic search uses a pluggable provider pattern (OpenAI, Ollama, local embeddings) backed by an HNSW index.'),
-    lexicalHeading('Architecture', 'h2'),
     lexicalParagraph('The codebase is a Bun-managed monorepo with three workspaces: app (React frontend + Tauri shell), server (tRPC + Express + AI providers), and shared (types, schemas, helpers). The AI layer uses a factory pattern so new providers are ~one file.'),
-    lexicalCode('noteflow/\n├── app/           # React + Vite + Tauri\n│   ├── src/\n│   └── src-tauri/\n├── server/        # tRPC + Express + AI\n│   ├── routerTrpc/\n│   └── aiServer/\n├── shared/        # types & helpers\n└── prisma/        # schema & migrations'),
   ],
   'rent-house-ai': [
     lexicalHeading('Overview', 'h2'),
     lexicalParagraph('Rent-House-AI is a rental listing aggregation and semantic search pipeline. It scrapes listings from four platforms concurrently, embeds the listings into a vector store, and exposes a natural-language search API — all running across five services in three languages.'),
     lexicalParagraph('The scraper (Go) runs on a cron schedule, pulling new listings and diffing against previous runs to detect changes. Listings flow through a Python/FastAPI embedding service (text-embedding-3-small), then into a pgvector-backed Postgres store. A Node.js gateway exposes the public search API with Redis caching for hot queries.'),
-    lexicalHeading('Architecture', 'h2'),
-    lexicalCode('rent-house-ai/\n├── scraper/       # Go — concurrent listing fetcher\n├── embeddings/    # Python/FastAPI — chunk + embed\n├── gateway/       # Node.js — public API\n├── redis/         # cache layer\n└── postgres/      # pgvector store'),
   ],
   'devplatform-cli': [
     lexicalHeading('Overview', 'h2'),

@@ -37,6 +37,12 @@ export const Projects: CollectionConfig = {
     { name: 'status', type: 'select', options: ['draft', 'published'], defaultValue: 'published' },
     { name: 'order', type: 'number', defaultValue: 0 },
     {
+      name: 'showOnHome',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: { position: 'sidebar', description: 'Feature in the Home "Selected work" strip' },
+    },
+    {
       name: 'seo',
       type: 'group',
       admin: { description: 'SEO metadata' },
@@ -62,14 +68,6 @@ export const Projects: CollectionConfig = {
         { name: 'label', type: 'text' },
         { name: 'bannerColor', type: 'text' },
         { name: 'icon', type: 'text' },
-      ],
-    },
-    {
-      name: 'statsFooter',
-      type: 'array',
-      fields: [
-        { name: 'value', type: 'text', required: true },
-        { name: 'label', type: 'text', required: true },
       ],
     },
     { name: 'architecture', type: 'code', admin: { language: 'plaintext', description: 'ASCII directory tree or architecture diagram' } },

@@ -14,15 +14,48 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            set -e
+            set -euo pipefail
 
-            if [ ! -d ~/portfolio ]; then
-              echo "❌ Repo not found at ~/portfolio"
-              echo "   Run on VPS first: bash scripts/setup-vps.sh"
+            REPO_DIR="$HOME/portfolio"
+            echo "==> Deploy target: user=$(whoami)  HOME=$HOME  REPO_DIR=$REPO_DIR"
+
+            # Fail fast with diagnostics instead of a generic "not found".
+            # We deliberately do NOT auto-clone here: backend/.env (PAYLOAD_SECRET
+            # etc.) is gitignored, so a fresh clone would just fail later at
+            # deploy.sh's .env check. Recovery is re-provisioning via setup-vps.sh.
+            if [ ! -d "$REPO_DIR/.git" ]; then
+              echo ""
+              echo "❌ DEPLOY ABORTED: git repo not found at $REPO_DIR"
+              echo ""
+              echo "   Contents of $HOME:"
+              ls -la "$HOME" 2>/dev/null | sed 's/^/     /' || true
+              echo ""
+              echo "   Probing other common repo locations:"
+              FOUND_ELSEWHERE=0
+              for cand in "/root/portfolio" /home/*/portfolio; do
+                if [ "$cand" != "$REPO_DIR" ] && [ -d "$cand/.git" ]; then
+                  echo "     ✅ FOUND at $cand  → VPS_USER/path mismatch."
+                  echo "       Set the VPS_USER GitHub secret to the owner of this path."
+                  FOUND_ELSEWHERE=1
+                fi
+              done
+              [ "$FOUND_ELSEWHERE" -eq 0 ] && echo "     (none found under /root or /home/*)"
+              echo ""
+              echo "   Environment on this VPS:"
+              echo "     node:  $(command -v node  || echo MISSING)"
+              echo "     pm2:   $(command -v pm2   || echo MISSING)"
+              echo "     nginx: $(command -v nginx || echo MISSING)"
+              echo ""
+              echo "   Most likely causes & fixes:"
+              echo "     1) Wrong SSH user — the repo lives under another user's home (see probe above)."
+              echo "        → Update the VPS_USER GitHub secret to the user that owns ~/portfolio."
+              echo "     2) The VPS was reset / ~/portfolio was deleted (the gitignored backend/.env is gone too)."
+              echo "        → Re-provision ON THE VPS:  bash scripts/setup-vps.sh"
+              echo "          (re-clones, regenerates backend/.env + PAYLOAD_SECRET, rebuilds, restarts PM2/nginx)."
               exit 1
             fi
-            cd ~/portfolio
 
+            cd "$REPO_DIR"
             git fetch origin main
             git reset --hard origin/main
             rm -rf docs/

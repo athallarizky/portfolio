@@ -8,7 +8,7 @@
   --font-family: 'Inter', sans-serif;
 
   --background: hsl(0 0% 100%);
-  --foreground: hsl(222.2 47.4% 11.2%);
+  --foreground: #1f1e1c;
   --secondbackground: #f6f5f4;
 
   --hover: #efeee7d9;
@@ -21,15 +21,15 @@
   --scrollbar: #d6d7d9;
 
   --popover: hsl(0 0% 100%);
-  --popover-foreground: hsl(222.2 47.4% 11.2%);
+  --popover-foreground: #1f1e1c;
 
   --muted: hsl(210 40% 96.1%);
   --muted-foreground: hsl(215.4 16.3% 46.9%);
 
   --card: hsl(0 0% 100%);
-  --card-foreground: hsl(222.2 47.4% 11.2%);
+  --card-foreground: #1f1e1c;
 
-  --border: #E7E7E5;
+  --border: #e5e3df;
   --input: hsl(214.3 31.8% 91.4%);
 
   --primary: #5645d4;
@@ -39,7 +39,7 @@
   --secondary-foreground: hsl(210 40% 98%);
 
   --accent: hsl(240, 5%, 96%);
-  --accent-foreground: hsl(222.2 47.4% 11.2%);
+  --accent-foreground: #1f1e1c;
 
   --destructive: hsl(0 100% 50%);
   --destructive-foreground: hsl(210 40% 98%);
@@ -51,7 +51,7 @@
   --radius: 0.5rem;
 
   --md-editor-bg: #fff;
-  --md-editor-text: hsl(222.2 47.4% 11.2%);
+  --md-editor-text: #1f1e1c;
   --md-editor-separator: #bcbcbe;
   --md-editor-border: #e5e7eb;
   --shadow: 0 1px 2px rgba(0,0,0,.05), 0 4px 12px rgba(0,0,0,.04);
@@ -451,8 +451,8 @@ a { color: inherit; text-decoration: none; }
 .card {
   background: var(--background);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 16px;
+  border-radius: 12px;  /* sprint-13: Notion feature-card (rounded.lg) */
+  padding: 20px;
   display: flex;
   flex-direction: column;
   transition: transform .25s ease, border-color .25s ease, background-color .3s ease;
@@ -475,9 +475,10 @@ a { color: inherit; text-decoration: none; }
 .tag {
   display: inline-flex; align-items: center;
   margin: 2px 4px 2px 0;
-  padding: 3px 8px;
-  border-radius: 7px;
+  padding: 3px 10px;
+  border-radius: 9999px;   /* sprint-13: Notion badge-pill (rounded.full) */
   font-size: 12px;
+  font-weight: 600;        /* sprint-13: Notion eyebrow weight */
   color: var(--primary);
   background: color-mix(in srgb, var(--primary) 10%, transparent);
 }
@@ -536,7 +537,7 @@ a { color: inherit; text-decoration: none; }
 .blog-card-meta .read-est { flex-shrink: 0; white-space: nowrap; }
 
 /* ---------- Documents (compact downloadable-file rows) ---------- */
-.doc-card { display: flex; flex-direction: row; align-items: center; gap: 12px; padding: 12px 14px; }
+.doc-card { display: flex; flex-direction: row; align-items: center; gap: 12px; padding: 12px 14px; min-width: 0; }
 .doc-icon {
   flex-shrink: 0;
   width: 40px; height: 40px;
@@ -547,12 +548,13 @@ a { color: inherit; text-decoration: none; }
   box-shadow: var(--shadow);
 }
 .doc-info { flex: 1; min-width: 0; }
-.doc-info .card-header { margin-bottom: 2px; }
-.doc-info .card-title { font-size: 14px; }
+.doc-info .card-header { margin-bottom: 2px; min-width: 0; }
+.doc-info .card-title { font-size: 14px; min-width: 0; overflow-wrap: anywhere; }
 .doc-card .card-excerpt {
   margin: 0 0 4px;
   font-size: 13px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  /* sprint-13: wrap instead of nowrap+truncate so the card never overflows on mobile */
+  overflow-wrap: anywhere;
 }
 .doc-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .doc-meta .dot { opacity: .5; }
@@ -562,6 +564,9 @@ a { color: inherit; text-decoration: none; }
 .doc-group { margin-bottom: 28px; }
 .doc-group:last-child { margin-bottom: 0; }
 .doc-group-head { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+/* sprint-13: when a category has no hint/description, give the title row breathing room
+   before the cards (normally the .doc-group-hint supplies that gap). */
+.doc-group-head:not(:has(+ .doc-group-hint)) { margin-bottom: 16px; }
 .doc-group-head iconify-icon { color: var(--secondary); flex-shrink: 0; }
 .doc-group-title { font-size: 16px; font-weight: 800; color: var(--foreground); margin: 0; }
 .doc-group-count {
@@ -830,11 +835,11 @@ a { color: inherit; text-decoration: none; }
 
 /* ---------- Buttons ---------- */
 .btn {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 8px 14px;
-  border-radius: 14px;
-  font-weight: 600;
-  font-size: 13px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 10px 18px;
+  border-radius: 9999px;   /* sprint-13: Notion pill CTA (rounded.full) */
+  font-weight: 500;        /* sprint-13: Notion button weight */
+  font-size: 14px;
   cursor: pointer;
   border: 0;
   transition: background .2s ease, transform .15s ease;
@@ -846,6 +851,9 @@ a { color: inherit; text-decoration: none; }
 .btn-ghost:hover { background: var(--hover); }
 .btn-outline { background: transparent; color: var(--foreground); border: 1px solid var(--border); }
 .btn-outline:hover { background: var(--hover); }
+
+/* sprint-13: DESIGN.md 44×44 minimum touch target for CTAs on mobile */
+@media (max-width: 768px) { .btn { min-height: 44px; } }
 
 /* ---------- Empty state ---------- */
 .empty-state {
@@ -872,6 +880,9 @@ a { color: inherit; text-decoration: none; }
     transform: translateX(-100%);
     width: var(--sidebar-width) !important;
     height: var(--doc-height, 100vh);
+    /* sprint-13: raise above .sidebar-backdrop (z-index: 40) so taps land on the
+       <a> nav links instead of the backdrop (which only closes the drawer). */
+    z-index: 50;
   }
   .sidebar.is-open { transform: translateX(0); }
   .main { width: 100% !important; }
@@ -885,16 +896,10 @@ a { color: inherit; text-decoration: none; }
     -webkit-backdrop-filter: blur(10px);
   }
   .dark .header { background: rgba(0,0,0,.8); }
-  .content-scroll { padding-top: 56px; height: calc(100% - 0px); }
+  /* sprint-13: clear the 64px fixed header (was 56px → top of content was clipped) */
+  .content-scroll { padding-top: 72px; height: calc(100% - 0px); }
   .accent-bar { display: none; }
 }
-
-/* ---------- Page section visibility ---------- */
-/* NOTE: scoped with :not(.sidebar-link) so this SPA-style rule doesn't
-   accidentally hide nav links, which also carry a `data-page` attribute
-   (used by app.js for active-link highlighting). */
-[data-page]:not(.sidebar-link) { display: none; }
-[data-page]:not(.sidebar-link).is-active { display: block; }
 
 /* ---------- Utility ---------- */
 .flex { display: flex; }
@@ -1056,6 +1061,9 @@ a { color: inherit; text-decoration: none; }
 /* ---------- Right-side mesh gradient (Phase 7) — Notion sticker palette, decorative ---------- */
 /* Cards float above (z-index 1); the mesh lives in the right gutter + shows through gaps. */
 .home > *:not(.home-mesh) { position: relative; z-index: 1; }
+/* sprint-13 phase 7: lift page content above the mesh on ALL pages (the mesh
+   now lives in .content-inner via BaseLayout's `mesh` prop, not just .home). */
+.content-inner > *:not(.home-mesh) { position: relative; z-index: 1; }
 .home-mesh {
   position: fixed;
   top: -10vh; right: -6vw;
@@ -1391,22 +1399,4 @@ a { color: inherit; text-decoration: none; }
 .pagination-info {
   user-select: none;
 }
-
-
-.contact-alt { display: flex; flex-direction: column; gap: 4px; margin-top: 12px; }
-
-.contact-alt-item {
-  display: flex; align-items: center; gap: 12px;
-  padding: 10px 12px; border-radius: 14px;
-  text-decoration: none; color: var(--foreground);
-  transition: background .2s ease;
-}
-.contact-alt-item:hover { background: var(--hover); }
-.contact-alt-item > svg:first-child { color: var(--secondary); flex-shrink: 0; }
-.contact-alt-item div { display: flex; flex-direction: column; gap: 2px; }
-
-/* ── Home Contact CTA ── */
-.contact-cta { text-align: center; padding: 2rem; display: flex; flex-direction: column; align-items: center; gap: .25rem; }
-.contact-cta-title { margin: .75rem 0 .25rem; font-weight: 800; font-size: 20px; color: var(--foreground); }
-.contact-cta-sub { margin-bottom: 1rem; }
 

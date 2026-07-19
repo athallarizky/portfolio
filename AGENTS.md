@@ -2,7 +2,7 @@
 
 > **For:** any LLM agent working on this repo in a fresh session.
 > **Read this first**, then the latest sprint record in [`docs/sprint-N/`](docs/)
-> (currently sprint-12 → [`docs/sprint-12/final-report.md`](docs/sprint-12/final-report.md)).
+> (currently sprint-13 → [`docs/sprint-13/final-report.md`](docs/sprint-13/final-report.md)).
 > **Owner:** Atha Thizky — Full-Stack Engineer (backend-leaning · TS/Go/Python · AI tooling).
 
 ---
@@ -157,8 +157,9 @@ Toggle via the sidebar button; persisted in `localStorage['portfolio-theme']`;
 | 10 | **Home page redesign** per Notion `DESIGN.md`: `--n-*` tokens, Selected work + Latest writing sections, glow/magnetic/reveal/stagger interactions |
 | 11 | Deploy workflow (manual trigger) — fixed SSH auth, repo path (`/root/portfolio`), `PAYLOAD_SECRET` ([RCAs](docs/sprint-11/rca/)) |
 | 12 | **Deploy OOM-proofing** — build moved to the GitHub runner + rsync; VPS only restarts. 2 GB swap added. ([final-report](docs/sprint-12/final-report.md), [architecture](docs/sprint-12/resources/architecture.md)) |
+| 13 | **Notion system across all pages + sidebar fix + SEO** — fixed mobile sidebar nav (z-index), warmed tokens + Notion component discipline (pill CTAs, 12px cards), SEO tier-up (`site` config, `@astrojs/sitemap`, per-page meta/OG/JSON-LD, `robots.txt`). Purple accent kept. ([final-report](docs/sprint-13/final-report.md)) |
 
-Latest detail: [`docs/sprint-12/final-report.md`](docs/sprint-12/final-report.md).
+Latest detail: [`docs/sprint-13/final-report.md`](docs/sprint-13/final-report.md).
 
 ---
 

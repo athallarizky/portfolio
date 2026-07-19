@@ -30,7 +30,7 @@ const bannerColor = article.bannerColor || 'linear-gradient(135deg,#9936e6,#5b21
 const bannerIcon = article.bannerIcon || 'solar:rocket-bold';
 ---
 
-<BaseLayout title={article.title} pageTitle={article.title} activeNav="/blogs">
+<BaseLayout title={article.title} pageTitle={article.title} activeNav="/blogs" mesh={false} description={article.excerpt || `${article.title} — an article by Athalla Rizky.`}>
   <div class="article-layout mt-4">
     <div class="article-main">
       <div class="detail-header">

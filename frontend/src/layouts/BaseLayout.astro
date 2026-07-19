@@ -12,9 +12,24 @@ interface Props {
   title: string;
   pageTitle: string;
   activeNav: string;
+  description?: string;
+  image?: string;
+  mesh?: boolean;
 }
 
-const { title, pageTitle, activeNav } = Astro.props;
+const {
+  title,
+  pageTitle,
+  activeNav,
+  description = 'Full-stack engineer — backend systems, AI tooling, developer experience.',
+  image = '/og.png',
+  mesh = true,
+} = Astro.props;
+
+// sprint-13: stable absolute URLs (Astro.site is set in astro.config.mjs).
+const origin = Astro.site ?? Astro.url.origin;
+const canonical = new URL(Astro.url.pathname, origin).href;
+const ogImage = new URL(image, origin).href;
 ---
 
 <!doctype html>
@@ -22,24 +37,38 @@ const { title, pageTitle, activeNav } = Astro.props;
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Personal portfolio — full-stack engineer, backend systems, AI tooling." />
-  <meta name="theme-color" content="#c35af7" />
+  <meta name="description" content={description} />
+  <meta name="theme-color" content="#5645d4" />
+  <meta name="author" content="Athalla Rizky" />
 
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
   <meta property="og:title" content={`${title} — Portfolio`} />
-  <meta property="og:description" content="Full-stack engineer — backend systems, AI tooling, developer experience." />
-  <meta property="og:site_name" content="Portfolio" />
+  <meta property="og:description" content={description} />
+  <meta property="og:site_name" content="Athalla Rizky — Portfolio" />
+  <meta property="og:url" content={canonical} />
+  <meta property="og:image" content={ogImage} />
 
   <!-- Twitter -->
-  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content={`${title} — Portfolio`} />
-  <meta name="twitter:description" content="Full-stack engineer — backend systems, AI tooling, developer experience." />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={ogImage} />
 
   <!-- Canonical -->
-  <link rel="canonical" href={new URL(Astro.url.pathname, Astro.url.origin).href} />
+  <link rel="canonical" href={canonical} />
 
   <title>{title} — Portfolio</title>
+
+  <!-- Structured data (sprint-13) -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Athalla Rizky",
+    "url": "https://athallarizky.com",
+    "jobTitle": "Full-Stack Engineer",
+    "description": description,
+  })} />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -80,6 +109,7 @@ const { title, pageTitle, activeNav } = Astro.props;
         <div class="layout-container">
           <div class="corner-blob"></div>
           <div class="content-inner">
+            {mesh && <div class="home-mesh" aria-hidden="true"></div>}
             <slot />
           </div>
         </div>

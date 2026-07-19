@@ -26,7 +26,7 @@ const otherProjects = (allData.docs || [])
   .slice(0, 5);
 ---
 
-<BaseLayout title={project.title} pageTitle={project.title} activeNav="/projects">
+<BaseLayout title={project.title} pageTitle={project.title} activeNav="/projects" mesh={false} description={project.excerpt || `${project.descriptor || project.title}${project.year ? ` (${project.year})` : ''} — a project by Athalla Rizky.`}>
   <div class="article-layout mt-4">
     <div class="article-main">
       <div class="detail-header">

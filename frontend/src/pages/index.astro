@@ -35,11 +35,8 @@ const skills = home.skills || [];
 const stats = home.stats || [];
 ---
 
-<BaseLayout title="Home" pageTitle="Home" activeNav="/">
+<BaseLayout title="Home" pageTitle="Home" activeNav="/" description="Athalla Rizky — full-stack engineer building backend systems, AI tooling, and developer experience. Selected work, writing, and projects.">
   <div class="home">
-    {/* Right-side mesh gradient (Phase 7) — Notion sticker palette, decorative */}
-    <div class="home-mesh" aria-hidden="true"></div>
-
     {/* HERO — load-time reveal (unchanged) */}
     {visible.has('hero') && (
     <section class="hero reveal" id="hero" style="--d:.04s">

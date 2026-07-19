@@ -1,8 +1,10 @@
-# Sprint-12 Plan — Kill deploy OOM (swap bridge + build-on-runner)
+# Sprint-12 Plan — Kill deploy OOM (build-on-runner)
 
-> Status: ⬜ Not started | Created: 2026-07-19
+> Status: 🟡 Design — Option **B chosen**, ready to implement | Created: 2026-07-19
 > Trigger: [`../sprint-11/rca/2026-07-19-deploy-build-oom-lockout.md`](../sprint-11/rca/2026-07-19-deploy-build-oom-lockout.md)
-> Companion: [`tasks.md`](./tasks.md) · root [`../../AGENTS.md`](../../AGENTS.md)
+> Companion: [`tasks.md`](./tasks.md) · **architecture: [`resources/architecture.md`](./resources/architecture.md)** (concepts + 3 options + flowcharts + B design) · root [`../../AGENTS.md`](../../AGENTS.md)
+>
+> **Progress:** Phase 1.1 (2 GB swap) ✅ done on VPS (4 GB effective now). Backend/FE recovered and online.
 
 ---
 
@@ -119,11 +121,19 @@ Goal: the VPS receives only **finished artifacts** and runs them — no `npm ins
   stays flat during deploy (no `next build` process on the VPS at all).
 - **Both:** `curl https://athallarizky.com` returns 200; `/admin` loads.
 
-## 9. Open questions / decisions for the session
+## 9. Decisions for the session — RESOLVED
 
-- Backend: adopt Next **standalone** output (cleanest) or rsync + `npm ci --omit=dev`?
-- Frontend: rsync `node_modules` (simple, heavy) or `npm ci --omit=dev` on VPS (lighter)?
-- rsync transport: raw `rsync -e ssh` step vs a dedicated action (e.g. `burnett/rsync-deployments`)?
-- Keep `scripts/deploy.sh` as a VPS-side restart-only helper, or fold everything into the workflow?
+All four open questions are decided in [`resources/architecture.md`](./resources/architecture.md) §7.2.
+Summary:
+
+| Question | Decision |
+|----------|----------|
+| Backend: Next **standalone** vs full `.next/` + `npm ci --omit=dev`? | **Full `.next/` + `npm ci --omit=dev`** — avoids PayloadCMS standalone/SQLite gotchas; `next start` entry unchanged |
+| Frontend: rsync `node_modules` vs `npm ci --omit=dev`? | **`npm ci --omit=dev`** — lighter transfer, native deps resolved on VPS |
+| rsync transport | **Native `rsync -e ssh`** with key written to the runner — no extra action dependency |
+| Fate of `scripts/deploy.sh` | **VPS-side restart helper** — `npm ci --omit=dev` + `pm2 restart` (no compile) |
+
+**Chosen approach: Option B (build-on-runner).** Options A & C documented as fallback in
+[`resources/architecture.md`](./resources/architecture.md) §3 & §5.
 
 > ⚠️ Until Phase 1 lands, **do not dispatch the workflow** — each run risks re-OOMing the box (see the RCA).

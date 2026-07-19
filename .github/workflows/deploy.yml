@@ -1,5 +1,22 @@
 name: Deploy to VPS
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Build-on-runner deploy (sprint-12).
+#
+# The VPS (~2 GB RAM) is too small to compile a Next.js + PayloadCMS build — it
+# OOM'd and locked us out (see docs/sprint-11/rca/2026-07-19-deploy-build-oom-lockout.md).
+# So we build on the GitHub runner (~7 GB RAM) and rsync finished artifacts to
+# the VPS, which only does `npm ci --omit=dev` + `pm2 restart`. No compile on the
+# VPS → OOM is impossible.
+#
+# Design + concepts: docs/sprint-12/resources/architecture.md
+#
+# Secrets (GitHub → Settings → Secrets and variables → Actions):
+#   VPS_HOST    — server IP
+#   VPS_USER    — root  (the repo lives at /root/portfolio; PM2/nginx run as root)
+#   VPS_SSH_KEY — private key whose public half is in /root/.ssh/authorized_keys
+# ─────────────────────────────────────────────────────────────────────────────
+
 on:
   workflow_dispatch:
 
@@ -7,60 +24,85 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy via SSH
+      # ── 1. Checkout + Node setup ──────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      # ── 2. Build BACKEND on the runner (RAM is plentiful here — no OOM) ────
+      #    payload.config.ts gives every env var a build-time default, so the
+      #    build needs NO secrets. The real PAYLOAD_SECRET + payload.db stay
+      #    on the VPS only.
+      - name: Build backend
+        working-directory: backend
+        run: |
+          npm ci
+          npm run build          # → backend/.next/
+
+      # ── 3. Build FRONTEND on the runner ────────────────────────────────────
+      - name: Build frontend
+        working-directory: frontend
+        env:
+          # The frontend runs as SSR on the VPS and calls the backend on the
+          # SAME box, so localhost:3000 is correct for server-side fetches.
+          PUBLIC_API_URL: http://localhost:3000/api
+        run: |
+          npm ci
+          npm run build          # → frontend/dist/
+
+      # ── 4. Configure the SSH key on the runner so rsync can reach the VPS ─
+      - name: Configure SSH for rsync
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+          echo "SSH configured for ${{ secrets.VPS_HOST }}"
+
+      # ── 5. Sync backend artifacts to the VPS ──────────────────────────────
+      #    --delete keeps the VPS tidy. Excluded files are PROTECTED from
+      #    deletion by plain --delete (only --delete-excluded would remove them),
+      #    so backend/.env, backend/payload.db, and the Payload upload dirs are
+      #    safe. DO NOT add --delete-excluded. See architecture.md §7.4 / §7.5.
+      - name: Sync backend to VPS
+        run: |
+          rsync -az --delete \
+            --exclude '.env' \
+            --exclude 'payload.db' \
+            --exclude 'payload.db.*' \
+            --exclude '*.bak' \
+            --exclude 'node_modules' \
+            --exclude '.next/cache' \
+            --exclude '/documents' \
+            --exclude '/media' \
+            --exclude '/uploads' \
+            --exclude '/tmp' \
+            backend/ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/root/portfolio/backend/
+
+      # ── 6. Sync frontend artifacts to the VPS ─────────────────────────────
+      - name: Sync frontend to VPS
+        run: |
+          rsync -az --delete \
+            --exclude 'node_modules' \
+            frontend/ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/root/portfolio/frontend/
+
+      # ── 7. Install runtime deps + restart PM2 on the VPS (no compile) ─────
+      - name: Restart services on VPS
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          timeout: 30s           # SSH connection timeout
-          command_timeout: 20m   # the next/astro build on a small VPS takes several minutes;
-                                 # default 30s was killing it mid-build ("Run Command Timeout")
+          command_timeout: 5m
           script: |
             set -euo pipefail
-
-            REPO_DIR="$HOME/portfolio"
-            echo "==> Deploy target: user=$(whoami)  HOME=$HOME  REPO_DIR=$REPO_DIR"
-
-            # Fail fast with diagnostics instead of a generic "not found".
-            # We deliberately do NOT auto-clone here: backend/.env (PAYLOAD_SECRET
-            # etc.) is gitignored, so a fresh clone would just fail later at
-            # deploy.sh's .env check. Recovery is re-provisioning via setup-vps.sh.
-            if [ ! -d "$REPO_DIR/.git" ]; then
-              echo ""
-              echo "❌ DEPLOY ABORTED: git repo not found at $REPO_DIR"
-              echo ""
-              echo "   Contents of $HOME:"
-              ls -la "$HOME" 2>/dev/null | sed 's/^/     /' || true
-              echo ""
-              echo "   Probing other common repo locations:"
-              FOUND_ELSEWHERE=0
-              for cand in "/root/portfolio" /home/*/portfolio; do
-                if [ "$cand" != "$REPO_DIR" ] && [ -d "$cand/.git" ]; then
-                  echo "     ✅ FOUND at $cand  → VPS_USER/path mismatch."
-                  echo "       Set the VPS_USER GitHub secret to the owner of this path."
-                  FOUND_ELSEWHERE=1
-                fi
-              done
-              [ "$FOUND_ELSEWHERE" -eq 0 ] && echo "     (none found under /root or /home/*)"
-              echo ""
-              echo "   Environment on this VPS:"
-              echo "     node:  $(command -v node  || echo MISSING)"
-              echo "     pm2:   $(command -v pm2   || echo MISSING)"
-              echo "     nginx: $(command -v nginx || echo MISSING)"
-              echo ""
-              echo "   Most likely causes & fixes:"
-              echo "     1) Wrong SSH user — the repo lives under another user's home (see probe above)."
-              echo "        → Update the VPS_USER GitHub secret to the user that owns ~/portfolio."
-              echo "     2) The VPS was reset / ~/portfolio was deleted (the gitignored backend/.env is gone too)."
-              echo "        → Re-provision ON THE VPS:  bash scripts/setup-vps.sh"
-              echo "          (re-clones, regenerates backend/.env + PAYLOAD_SECRET, rebuilds, restarts PM2/nginx)."
-              exit 1
-            fi
-
-            cd "$REPO_DIR"
-            git fetch origin main
-            git reset --hard origin/main
-            rm -rf docs/
-
+            cd /root/portfolio
             bash scripts/deploy.sh

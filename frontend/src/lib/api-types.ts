@@ -88,9 +88,9 @@ export interface Project {
   body: LexicalRoot;
   status: 'draft' | 'published';
   order: number;
+  showOnHome?: boolean;
   features: { icon: string | null; heading: string | null; description: string | null }[];
   screenshots: { label: string | null; bannerColor: string | null; icon: string | null }[];
-  statsFooter: { value: string; label: string }[];
   architecture: string | null;
   seo: { metaTitle: string | null; metaDescription: string | null; ogImage: string | null } | null;
 }
@@ -114,6 +114,8 @@ export interface SiteConfig {
   status: string | null;
   timezone: string | null;
   location: string | null;
+  contactFormEnabled?: boolean | null;
+  documentsEnabled?: boolean | null;
 }
 
 export interface Home {
@@ -123,7 +125,17 @@ export interface Home {
   currently: { icon: string | null; text: string }[];
   skills: { name: string }[];
   roles: { label: string }[];
-  showItems: string[];
+  showItems: (
+    | 'hero'
+    | 'stats'
+    | 'featuredProjects'
+    | 'latestWriting'
+    | 'about'
+    | 'currently'
+    | 'skills'
+    | 'findMe'
+    | 'contactCta'
+  )[];
 }
 
 export interface Nav {

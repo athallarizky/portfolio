@@ -30,14 +30,13 @@
 
 <div style="margin-top:1.25rem;" class="grid-3">
   {#each paged as p}
-    <article class="card is-hoverable">
+    <article class="card is-hoverable project-card">
       <a href={`/projects/${p.slug}`} style="display:block; text-decoration:none; color:inherit;">
         <div style={`height: 140px; border-radius: 12px; background: ${p.bannerColor}; display:flex; align-items:center; justify-content:center; margin-bottom:12px;`}>
           <Icon icon={p.bannerIcon || 'solar:rocket-bold'} width={48} height={48} />
         </div>
         <div class="card-header">
           <span class="card-title">{p.title}</span>
-          <span class="card-date">{p.year}</span>
         </div>
         <p class="card-excerpt">{p.excerpt}</p>
         <div class="flex flex-wrap mt-2">
@@ -47,7 +46,7 @@
         </div>
       </a>
       <div class="card-footer">
-        <span class="text-xs text-desc">{p.descriptor}</span>
+        <span class="text-xs text-desc">{[p.descriptor, p.year].filter(Boolean).join(' · ')}</span>
         <div class="flex gap-2">
           {#each p.links as l}
             <a class="icon-btn" href={l.url || '#'} title={l.label} aria-label={l.label} target="_blank" rel="noopener">

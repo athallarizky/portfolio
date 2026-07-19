@@ -41,22 +41,20 @@
 
 <div class="blog-layout">
   <div class="blog-list">
-    <SearchInput bind:value={searchQuery} placeholder="Search articles\u2026" maxWidth="100%" />
+    <SearchInput bind:value={searchQuery} placeholder="Search articles" maxWidth="100%" />
 
     {#each filteredArticles as article}
       <article class="card is-hoverable">
         <div class="blog-card-meta">
-          {#each article.tags as tag}
-            <span class="tag is-secondary">{tag.name}</span>
-          {/each}
-          <span class="meta-item">
-            <Icon icon="solar:calendar-linear" width={14} height={14} />
-            {formatDate(article.publishedAt)}
-          </span>
+          <div class="blog-card-tags">
+            {#each article.tags as tag}
+              <span class="tag is-secondary">{tag.name}</span>
+            {/each}
+          </div>
           {#if article.readMinutes}
-            <span class="meta-item">
+            <span class="meta-item read-est">
               <Icon icon="solar:clock-circle-linear" width={14} height={14} />
-              {article.readMinutes} min read
+              {article.readMinutes} min
             </span>
           {/if}
         </div>

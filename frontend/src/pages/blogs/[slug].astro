@@ -8,29 +8,29 @@ export const prerender = false;
 
 const { slug } = Astro.params;
 
-const data = await safeFetch<PaginatedResponse<Article>>(`/articles?where[slug][equals]=${slug}&depth=1`);
-const article = data.docs?.[0];
+// Fetch all published articles so we can derive "related" by shared tags (tech stack),
+// instead of the manual (always-empty) relatedArticles field.
+const all = await safeFetch<PaginatedResponse<Article>>('/articles?where[status][equals]=published&sort=-publishedAt&depth=1');
+const article = (all.docs || []).find((a) => a.slug === slug);
 
 if (!article) {
   return Astro.redirect('/404');
 }
 
-const relIds = article.relatedArticles || [];
-const relatedData = relIds.length > 0
-  ? await safeFetch<PaginatedResponse<Article>>(`/articles?where[id][in]=${relIds.join(',')}&depth=1`)
-  : { docs: [] };
-const relatedArticles = relatedData.docs || [];
+const tagIds = new Set((article.tags || []).map((t) => t.id));
+const relatedArticles = (all.docs || [])
+  .filter((a) => a.slug !== slug)
+  .map((a) => ({ a, shared: (a.tags || []).filter((t) => tagIds.has(t.id)).length }))
+  .filter((x) => x.shared > 0)
+  .sort((a, b) => b.shared - a.shared)
+  .slice(0, 5)
+  .map((x) => x.a);
 
 const bannerColor = article.bannerColor || 'linear-gradient(135deg,#9936e6,#5b21b6)';
 const bannerIcon = article.bannerIcon || 'solar:rocket-bold';
 ---
 
 <BaseLayout title={article.title} pageTitle={article.title} activeNav="/blogs">
-  <a class="back-link" href="/blogs" slot="headerRight">
-    <iconify-icon icon="solar:alt-arrow-left-linear" width="16" height="16"></iconify-icon>
-    All articles
-  </a>
-
   <div class="article-layout mt-4">
     <div class="article-main">
       <div class="detail-header">
@@ -46,19 +46,19 @@ const bannerIcon = article.bannerIcon || 'solar:rocket-bold';
         </div>
         <div class="flex flex-wrap gap-1 mt-2">
           {article.tags.map((t) => (
-            <span class="tag is-secondary">{t.name}</span>
+            <span class="tag is-secondary tech-chip">{t.name}</span>
           ))}
         </div>
       </div>
 
       <div class="prose mt-4" set:html={renderLexical(article.body)}></div>
 
-      <div class="author-card mt-4">
-        <div class="avatar">{article.author.initials}</div>
-        <div>
-          <div class="font-bold">{article.author.name}</div>
-          {article.author.role && <div class="text-desc text-sm">{article.author.role}</div>}
-          {article.author.bio && <div class="text-desc text-sm mt-1">{article.author.bio}</div>}
+      <div class="author-card">
+        <div class="author-avatar">{article.author.initials}</div>
+        <div class="author-info">
+          <div class="author-name">{article.author.name}</div>
+          {article.author.role && <div class="author-role">{article.author.role}</div>}
+          {article.author.bio && <div class="author-bio">{article.author.bio}</div>}
         </div>
       </div>
     </div>
@@ -74,6 +74,10 @@ const bannerIcon = article.bannerIcon || 'solar:rocket-bold';
           <span class="text-desc text-xs">{new Date(related.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
         </a>
       ))}
+      <a class="all-articles-link" href="/blogs">
+        All articles
+        <iconify-icon icon="solar:alt-arrow-right-linear" width="14" height="14"></iconify-icon>
+      </a>
     </aside>
   </div>
 </BaseLayout>

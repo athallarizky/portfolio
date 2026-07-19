@@ -9,12 +9,12 @@
 
   --background: hsl(0 0% 100%);
   --foreground: hsl(222.2 47.4% 11.2%);
-  --secondbackground: #f8f8f8;
+  --secondbackground: #f6f5f4;
 
   --hover: #efeee7d9;
   --hover-foreground: hsl(215.4 16.3% 46.9%);
 
-  --desc: #6b6b6b;
+  --desc: #615d59;
   --ignore: #bababa;
   --tag: #c35af7;
   --tag-foreground: #fceefe;
@@ -32,7 +32,7 @@
   --border: #E7E7E5;
   --input: hsl(214.3 31.8% 91.4%);
 
-  --primary: black;
+  --primary: #5645d4;
   --primary-foreground: hsl(210 40% 98%);
 
   --secondary: hsl(253, 53%, 59%);
@@ -54,7 +54,7 @@
   --md-editor-text: hsl(222.2 47.4% 11.2%);
   --md-editor-separator: #bcbcbe;
   --md-editor-border: #e5e7eb;
-  --shadow: 1px 1px 7px 3px #b1b1b142;
+  --shadow: 0 1px 2px rgba(0,0,0,.05), 0 4px 12px rgba(0,0,0,.04);
 }
 
 .dark {
@@ -84,8 +84,8 @@
   --border: #0b0b0c;
   --input: hsl(216 34% 17%);
 
-  --primary: #f9f9f9;
-  --primary-foreground: hsl(0, 0%, 0%);
+  --primary: #7c6fe4;
+  --primary-foreground: #ffffff;
 
   --secondary: hsl(253, 53%, 59%);
   --secondary-foreground: hsl(210 40% 98%);
@@ -192,7 +192,7 @@ a { color: inherit; text-decoration: none; }
   overflow: hidden;
 }
 
-.sidebar.is-collapsed { width: 72px; }
+.sidebar.is-collapsed { width: 72px; padding-left: .5rem; padding-right: .5rem; }
 
 .sidebar-resizer {
   position: absolute;
@@ -322,7 +322,13 @@ a { color: inherit; text-decoration: none; }
   border-top: 1px solid var(--border);
   margin-top: 8px;
 }
-.sidebar.is-collapsed .sidebar-bottom { justify-content: center; }
+.sidebar.is-collapsed .sidebar-bottom { justify-content: center; gap: .25rem; }
+/* collapsed rail is only 72px (≈56px content) — shrink the two bottom toggles so the
+   theme + expand buttons sit side-by-side instead of overflowing. Scoped to desktop
+   (mobile drawer is forced to 256px and keeps the 44px touch targets). */
+@media (min-width: 768px) {
+  .sidebar.is-collapsed .sidebar-bottom .icon-btn { width: 26px; height: 26px; min-width: 26px; min-height: 26px; }
+}
 
 /* ---------- Main column ---------- */
 .main {
@@ -334,7 +340,11 @@ a { color: inherit; text-decoration: none; }
   transition: width .3s ease, background-color .3s ease;
   overflow: hidden;
 }
-.sidebar.is-collapsed ~ .main { width: calc(100% - 72px); }
+/* `.sidebar` lives inside an <astro-island> wrapper, so it is NOT a DOM sibling of
+   `.main` — a `~ .main` selector never matches. Use :has() on the shared .layout
+   ancestor so `.main` actually widens when the sidebar collapses (otherwise a gap is
+   left where the sidebar was and the main scrollbar/content shifts left). */
+.layout:has(.sidebar.is-collapsed) .main { width: calc(100% - 72px); }
 
 /* ---------- Header bar ---------- */
 .header {
@@ -457,6 +467,9 @@ a { color: inherit; text-decoration: none; }
 .card-date { font-size: 12px; color: var(--desc); }
 .card-excerpt { color: var(--foreground); opacity: .85; font-size: 14px; line-height: 1.55; }
 .card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; gap: 8px; }
+/* pin the project-card footer (descriptor·year + link icons) to the card bottom
+   so cards in the same grid row align regardless of excerpt length */
+.project-card > .card-footer { margin-top: auto; padding-top: 14px; }
 
 /* tags */
 .tag {
@@ -469,6 +482,10 @@ a { color: inherit; text-decoration: none; }
   background: color-mix(in srgb, var(--primary) 10%, transparent);
 }
 .tag.is-secondary { color: var(--tag); background: color-mix(in srgb, var(--tag) 12%, transparent); }
+
+/* tech-stack chips (project detail) */
+.tech-chip { gap: 6px; padding: 5px 11px; font-size: 13px; font-weight: 500; }
+.tech-chip iconify-icon { color: var(--secondary); }
 
 /* ---------- Generic grids ---------- */
 .grid-2 {
@@ -508,12 +525,15 @@ a { color: inherit; text-decoration: none; }
 }
 .blog-card-meta {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
   font-size: 12px;
   color: var(--desc);
 }
+.blog-card-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.blog-card-meta .meta-item { display: inline-flex; align-items: center; gap: 5px; }
+.blog-card-meta .read-est { flex-shrink: 0; white-space: nowrap; }
 
 /* ---------- Documents (compact downloadable-file rows) ---------- */
 .doc-card { display: flex; flex-direction: row; align-items: center; gap: 12px; padding: 12px 14px; }
@@ -616,6 +636,18 @@ a { color: inherit; text-decoration: none; }
 .article-layout { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 32px; align-items: start; }
 .article-layout .article-main { max-width: 760px; min-width: 0; }
 .related-articles { position: sticky; top: 16px; display: flex; flex-direction: column; gap: 4px; }
+/* "All ..." link at the bottom of a detail-page sidebar (projects / articles) */
+.all-projects-link,
+.all-articles-link {
+  align-self: flex-start;
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-top: 10px; padding-top: 10px;
+  font-size: 13px; font-weight: 700;
+  color: var(--secondary);
+  border-top: 1px solid var(--border);
+}
+.all-projects-link:hover,
+.all-articles-link:hover { text-decoration: underline; }
 .related-head { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--desc); padding: 4px 12px; margin-bottom: 4px; }
 .related-item { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 12px; text-decoration: none; color: inherit; transition: background .15s ease; }
 .related-item:hover { background: var(--hover); }
@@ -733,20 +765,32 @@ a { color: inherit; text-decoration: none; }
 .prose img { max-width: 100%; border-radius: 12px; margin: 16px 0; }
 
 /* ---------- Author bio card (article footer) ---------- */
+/* Notion-style author card (revamped) — canvas surface, hairline, 12px radius */
 .author-card {
   display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 16px;
-  margin: 32px 0;
-  border-radius: 16px;
-  background: var(--muted);
-  border: 1px solid var(--border);
+  align-items: flex-start;
+  gap: 16px;
+  padding: 24px;
+  margin: 2.5rem 0;
+  background: var(--n-canvas);
+  border: 1px solid var(--n-hairline);
+  border-radius: 12px;
 }
-.author-card .avatar { width: 48px; height: 48px; font-size: 16px; }
+.author-avatar {
+  width: 56px; height: 56px; flex-shrink: 0;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #9936e6, #ffc65c);
+  color: #fff; font-weight: 700; font-size: 20px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 1px 2px rgba(15, 15, 15, .06);
+}
+.author-info { min-width: 0; }
+.author-name { font-size: 18px; font-weight: 700; color: var(--n-ink); letter-spacing: -.01em; }
+.author-role { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--n-steel); margin-top: 3px; }
+.author-bio { font-size: 14px; line-height: 1.55; color: var(--n-slate); margin-top: 8px; }
 
 /* ---------- Project detail ---------- */
-.project-section { margin: 24px 0; }
+.project-section { margin: 2rem 0; }
 .project-section h3 {
   font-size: 13px;
   font-weight: 800;
@@ -939,22 +983,15 @@ a { color: inherit; text-decoration: none; }
 .stat-suffix { font-size: 20px; font-weight: 800; color: var(--secondary); }
 .stat-label { font-size: 12px; color: var(--desc); font-weight: 600; }
 
-/* "now" card */
-.now-live { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #22c55e; }
-.pulse { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; position: relative; flex-shrink: 0; }
-.pulse::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: #22c55e; animation: ping 1.9s cubic-bezier(0,0,.2,1) infinite; }
+/* "now" list (currently) */
 .now-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
 .now-list li { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--foreground); opacity: .9; }
 .now-list li iconify-icon { color: var(--secondary); flex-shrink: 0; }
-#local-time { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-weight: 700; color: var(--foreground); }
 
-/* skill + find-me micro-interactions */
-.skill-tag { cursor: default; transition: transform .15s ease, background .15s ease; }
-.skill-tag:hover { transform: translateY(-2px); }
+/* find-me link micro-interactions */
 .findme-link { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 12px; text-decoration: none; color: var(--foreground); font-size: 14px; font-weight: 600; transition: background .15s ease; }
 .findme-link:hover { background: var(--hover); }
 .findme-link > iconify-icon:first-child { color: var(--secondary); flex-shrink: 0; }
-.findme-link .ext { margin-left: auto; color: var(--desc); flex-shrink: 0; }
 .findme-link span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .home-foot { text-align: center; font-size: 12px; color: var(--ignore); padding: 6px 0 2px; font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; }
@@ -969,8 +1006,320 @@ a { color: inherit; text-decoration: none; }
 @media (prefers-reduced-motion: reduce) {
   * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
   .reveal { animation: none; opacity: 1; transform: none; }
-  .pulse::after, .hero-status-dot::after { animation: none; }
+  .hero-status-dot::after { animation: none; }
   .hero-role .caret { animation: none; opacity: 0; }
+}
+
+/* =====================================================================
+   Home — Notion DESIGN.md token layer (sprint-10)
+   All re-skin rules hang off .home; other pages are untouched.
+   Token values: docs/sprint-10/resources/architecture.md §5
+   ===================================================================== */
+
+/* ---------- Tokens (light) ---------- */
+:root {
+  --n-primary: #5645d4; --n-primary-pressed: #4534b3;
+  --n-ink: #1a1a1a; --n-charcoal: #37352f; --n-slate: #5d5b54;
+  --n-steel: #787671; --n-stone: #a4a097;
+  --n-canvas: #ffffff; --n-surface: #f6f5f4;
+  --n-hairline: #e5e3df; --n-hairline-soft: #ede9e4; --n-hairline-strong: #c8c4be;
+  --n-link: #0075de;
+  --n-tint-lavender: #e6e0f5; --n-tint-lavender-ink: #391c57;
+  --n-tint-peach: #ffe8d4;    --n-tint-peach-ink: #793400;
+  --n-tint-mint: #d9f3e1;     --n-tint-mint-ink: #1aae39;
+  --n-tint-sky: #dcecfa;      --n-tint-sky-ink: #005bab;
+}
+/* ---------- Tokens (dark — spec has no dark tokens; mapped per arch §5) ---------- */
+.dark {
+  --n-primary: #7c6fe4; --n-primary-pressed: #6357d6;
+  --n-ink: #e8e6e1; --n-charcoal: #cfccc4; --n-slate: #9c998f;
+  --n-steel: #7d7a71; --n-stone: #6d6a62;
+  --n-canvas: var(--card);
+  --n-surface: color-mix(in srgb, var(--foreground) 4%, var(--card));
+  --n-hairline: var(--border);
+  --n-hairline-soft: color-mix(in srgb, var(--border) 60%, transparent);
+  --n-hairline-strong: color-mix(in srgb, var(--foreground) 20%, var(--border));
+  --n-link: #4b9bf0;
+  --n-tint-lavender: color-mix(in srgb, #7b3ff2 18%, var(--card)); --n-tint-lavender-ink: #cdb9f6;
+  --n-tint-peach: color-mix(in srgb, #dd5b00 18%, var(--card));    --n-tint-peach-ink: #f0b48a;
+  --n-tint-mint: color-mix(in srgb, #1aae39 16%, var(--card));     --n-tint-mint-ink: #8fdca4;
+  --n-tint-sky: color-mix(in srgb, #0075de 18%, var(--card));      --n-tint-sky-ink: #9ecdf5;
+}
+
+/* ---------- Home base / typography ---------- */
+.home { position: relative; isolation: isolate; gap: 20px; color: var(--n-charcoal); }
+.home h1, .home h2, .home h3 { color: var(--n-ink); }
+.home .card-title { color: var(--n-ink); }
+.home .text-desc { color: var(--n-slate); }
+.home .text-sm { font-size: 14px; line-height: 1.5; }
+
+/* ---------- Right-side mesh gradient (Phase 7) — Notion sticker palette, decorative ---------- */
+/* Cards float above (z-index 1); the mesh lives in the right gutter + shows through gaps. */
+.home > *:not(.home-mesh) { position: relative; z-index: 1; }
+.home-mesh {
+  position: fixed;
+  top: -10vh; right: -6vw;
+  width: 60vw; height: 120vh;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(38% 32% at 64% 14%, rgba(214, 182, 246, 0.50), transparent 70%),  /* accent-purple */
+    radial-gradient(34% 28% at 33% 38%, rgba(255, 100, 200, 0.30), transparent 70%),  /* accent-pink  */
+    radial-gradient(44% 38% at 80% 52%, rgba(98, 174, 240, 0.42), transparent 72%),   /* accent-sky   */
+    radial-gradient(36% 32% at 46% 74%, rgba(42, 157, 153, 0.28), transparent 70%),   /* accent-teal  */
+    radial-gradient(30% 26% at 78% 90%, rgba(221, 91, 0, 0.26), transparent 70%);     /* accent-orange*/
+  filter: blur(50px);
+  opacity: 0.5;
+}
+.dark .home-mesh { opacity: 0.36; }
+@media (max-width: 768px) { .home-mesh { display: none; } }
+
+/* ---------- Hero ---------- */
+.home .hero {
+  background: var(--n-canvas);
+  border: 1px solid var(--n-hairline);
+  border-radius: 16px;
+  padding: 32px;
+}
+.home .hero-grid {
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--n-ink) 7%, transparent) 1px, transparent 1.6px);
+  background-size: 22px 22px;
+}
+.home .hero-spotlight {
+  background: radial-gradient(300px circle at var(--mx, 30%) var(--my, 25%),
+    color-mix(in srgb, var(--n-primary) 22%, transparent), transparent 62%);
+}
+.home .hero-eyebrow {
+  font-family: var(--font-family);
+  font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .08em;
+  color: var(--n-stone);
+}
+.home .hero-name {
+  margin: 4px 0 6px;
+  font-size: clamp(32px, 4vw, 40px);
+  font-weight: 600;
+  letter-spacing: -.02em;
+  line-height: 1.05;
+  color: var(--n-ink);
+}
+.home .hero-role { color: var(--n-slate); font-size: 16px; font-weight: 500; }
+.home .hero-role .caret { background: var(--n-primary); }
+.home .hero-chip {
+  background: var(--n-surface);
+  color: var(--n-charcoal);
+  border-radius: 9999px;
+  padding: 5px 11px;
+  font-size: 12px; font-weight: 500;
+}
+.home .hero-chip iconify-icon { color: var(--n-primary); }
+
+/* ---------- Buttons (home: 8px rectangles, purple primary) ---------- */
+.home .btn {
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 14px;
+  padding: 9px 16px;
+  transition: background .18s ease, border-color .18s ease, transform .15s ease;
+}
+.home .btn-primary { background: var(--n-primary); color: #fff; }
+.home .btn-primary:hover { background: var(--n-primary-pressed); }
+.home .btn-outline { background: transparent; color: var(--n-ink); border: 1px solid var(--n-hairline-strong); }
+.home .btn-outline:hover { background: var(--n-surface); }
+
+/* ---------- Stats → single surface band ---------- */
+.home .stats {
+  background: var(--n-surface);
+  border: 1px solid var(--n-hairline);
+  border-radius: 12px;
+  padding: 20px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+}
+.home .stat {
+  background: transparent;
+  border: 0;
+  border-right: 1px solid var(--n-hairline-soft);
+  border-radius: 0;
+  padding: 4px 20px;
+  transition: none;
+}
+.home .stat:last-child { border-right: 0; }
+.home .stat:hover { transform: none; border-color: transparent; }
+.home .stat-num { color: var(--n-ink); font-size: 30px; font-weight: 700; letter-spacing: -.02em; }
+.home .stat-suffix { color: var(--n-primary); }
+.home .stat-label { color: var(--n-steel); font-size: 12px; font-weight: 500; }
+
+/* ---------- Cards (about / currently / skills / find-me) ---------- */
+.home .card {
+  background: var(--n-canvas);
+  border: 1px solid var(--n-hairline);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: none;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.home .card-header { margin-bottom: 10px; }
+.home .card-header iconify-icon { color: var(--n-primary); }
+.home .card-title { font-size: 15px; font-weight: 600; }
+@media (hover: hover) {
+  .home .card.is-hoverable:hover {
+    transform: translateY(-2px);
+    border-color: var(--n-hairline-strong);
+    box-shadow: 0 1px 2px rgba(15, 15, 15, .04);
+  }
+}
+.dark .home .card.is-hoverable:hover { box-shadow: none; }
+
+/* Currently = lavender tint card */
+.home .card.is-currently {
+  background: var(--n-tint-lavender);
+  border-color: color-mix(in srgb, var(--n-tint-lavender-ink) 12%, var(--n-tint-lavender));
+}
+.home .card.is-currently .card-title { color: var(--n-tint-lavender-ink); }
+.home .card.is-currently .now-list li { color: var(--n-tint-lavender-ink); opacity: 1; }
+.home .card.is-currently .now-list li iconify-icon { color: var(--n-tint-lavender-ink); }
+
+/* ---------- Skill tags (pastel badge-tags, deepen on hover) ---------- */
+.home .tag.is-secondary {
+  background: var(--n-tint-lavender);
+  color: var(--n-tint-lavender-ink);
+  border-radius: 6px;
+  padding: 4px 10px;
+  margin: 2px 4px 2px 0;
+  font-size: 12px; font-weight: 500;
+  border: 1px solid transparent;
+  transition: transform .15s ease, background .15s ease;
+}
+@media (hover: hover) {
+  .home .tag.is-secondary:hover {
+    transform: translateY(-2px);
+    background: color-mix(in srgb, var(--n-tint-lavender) 65%, var(--n-tint-lavender-ink));
+  }
+}
+
+/* ---------- Find-me links ---------- */
+.home .findme-link {
+  background: var(--n-surface);
+  border: 1px solid var(--n-hairline-soft);
+  border-radius: 8px;
+  color: var(--n-charcoal);
+}
+@media (hover: hover) {
+  .home .findme-link:hover { background: var(--n-canvas); border-color: var(--n-hairline); }
+}
+.home .findme-link > iconify-icon:first-child { color: var(--n-primary); }
+
+/* ---------- CTA banner (centered surface band) ---------- */
+.home .contact-cta {
+  background: var(--n-surface);
+  border: 1px solid var(--n-hairline);
+  border-radius: 12px;
+  padding: 36px 24px;
+}
+.home .contact-cta-title { color: var(--n-ink); font-size: 22px; font-weight: 600; }
+.home .contact-cta-sub { color: var(--n-slate); }
+
+/* ---------- Shared section primitives (used by Phase 3 strips) ---------- */
+.home .home-section { display: flex; flex-direction: column; gap: 12px; }
+.home .section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 4px; }
+.home .section-title { font-size: 16px; font-weight: 600; color: var(--n-ink); margin: 0; }
+.home .section-link { color: var(--n-link); font-size: 13px; font-weight: 500; }
+.home .section-link:hover { text-decoration: underline; }
+.home .tag-badge { display: inline-flex; align-items: center; border-radius: 6px; padding: 3px 9px; margin: 2px 4px 2px 0; font-size: 11px; font-weight: 500; }
+.home .tint-0 { background: var(--n-tint-lavender); color: var(--n-tint-lavender-ink); }
+.home .tint-1 { background: var(--n-tint-peach);    color: var(--n-tint-peach-ink); }
+.home .tint-2 { background: var(--n-tint-mint);     color: var(--n-tint-mint-ink); }
+.home .tint-3 { background: var(--n-tint-sky);      color: var(--n-tint-sky-ink); }
+
+/* ---------- Stats: mobile 2×2 with clean hairline dividers ---------- */
+@media (max-width: 768px) {
+  .home .stats { grid-template-columns: repeat(2, 1fr); }
+  .home .stat { border-right: 1px solid var(--n-hairline-soft); border-bottom: 1px solid var(--n-hairline-soft); }
+  .home .stat:nth-child(even) { border-right: 0; }
+  .home .stat:nth-last-child(-n + 2) { border-bottom: 0; }
+}
+
+/* ---------- Selected work (Phase 3) ---------- */
+.home .work-card {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 18px;
+  text-decoration: none; color: inherit;
+  background: var(--n-canvas);
+  border: 1px solid var(--n-hairline);
+  border-radius: 12px;
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+.home .work-icon {
+  width: 36px; height: 36px;
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--n-primary);
+  margin-bottom: 4px;
+}
+.home .work-icon iconify-icon { color: #fff; }
+.home .work-title { font-size: 15px; font-weight: 600; color: var(--n-ink); margin: 0; }
+.home .work-excerpt { margin: 0; }
+.home .work-tags { margin-top: auto; padding-top: 4px; }
+@media (hover: hover) {
+  .home .work-card:hover { transform: translateY(-2px); border-color: var(--n-hairline-strong); box-shadow: 0 1px 2px rgba(15, 15, 15, .04); }
+}
+.dark .home .work-card:hover { box-shadow: none; }
+
+/* ---------- Latest writing (Phase 3) ---------- */
+.home .write-list { display: flex; flex-direction: column; }
+.home .write-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 8px;
+  border-bottom: 1px solid var(--n-hairline-soft);
+  text-decoration: none; color: inherit;
+  transition: background .15s ease;
+}
+.home .write-row:last-child { border-bottom: 0; }
+.home .write-title {
+  flex: 1; min-width: 0;
+  font-size: 15px; font-weight: 500; color: var(--n-ink);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.home .write-date { font-size: 13px; color: var(--n-steel); flex-shrink: 0; }
+.home .write-arrow { color: var(--n-steel); flex-shrink: 0; transition: transform .15s ease, color .15s ease; }
+@media (hover: hover) {
+  .home .write-row:hover { background: var(--n-surface); }
+  .home .write-row:hover .write-arrow { transform: translateX(3px); color: var(--n-primary); }
+}
+
+/* ---------- Cursor glow (Phase 4.1) — `--gx/--gy` set by the glow action ---------- */
+.glowable { position: relative; isolation: isolate; }
+.glowable > * { position: relative; z-index: 1; }
+.glowable::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(240px circle at var(--gx, 50%) var(--gy, 50%),
+    color-mix(in srgb, var(--n-primary) 10%, transparent), transparent 70%);
+  opacity: 0; transition: opacity .2s; z-index: 0;
+}
+@media (hover: hover) { .glowable:hover::after { opacity: 1; } }
+
+/* ---------- Scroll reveal (Phase 4.3) ---------- */
+.reveal-io { opacity: 0; transform: translateY(14px); transition: opacity .6s cubic-bezier(.22,.68,.18,1) var(--d, 0s), transform .6s cubic-bezier(.22,.68,.18,1) var(--d, 0s); }
+.reveal-io.is-in { opacity: 1; transform: none; }
+
+/* ---------- Magnetic button (Phase 4.2) ---------- */
+.magnetic { display: inline-block; transition: transform .2s ease-out; will-change: transform; }
+
+/* ---------- Skill-tag stagger (Phase 4.4) — fires when the parent reveals ---------- */
+.reveal-io.is-in .skills-chips .tag.is-secondary {
+  animation: skill-in .3s cubic-bezier(.22,.68,.18,1) backwards;
+  animation-delay: calc(var(--i, 0) * 40ms);
+}
+@keyframes skill-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* ---------- Reduced-motion guards (Phase 4.5) ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .reveal-io { opacity: 1; transform: none; transition: none; }
+  .magnetic { transition: none; }
+  .reveal-io.is-in .skills-chips .tag.is-secondary { animation: none; }
+  .glowable::after { display: none; }
 }
 
 /* ── Contact Form ── */

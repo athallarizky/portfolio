@@ -8,6 +8,7 @@ node_modules/
 .next/
 dist/
 build/
+.astro/
 
 # Environment
 .env
@@ -34,3 +35,4 @@ backend/documents/*
 temp
 *.log
 *.tsbuildinfo
+*.bak

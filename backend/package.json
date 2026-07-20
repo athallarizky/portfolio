@@ -16,13 +16,20 @@
     "seed:documents": "cp payload.db payload.db.$(date +%Y%m%d-%H%M%S).bak 2>/dev/null; npx tsx src/seed/documents.ts",
     "seed:social": "cp payload.db payload.db.$(date +%Y%m%d-%H%M%S).bak 2>/dev/null; npx tsx src/seed/social.ts",
     "seed:all": "cp payload.db payload.db.$(date +%Y%m%d-%H%M%S).bak 2>/dev/null; npx tsx src/seed.ts",
-    "seed:dry": "npx tsx src/seed/dry.ts"
+    "seed:dry": "npx tsx src/seed/dry.ts",
+    "export": "cp payload.db payload.db.$(date +%Y%m%d-%H%M%S).bak 2>/dev/null; npx tsx src/data-sync/cli/export.ts",
+    "import": "npx tsx src/data-sync/cli/import.ts",
+    "snapshot": "npx tsx src/data-sync/cli/snapshot.ts",
+    "snapshot:restore": "npx tsx src/data-sync/cli/snapshot-restore.ts",
+    "test": "node --import tsx --test \"src/data-sync/**/*.test.ts\""
   },
   "dependencies": {
     "@payloadcms/db-sqlite": "latest",
     "@payloadcms/next": "latest",
     "@payloadcms/richtext-lexical": "latest",
     "@payloadcms/ui": "latest",
+    "adm-zip": "^0.6.0",
+    "archiver": "^8.0.0",
     "graphql": "^16.8.2",
     "next": "^16.2.6",
     "payload": "latest",
@@ -31,6 +38,8 @@
     "sharp": "^0.34.0"
   },
   "devDependencies": {
+    "@types/adm-zip": "^0.5.8",
+    "@types/archiver": "^8.0.0",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",

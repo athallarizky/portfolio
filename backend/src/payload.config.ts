@@ -20,6 +20,8 @@ import { SiteConfig } from './globals/SiteConfig'
 import { Home } from './globals/Home'
 import { Nav } from './globals/Nav'
 
+import { dataSyncEndpoints } from './data-sync/endpoints'
+
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
@@ -32,6 +34,15 @@ export default buildConfig({
   admin: {
     user: Users.slug,
     importMap: { baseDir: path.resolve(dirname) },
+    components: {
+      afterNav: ['/data-sync/admin/DataSyncNavLink#DataSyncNavLink'],
+      views: {
+        dataSync: {
+          Component: '/data-sync/admin/DataSyncView#DataSyncView',
+          path: '/data-sync',
+        },
+      },
+    },
   },
   collections: [Users, DocumentCategories, Documents, Tags, Authors, Articles, Technologies, Projects, SocialProfiles, ContactMessages],
   globals: [SiteConfig, Home, Nav],
@@ -52,4 +63,5 @@ export default buildConfig({
     limits: { fileSize: 10 * 1024 * 1024 },
   },
   cors,
+  endpoints: dataSyncEndpoints,
 })

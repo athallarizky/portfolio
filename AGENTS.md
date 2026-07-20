@@ -2,7 +2,7 @@
 
 > **For:** any LLM agent working on this repo in a fresh session.
 > **Read this first**, then the latest sprint record in [`docs/sprint-N/`](docs/)
-> (currently sprint-13 → [`docs/sprint-13/final-report.md`](docs/sprint-13/final-report.md)).
+> (currently sprint-14 → [`docs/sprint-14/final-report.md`](docs/sprint-14/final-report.md)).
 > **Owner:** Atha Thizky — Full-Stack Engineer (backend-leaning · TS/Go/Python · AI tooling).
 
 ---
@@ -139,6 +139,24 @@ Two token layers in `frontend/src/styles/styles.css`:
 Author it in the Payload admin (`/admin`) or extend the seed in
 `backend/src/seed/data/*.ts` then `npm run seed:<phase>`. The frontend reads it via REST.
 
+### Back up / sync content (sprint-14)
+Content can be moved between local ↔ prod (and bulk-edited) via the data-sync tool —
+see [`docs/sprint-14/`](docs/sprint-14/). Export → a portable `.zip` (JSON + Markdown
+bodies + media); import upserts by natural key (merge, never replace-all). A raw-DB
+snapshot backs up the whole instance.
+
+```bash
+cd backend
+npm run export                                      # content zip (sync / bulk-edit)
+npm run import -- portfolio-data-*.zip -- --dry-run # preview (no writes)
+npm run import -- portfolio-data-*.zip              # upsert-merge (backs up payload.db first)
+npm run snapshot                                    # whole-DB zip
+npm run snapshot:restore -- portfolio-snapshot-*.zip -- --yes   # destructive; stop backend
+```
+
+Admin UI: **`/admin/data-sync`** (Download / Upload / Snapshot, admin-only). Engine:
+`backend/src/data-sync/` — exclude `users`, `contact-messages`, payload-internal from sync.
+
 ### Theme
 Toggle via the sidebar button; persisted in `localStorage['portfolio-theme']`;
 `.dark` on `<html>` switches all tokens (both `--*` and `--n-*`).
@@ -158,8 +176,9 @@ Toggle via the sidebar button; persisted in `localStorage['portfolio-theme']`;
 | 11 | Deploy workflow (manual trigger) — fixed SSH auth, repo path (`/root/portfolio`), `PAYLOAD_SECRET` ([RCAs](docs/sprint-11/rca/)) |
 | 12 | **Deploy OOM-proofing** — build moved to the GitHub runner + rsync; VPS only restarts. 2 GB swap added. ([final-report](docs/sprint-12/final-report.md), [architecture](docs/sprint-12/resources/architecture.md)) |
 | 13 | **Notion system across all pages + sidebar fix + SEO** — fixed mobile sidebar nav (z-index), warmed tokens + Notion component discipline (pill CTAs, 12px cards), SEO tier-up (`site` config, `@astrojs/sitemap`, per-page meta/OG/JSON-LD, `robots.txt`). Purple accent kept. ([final-report](docs/sprint-13/final-report.md)) |
+| 14 | **Data Sync, Backup & Bulk Import** — backend tool to export/import content as a portable `.zip` (JSON + Markdown bodies + media; upsert-merge by natural key) for local↔prod sync + bulk authoring, plus a raw-DB snapshot. Admin UI (`/admin/data-sync`) + CLI (`npm run export \| import \| snapshot`). ([final-report](docs/sprint-14/final-report.md)) |
 
-Latest detail: [`docs/sprint-13/final-report.md`](docs/sprint-13/final-report.md).
+Latest detail: [`docs/sprint-14/final-report.md`](docs/sprint-14/final-report.md).
 
 ---
 
@@ -172,9 +191,9 @@ cd backend && npm install && npm run dev
 # Frontend (Astro) — http://localhost:4321
 cd frontend && npm install && npm run dev
 
-# Verify (no test runner): typecheck + build
+# Verify: typecheck + build (backend also has `npm test` for the data-sync units)
 cd frontend && ./node_modules/.bin/tsc --noEmit && npm run build
-cd backend && npm run build
+cd backend && npm run build && npm test
 # Sanity-check the API:  curl -sg 'http://localhost:3000/api/projects?limit=3'
 ```
 

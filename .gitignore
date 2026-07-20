@@ -31,6 +31,11 @@ build/
 frontend/assets/documents/*
 backend/documents/*
 
+# Data-sync export/snapshot artifacts (build outputs, not source)
+backend/portfolio-data-*.zip
+backend/portfolio-snapshot-*.zip
+backend/payload.test.db*
+
 # Temp / misc
 temp
 *.log

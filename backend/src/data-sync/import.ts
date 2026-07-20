@@ -1,0 +1,340 @@
+// Content import — upserts an archive back into Payload via the Local API.
+//
+// Dry-run by default: reports would-create / would-update + errors, with zero writes.
+// Real run: takes a pre-import DB backup, then upserts in dependency order (parents
+// before children), resolves self-referential relations in a 2nd pass, converts body
+// Markdown → Lexical, and re-uploads Documents media.
+
+import type { Payload } from 'payload'
+import fs from 'fs'
+import path from 'path'
+import type AdmZip from 'adm-zip'
+
+import {
+  CONTENT_COLLECTIONS,
+  SYNC_GLOBALS,
+  type ArchiveManifest,
+  type ContentCollection,
+  type ImportReport,
+} from './types'
+import { NATURAL_KEYS, RELATIONS, RICH_TEXT_BODY } from './keys'
+import { validateManifest } from './manifest'
+import { readZip, readJson, readEntry } from './archive'
+import { getEditorConfig, mdToLexical, type EditorConfig } from './converters'
+import {
+  makeIdResolver,
+  planImportOrder,
+  type IdResolver,
+  UnresolvedRelationError,
+} from './relations'
+
+export interface ImportOptions {
+  dryRun: boolean
+  /** Directory for the pre-import backup (default: cwd). */
+  backupDir?: string
+}
+
+// ---- helpers ----
+
+function inferMimetype(filename: string): string {
+  switch (filename.toLowerCase().split('.').pop()) {
+    case 'pdf':
+      return 'application/pdf'
+    case 'md':
+      return 'text/markdown'
+    case 'png':
+      return 'image/png'
+    case 'jpg':
+    case 'jpeg':
+      return 'image/jpeg'
+    case 'gif':
+      return 'image/gif'
+    case 'webp':
+      return 'image/webp'
+    case 'svg':
+      return 'image/svg+xml'
+    default:
+      return 'application/octet-stream'
+  }
+}
+
+function safeReadEntry(zip: AdmZip, entryPath: string): Buffer | null {
+  try {
+    return readEntry(zip, entryPath)
+  } catch {
+    return null
+  }
+}
+
+/** Detect a top-level folder prefix so imports survive a macOS/Windows re-zip
+ *  (Finder/Explorer wraps the contents in a folder, e.g. `portfolio-data/manifest.json`,
+ *  and adds `__MACOSX/`, `.DS_Store`, `._*` junk). Returns '' when manifest.json is at the
+ *  archive root. */
+export function detectPrefix(zip: AdmZip): string {
+  if (zip.getEntry('manifest.json')) return ''
+  const isJunk = (n: string) =>
+    n.startsWith('__MACOSX/') || n.endsWith('.DS_Store') || path.basename(n).startsWith('._')
+  const dirs = new Set<string>()
+  for (const e of zip.getEntries()) {
+    const n = e.entryName
+    if (isJunk(n)) continue
+    const i = n.indexOf('/')
+    if (i > 0) dirs.add(n.slice(0, i))
+  }
+  for (const d of dirs) {
+    if (zip.getEntry(`${d}/manifest.json`)) return `${d}/`
+  }
+  return ''
+}
+
+/** Copy the active DB to a timestamped .preimport.bak (named after the actual DB file);
+ *  returns the path, or undefined on failure. */
+function backupDb(backupDir?: string): string | undefined {
+  const raw = process.env.DATABASE_URL || 'file:./payload.db'
+  const dbPath = raw.replace(/^file:/, '')
+  try {
+    const ts = new Date().toISOString().replace(/[:.]/g, '-')
+    const base = path.basename(dbPath) // payload.db (or payload.test.db, etc.)
+    const out = path.join(backupDir ?? process.cwd(), `${base}.${ts}.preimport.bak`)
+    fs.copyFileSync(dbPath, out)
+    return out
+  } catch {
+    return undefined
+  }
+}
+
+/** Rewrite a row's relationship fields from natural keys → ids. selfRef fields are
+ *  skipped (resolved in a 2nd pass). Required refs that can't resolve throw. */
+function rewriteRelationsToIds(
+  collection: ContentCollection,
+  row: Record<string, any>,
+  resolver: IdResolver,
+): Record<string, any> {
+  const data: Record<string, any> = { ...row }
+  const rels = RELATIONS[collection]
+  if (!rels) return data
+  for (const rel of rels) {
+    if (rel.selfRef) continue
+    const val = data[rel.field]
+    if (val == null) {
+      if (rel.required) {
+        throw new UnresolvedRelationError(rel.to, '(missing)', `${collection}.${rel.field}`)
+      }
+      continue
+    }
+    if (rel.hasMany) {
+      const keys = Array.isArray(val) ? val : [val]
+      data[rel.field] = keys
+        .map((k: any) => resolver.get(rel.to, String(k)))
+        .filter((id: any) => id !== undefined)
+    } else {
+      const id = resolver.get(rel.to, String(val))
+      if (id === undefined) {
+        if (rel.required) {
+          throw new UnresolvedRelationError(rel.to, String(val), `${collection}.${rel.field}`)
+        }
+        delete data[rel.field]
+      } else {
+        data[rel.field] = id
+      }
+    }
+  }
+  return data
+}
+
+type UpsertOutcome = { status: 'created' | 'updated'; id?: number | string; key: string }
+
+async function upsertDoc(
+  payload: Payload,
+  collection: ContentCollection,
+  row: Record<string, any>,
+  editorConfig: EditorConfig,
+  zip: AdmZip,
+  pfx: string,
+  resolver: IdResolver,
+  dryRun: boolean,
+): Promise<UpsertOutcome> {
+  const keyField = NATURAL_KEYS[collection]
+  const key = String(row[keyField])
+  let data = rewriteRelationsToIds(collection, row, resolver)
+
+  // MD → Lexical for rich-text bodies.
+  const bodyField = RICH_TEXT_BODY[collection]
+  if (bodyField && typeof data[bodyField] === 'string') {
+    data[bodyField] = mdToLexical(data[bodyField], editorConfig)
+  }
+
+  // Upload collection: `filename` is auto-managed by Payload, not a data field.
+  if (collection === 'documents') {
+    delete data.filename
+  }
+
+  const existing = await payload.find({
+    collection,
+    where: { [keyField]: { equals: row[keyField] } },
+    limit: 1,
+    depth: 0,
+  } as any)
+  const exists = existing.totalDocs > 0
+
+  if (dryRun) {
+    // Still track existing ids so downstream relations can resolve in dry-run.
+    return { status: exists ? 'updated' : 'created', id: exists ? existing.docs[0].id : undefined, key }
+  }
+
+  if (collection === 'documents') {
+    const bytes = row.filename ? safeReadEntry(zip, `${pfx}media/${row.filename}`) : null
+    const file =
+      bytes && row.filename
+        ? { data: bytes, mimetype: inferMimetype(row.filename), name: row.filename, size: bytes.length }
+        : undefined
+    if (exists) {
+      const id = existing.docs[0].id
+      await payload.update({ collection, id, data, ...(file ? { file } : {}) } as any)
+      return { status: 'updated', id, key }
+    }
+    if (!file) throw new Error(`document "${key}" has no media file in the archive`)
+    const created = await payload.create({ collection, data, file } as any)
+    return { status: 'created', id: created.id, key }
+  }
+
+  if (exists) {
+    const id = existing.docs[0].id
+    await payload.update({ collection, id, data } as any)
+    return { status: 'updated', id, key }
+  }
+  const created = await payload.create({ collection, data } as any)
+  return { status: 'created', id: created.id, key }
+}
+
+/** 2nd pass: resolve self-referential relations (articles.relatedArticles). Returns docs touched. */
+async function resolveSelfRefs(
+  payload: Payload,
+  zip: AdmZip,
+  pfx: string,
+  resolver: IdResolver,
+  dryRun: boolean,
+): Promise<number> {
+  if (!safeReadEntry(zip, `${pfx}collections/articles.json`)) return 0
+  const selfRels = RELATIONS.articles?.filter((r) => r.selfRef) ?? []
+  if (selfRels.length === 0) return 0
+  const articles = readJson<Record<string, any>[]>(zip, `${pfx}collections/articles.json`)
+
+  let touched = 0
+  for (const art of articles) {
+    const updates: Record<string, any> = {}
+    for (const rel of selfRels) {
+      const val = art[rel.field]
+      if (!val) continue
+      const keys = Array.isArray(val) ? val : [val]
+      updates[rel.field] = keys
+        .map((k: any) => resolver.get('articles', String(k)))
+        .filter((id: any) => id !== undefined)
+    }
+    if (Object.keys(updates).length === 0) continue
+    if (dryRun) {
+      touched++
+      continue
+    }
+    const existing = await payload.find({
+      collection: 'articles',
+      where: { slug: { equals: art.slug } },
+      limit: 1,
+      depth: 0,
+    } as any)
+    if (existing.totalDocs > 0) {
+      await payload.update({ collection: 'articles', id: existing.docs[0].id, data: updates } as any)
+      touched++
+    }
+  }
+  return touched
+}
+
+function bump(report: ImportReport, bucket: 'created' | 'updated', collection: string): void {
+  report[bucket][collection] = (report[bucket][collection] ?? 0) + 1
+}
+
+export async function importFromArchive(
+  payload: Payload,
+  zipBuf: Buffer,
+  opts: ImportOptions,
+): Promise<ImportReport> {
+  const zip = readZip(zipBuf)
+  const pfx = detectPrefix(zip)
+  if (!zip.getEntry(`${pfx}manifest.json`)) {
+    if (zip.getEntry(`${pfx}snapshot-manifest.json`)) {
+      throw new Error(
+        "this .zip is a DB snapshot, not a content export — restore it with `npm run snapshot:restore`, or upload a content export (portfolio-data-*.zip) instead",
+      )
+    }
+    throw new Error('not a portfolio content archive (manifest.json missing)')
+  }
+  const manifest = readJson<ArchiveManifest>(zip, `${pfx}manifest.json`)
+  validateManifest(manifest)
+
+  const editorConfig = await getEditorConfig(payload)
+  const resolver = makeIdResolver()
+  const report: ImportReport = {
+    created: {},
+    updated: {},
+    unchanged: {},
+    errors: [],
+    dryRun: opts.dryRun,
+  }
+
+  // Collections present in this archive, in dependency order.
+  const present = new Set<string>()
+  for (const c of CONTENT_COLLECTIONS) {
+    if (zip.getEntry(`${pfx}collections/${c}.json`)) present.add(c)
+  }
+
+  if (!opts.dryRun) {
+    report.backupPath = backupDb(opts.backupDir)
+  }
+
+  for (const collection of planImportOrder(present)) {
+    const rows = readJson<Record<string, any>[]>(zip, `${pfx}collections/${collection}.json`)
+    for (const row of rows) {
+      try {
+        const outcome = await upsertDoc(payload, collection, row, editorConfig, zip, pfx, resolver, opts.dryRun)
+        bump(report, outcome.status, collection)
+        if (outcome.id !== undefined) resolver.set(collection, outcome.key, outcome.id)
+      } catch (e) {
+        report.errors.push({
+          collection,
+          key: String(row[NATURAL_KEYS[collection]] ?? ''),
+          message: e instanceof Error ? e.message : String(e),
+        })
+      }
+    }
+  }
+
+  // 2nd pass: self-referential relations.
+  try {
+    await resolveSelfRefs(payload, zip, pfx, resolver, opts.dryRun)
+  } catch (e) {
+    report.errors.push({
+      collection: 'articles',
+      key: '(self-ref)',
+      message: e instanceof Error ? e.message : String(e),
+    })
+  }
+
+  // Globals.
+  for (const g of SYNC_GLOBALS) {
+    if (!zip.getEntry(`${pfx}globals/${g}.json`)) continue
+    const data = readJson<Record<string, any>>(zip, `${pfx}globals/${g}.json`)
+    try {
+      if (!opts.dryRun) await payload.updateGlobal({ slug: g, data } as any)
+      bump(report, 'updated', `global:${g}`)
+    } catch (e) {
+      report.errors.push({
+        collection: `global:${g}`,
+        key: g,
+        message: e instanceof Error ? e.message : String(e),
+      })
+    }
+  }
+
+  return report
+}

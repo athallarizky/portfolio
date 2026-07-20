@@ -1,5 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
+import { uuidField, ensureUuid } from '../data-sync/identity'
+
 /**
  * Document groups shown on the Documents page (Pinned / Research / Other…).
  * `order` controls display sequence; empty categories are hidden client-side.
@@ -18,7 +20,11 @@ export const DocumentCategories: CollectionConfig = {
   access: {
     read: () => true,
   },
+  hooks: {
+    beforeChange: [ensureUuid],
+  },
   fields: [
+    uuidField,
     { name: 'label', type: 'text', required: true },
     {
       name: 'slug',

@@ -6,6 +6,7 @@ import type { Endpoint } from 'payload'
 import { exportToArchive } from './export'
 import { importFromArchive } from './import'
 import { createSnapshot } from './snapshot'
+import { mergeRecords, MergeError } from './merge'
 import { resolvePkgVersion } from './version'
 
 const PAYLOAD_VERSION = resolvePkgVersion('payload')
@@ -89,4 +90,41 @@ export const dataSnapshotEndpoint: Endpoint = {
   },
 }
 
-export const dataSyncEndpoints: Endpoint[] = [dataExportEndpoint, dataImportEndpoint, dataSnapshotEndpoint]
+/** POST /api/data-merge (json: collection, winnerUuid, loserUuid, dryRun?) → MergeReport JSON.
+ *  Repoints every incoming relationship loser→winner, then deletes the loser (dry-run by preview). */
+export const dataMergeEndpoint: Endpoint = {
+  path: '/data-merge',
+  method: 'post',
+  handler: async (req) => {
+    if (!req.user) return unauthorized()
+    try {
+      const body = (await req.json()) as {
+        collection?: string
+        winnerUuid?: string
+        loserUuid?: string
+        dryRun?: boolean
+      }
+      const { collection, winnerUuid, loserUuid, dryRun } = body ?? {}
+      if (!collection || !winnerUuid || !loserUuid) {
+        return Response.json(
+          { error: 'collection, winnerUuid, loserUuid are required' },
+          { status: 400 },
+        )
+      }
+      const report = await mergeRecords(req.payload, collection as any, winnerUuid, loserUuid, {
+        dryRun: !!dryRun,
+      })
+      return Response.json(report)
+    } catch (e) {
+      if (e instanceof MergeError) return badRequest(e) // bad uuid / collection / winner==loser → 400
+      return serverError(e)
+    }
+  },
+}
+
+export const dataSyncEndpoints: Endpoint[] = [
+  dataExportEndpoint,
+  dataImportEndpoint,
+  dataSnapshotEndpoint,
+  dataMergeEndpoint,
+]

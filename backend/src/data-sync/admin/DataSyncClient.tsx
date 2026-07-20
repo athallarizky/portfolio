@@ -8,6 +8,8 @@
 import { useRef, useState, type ReactNode } from 'react'
 import { Button } from '@payloadcms/ui'
 
+import { MergePanel } from './MergePanel'
+
 type ImportError = { collection: string; key: string; message: string }
 type Report = {
   created: Record<string, number>
@@ -128,6 +130,8 @@ export const DataSyncClient = () => {
           </div>
         )}
       </Section>
+
+      <MergePanel />
 
       <Section
         title="DB snapshot (whole instance)"

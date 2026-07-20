@@ -4,6 +4,9 @@
 // Real run: takes a pre-import DB backup, then upserts in dependency order (parents
 // before children), resolves self-referential relations in a 2nd pass, converts body
 // Markdown → Lexical, and re-uploads Documents media.
+//
+// Identity (sprint-15): a record's `uuid` is the upsert key (rename-safe). v2 archives
+// serialize relations as dual { uuid, key } refs; v1 archives use plain strings. Both import.
 
 import type { Payload } from 'payload'
 import fs from 'fs'
@@ -35,6 +38,22 @@ export interface ImportOptions {
 }
 
 // ---- helpers ----
+
+/** A serialized relation ref is either a v1 plain string (key only) or a v2 { uuid?, key } object. */
+export function toRef(val: unknown): { uuid?: string; key: string } | null {
+  if (val == null) return null
+  if (typeof val === 'string') return { key: val }
+  if (typeof val === 'object') {
+    const o = val as { uuid?: unknown; key?: unknown }
+    if (o.key !== undefined && o.key !== null) {
+      const u = typeof o.uuid === 'string' && o.uuid ? o.uuid : undefined
+      const ref: { uuid?: string; key: string } = { key: String(o.key) }
+      if (u) ref.uuid = u
+      return ref
+    }
+  }
+  return null
+}
 
 function inferMimetype(filename: string): string {
   switch (filename.toLowerCase().split('.').pop()) {
@@ -87,15 +106,15 @@ export function detectPrefix(zip: AdmZip): string {
   return ''
 }
 
-/** Copy the active DB to a timestamped .preimport.bak (named after the actual DB file);
- *  returns the path, or undefined on failure. */
-function backupDb(backupDir?: string): string | undefined {
+/** Copy the active DB to a timestamped .bak (named after the actual DB file);
+ *  returns the path, or undefined on failure. `label` distinguishes pre-import vs pre-merge backups. */
+export function backupDb(backupDir?: string, label = 'preimport'): string | undefined {
   const raw = process.env.DATABASE_URL || 'file:./payload.db'
   const dbPath = raw.replace(/^file:/, '')
   try {
     const ts = new Date().toISOString().replace(/[:.]/g, '-')
     const base = path.basename(dbPath) // payload.db (or payload.test.db, etc.)
-    const out = path.join(backupDir ?? process.cwd(), `${base}.${ts}.preimport.bak`)
+    const out = path.join(backupDir ?? process.cwd(), `${base}.${ts}.${label}.bak`)
     fs.copyFileSync(dbPath, out)
     return out
   } catch {
@@ -103,9 +122,9 @@ function backupDb(backupDir?: string): string | undefined {
   }
 }
 
-/** Rewrite a row's relationship fields from natural keys → ids. selfRef fields are
- *  skipped (resolved in a 2nd pass). Required refs that can't resolve throw. */
-function rewriteRelationsToIds(
+/** Rewrite a row's relationship fields from refs (v1 string | v2 {uuid,key}) → ids.
+ *  selfRef fields are skipped (resolved in a 2nd pass). Required refs that can't resolve throw. */
+export function rewriteRelationsToIds(
   collection: ContentCollection,
   row: Record<string, any>,
   resolver: IdResolver,
@@ -123,16 +142,22 @@ function rewriteRelationsToIds(
       continue
     }
     if (rel.hasMany) {
-      const keys = Array.isArray(val) ? val : [val]
-      data[rel.field] = keys
-        .map((k: any) => resolver.get(rel.to, String(k)))
-        .filter((id: any) => id !== undefined)
+      const refs = (Array.isArray(val) ? val : [val])
+        .map((v) => toRef(v))
+        .filter((r): r is { uuid?: string; key: string } => r !== null)
+      data[rel.field] = refs
+        .map((r) => resolver.resolve(rel.to, r))
+        .filter((id): id is number | string => id !== undefined)
     } else {
-      const id = resolver.get(rel.to, String(val))
+      const ref = toRef(val)
+      if (!ref) {
+        if (rel.required) throw new UnresolvedRelationError(rel.to, '(invalid)', `${collection}.${rel.field}`)
+        delete data[rel.field]
+        continue
+      }
+      const id = resolver.resolve(rel.to, ref)
       if (id === undefined) {
-        if (rel.required) {
-          throw new UnresolvedRelationError(rel.to, String(val), `${collection}.${rel.field}`)
-        }
+        if (rel.required) throw new UnresolvedRelationError(rel.to, ref.key, `${collection}.${rel.field}`)
         delete data[rel.field]
       } else {
         data[rel.field] = id
@@ -156,6 +181,7 @@ async function upsertDoc(
 ): Promise<UpsertOutcome> {
   const keyField = NATURAL_KEYS[collection]
   const key = String(row[keyField])
+  const uuid = typeof row.uuid === 'string' && row.uuid ? row.uuid : undefined
   let data = rewriteRelationsToIds(collection, row, resolver)
 
   // MD → Lexical for rich-text bodies.
@@ -169,17 +195,31 @@ async function upsertDoc(
     delete data.filename
   }
 
-  const existing = await payload.find({
-    collection,
-    where: { [keyField]: { equals: row[keyField] } },
-    limit: 1,
-    depth: 0,
-  } as any)
-  const exists = existing.totalDocs > 0
+  // Find existing by uuid first (rename-safe), else by natural key (v1 / un-backfilled).
+  let existingId: number | string | undefined
+  if (uuid) {
+    const byUuid = await payload.find({
+      collection,
+      where: { uuid: { equals: uuid } },
+      limit: 1,
+      depth: 0,
+    } as any)
+    if (byUuid.totalDocs > 0) existingId = byUuid.docs[0].id
+  }
+  if (existingId === undefined) {
+    const byKey = await payload.find({
+      collection,
+      where: { [keyField]: { equals: row[keyField] } },
+      limit: 1,
+      depth: 0,
+    } as any)
+    if (byKey.totalDocs > 0) existingId = byKey.docs[0].id
+  }
+  const exists = existingId !== undefined
 
   if (dryRun) {
     // Still track existing ids so downstream relations can resolve in dry-run.
-    return { status: exists ? 'updated' : 'created', id: exists ? existing.docs[0].id : undefined, key }
+    return { status: exists ? 'updated' : 'created', id: existingId, key }
   }
 
   if (collection === 'documents') {
@@ -189,9 +229,8 @@ async function upsertDoc(
         ? { data: bytes, mimetype: inferMimetype(row.filename), name: row.filename, size: bytes.length }
         : undefined
     if (exists) {
-      const id = existing.docs[0].id
-      await payload.update({ collection, id, data, ...(file ? { file } : {}) } as any)
-      return { status: 'updated', id, key }
+      await payload.update({ collection, id: existingId, data, ...(file ? { file } : {}) } as any)
+      return { status: 'updated', id: existingId, key }
     }
     if (!file) throw new Error(`document "${key}" has no media file in the archive`)
     const created = await payload.create({ collection, data, file } as any)
@@ -199,9 +238,8 @@ async function upsertDoc(
   }
 
   if (exists) {
-    const id = existing.docs[0].id
-    await payload.update({ collection, id, data } as any)
-    return { status: 'updated', id, key }
+    await payload.update({ collection, id: existingId, data } as any)
+    return { status: 'updated', id: existingId, key }
   }
   const created = await payload.create({ collection, data } as any)
   return { status: 'created', id: created.id, key }
@@ -226,23 +264,38 @@ async function resolveSelfRefs(
     for (const rel of selfRels) {
       const val = art[rel.field]
       if (!val) continue
-      const keys = Array.isArray(val) ? val : [val]
-      updates[rel.field] = keys
-        .map((k: any) => resolver.get('articles', String(k)))
-        .filter((id: any) => id !== undefined)
+      const refs = (Array.isArray(val) ? val : [val])
+        .map((v) => toRef(v))
+        .filter((r): r is { uuid?: string; key: string } => r !== null)
+      updates[rel.field] = refs
+        .map((r) => resolver.resolve('articles', r))
+        .filter((id): id is number | string => id !== undefined)
     }
     if (Object.keys(updates).length === 0) continue
     if (dryRun) {
       touched++
       continue
     }
-    const existing = await payload.find({
-      collection: 'articles',
-      where: { slug: { equals: art.slug } },
-      limit: 1,
-      depth: 0,
-    } as any)
-    if (existing.totalDocs > 0) {
+    // Find the article by uuid (rename-safe) → slug fallback.
+    const uuid = typeof art.uuid === 'string' && art.uuid ? art.uuid : undefined
+    let existing
+    if (uuid) {
+      existing = await payload.find({
+        collection: 'articles',
+        where: { uuid: { equals: uuid } },
+        limit: 1,
+        depth: 0,
+      } as any)
+    }
+    if ((!uuid || existing.totalDocs === 0) && art.slug !== undefined) {
+      existing = await payload.find({
+        collection: 'articles',
+        where: { slug: { equals: art.slug } },
+        limit: 1,
+        depth: 0,
+      } as any)
+    }
+    if (existing && existing.totalDocs > 0) {
       await payload.update({ collection: 'articles', id: existing.docs[0].id, data: updates } as any)
       touched++
     }
@@ -298,7 +351,10 @@ export async function importFromArchive(
       try {
         const outcome = await upsertDoc(payload, collection, row, editorConfig, zip, pfx, resolver, opts.dryRun)
         bump(report, outcome.status, collection)
-        if (outcome.id !== undefined) resolver.set(collection, outcome.key, outcome.id)
+        if (outcome.id !== undefined) {
+          const rowUuid = typeof row.uuid === 'string' && row.uuid ? row.uuid : undefined
+          resolver.set(collection, outcome.key, outcome.id, rowUuid)
+        }
       } catch (e) {
         report.errors.push({
           collection,

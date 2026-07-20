@@ -53,3 +53,28 @@ export const RICH_TEXT_BODY: Partial<Record<ContentCollection, string>> = {
   articles: 'body',
   projects: 'body',
 }
+
+/** A relationship pointing AT a collection (the inverse of a RelationDef) — used by merge. */
+export interface InverseRelation {
+  fromCollection: ContentCollection
+  field: string
+  hasMany: boolean
+  selfRef: boolean
+}
+
+/** For a target collection, every (collection, field) with a relationship pointing AT it.
+ *  Derived from `RELATIONS` — single source of truth, so a new relationship auto-flows into merge. */
+export function inverseRelations(): Map<ContentCollection, InverseRelation[]> {
+  const inv = new Map<ContentCollection, InverseRelation[]>()
+  for (const [from, rels] of Object.entries(RELATIONS) as [ContentCollection, RelationDef[]][]) {
+    for (const rel of rels) {
+      let arr = inv.get(rel.to)
+      if (!arr) {
+        arr = []
+        inv.set(rel.to, arr)
+      }
+      arr.push({ fromCollection: from, field: rel.field, hasMany: rel.hasMany, selfRef: !!rel.selfRef })
+    }
+  }
+  return inv
+}

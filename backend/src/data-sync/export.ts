@@ -14,17 +14,18 @@ import {
   UPLOAD_AUTO_FIELDS,
   type ContentCollection,
   type ArchiveManifest,
+  type RelationRef,
 } from './types'
 import { NATURAL_KEYS, RELATIONS, RELATION_TARGETS, RICH_TEXT_BODY } from './keys'
 import { buildManifest } from './manifest'
 import { createZip, type ZipEntry } from './archive'
 import { getEditorConfig, lexicalToMd } from './converters'
 
-/** Per target collection: Map<id-as-string, natural-key value>. */
-type IdKeyMaps = Map<ContentCollection, Map<string, string>>
+/** Per target collection: Map<id-as-string, { uuid, key }> — the v2 dual-reference form. */
+export type IdRefMaps = Map<ContentCollection, Map<string, RelationRef>>
 
-async function buildIdKeyMaps(payload: Payload): Promise<IdKeyMaps> {
-  const maps: IdKeyMaps = new Map()
+async function buildIdRefMaps(payload: Payload): Promise<IdRefMaps> {
+  const maps: IdRefMaps = new Map()
   for (const target of RELATION_TARGETS) {
     const res = await payload.find({
       collection: target,
@@ -33,17 +34,21 @@ async function buildIdKeyMaps(payload: Payload): Promise<IdKeyMaps> {
       pagination: false,
     } as any)
     const keyField = NATURAL_KEYS[target]
-    const m = new Map<string, string>()
+    const m = new Map<string, RelationRef>()
     for (const doc of res.docs as any[]) {
-      m.set(String(doc.id), doc[keyField])
+      m.set(String(doc.id), { uuid: doc.uuid ?? undefined, key: doc[keyField] })
     }
     maps.set(target, m)
   }
   return maps
 }
 
-/** Rewrite a doc's relationship fields from ids → natural keys, in place. */
-function rewriteRelations(doc: Record<string, any>, collection: ContentCollection, maps: IdKeyMaps): void {
+/** Rewrite a doc's relationship fields from ids → dual refs { uuid, key }, in place (v2 format). */
+export function rewriteRelations(
+  doc: Record<string, any>,
+  collection: ContentCollection,
+  maps: IdRefMaps,
+): void {
   const rels = RELATIONS[collection]
   if (!rels) return
   for (const rel of rels) {
@@ -53,9 +58,11 @@ function rewriteRelations(doc: Record<string, any>, collection: ContentCollectio
     if (!targetMap) continue
     if (rel.hasMany) {
       const ids = Array.isArray(val) ? val : [val]
-      doc[rel.field] = ids.map((id: any) => targetMap.get(String(id))).filter((v: any) => v !== undefined)
+      doc[rel.field] = ids
+        .map((id: any) => targetMap.get(String(id)))
+        .filter((v: any): v is RelationRef => v !== undefined)
     } else {
-      doc[rel.field] = targetMap.get(String(val))
+      doc[rel.field] = targetMap.get(String(val)) ?? null
     }
   }
 }
@@ -86,7 +93,7 @@ export function resolveMediaDir(payload: Payload): string {
 }
 
 export async function exportToArchive(payload: Payload, opts: ExportOptions): Promise<Buffer> {
-  const maps = await buildIdKeyMaps(payload)
+  const maps = await buildIdRefMaps(payload)
   const editorConfig = await getEditorConfig(payload)
   const mediaDir = resolveMediaDir(payload)
   const entries: ZipEntry[] = []

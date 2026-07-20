@@ -17,11 +17,14 @@ export type ContentCollection = (typeof CONTENT_COLLECTIONS)[number]
 export const SYNC_GLOBALS = ['site-config', 'home', 'nav'] as const
 export type SyncGlobal = (typeof SYNC_GLOBALS)[number]
 
-/** Archive manifest schema version — bump when the on-disk format changes. */
-export const SCHEMA_VERSION = 1 as const
+/** Current archive format (sprint-15): uuid identity + dual relations. */
+export const SCHEMA_VERSION = 2 as const
+/** All schema versions the importer accepts. v1 = sprint-14 natural-key-only; v2 = uuid + dual. */
+export const SUPPORTED_SCHEMA_VERSIONS = [1, 2] as const
 
 export interface ArchiveManifest {
-  schemaVersion: typeof SCHEMA_VERSION
+  /** v1 (natural-key-only) and v2 (uuid identity) archives are both importable. */
+  schemaVersion: 1 | 2
   tool: 'portfolio-data-sync'
   exportedAt: string
   sourceEnv: string
@@ -37,6 +40,13 @@ export interface RelationDef {
   required?: boolean
   /** Self-referential (e.g. articles.relatedArticles) — resolve in a 2nd pass on import. */
   selfRef?: boolean
+}
+
+/** v2 relationship reference: target `uuid` (primary — resolves across renames) + natural `key`
+ *  (fallback — human-readable + v1-compatible). v1 archives use plain strings (key only). */
+export interface RelationRef {
+  uuid?: string
+  key: string
 }
 
 export interface ImportErrorEntry {

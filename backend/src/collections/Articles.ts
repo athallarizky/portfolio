@@ -1,5 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
+import { uuidField, ensureUuid } from '../data-sync/identity'
+
 export const Articles: CollectionConfig = {
   slug: 'articles',
   admin: {
@@ -9,7 +11,11 @@ export const Articles: CollectionConfig = {
   access: {
     read: () => true,
   },
+  hooks: {
+    beforeChange: [ensureUuid],
+  },
   fields: [
+    uuidField,
     { name: 'title', type: 'text', required: true },
     { name: 'slug', type: 'text', required: true, unique: true },
     { name: 'excerpt', type: 'textarea' },

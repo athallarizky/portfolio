@@ -1,5 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
+import { uuidField, ensureUuid } from '../data-sync/identity'
+
 /**
  * Downloadable documents. `upload: true` makes this a media collection —
  * Payload auto-tracks `filename`, `filesize`, `mimeType`, `updatedAt`, so the
@@ -17,8 +19,12 @@ export const Documents: CollectionConfig = {
   access: {
     read: () => true,
   },
+  hooks: {
+    beforeChange: [ensureUuid],
+  },
   upload: true,
   fields: [
+    uuidField,
     { name: 'title', type: 'text', required: true },
     {
       name: 'category',

@@ -2,7 +2,7 @@
 
 > **For:** any LLM agent working on this repo in a fresh session.
 > **Read this first**, then the latest sprint record in [`docs/sprint-N/`](docs/)
-> (currently sprint-14 → [`docs/sprint-14/final-report.md`](docs/sprint-14/final-report.md)).
+> (currently sprint-15 → [`docs/sprint-15/final-report.md`](docs/sprint-15/final-report.md)).
 > **Owner:** Atha Thizky — Full-Stack Engineer (backend-leaning · TS/Go/Python · AI tooling).
 
 ---
@@ -157,6 +157,21 @@ npm run snapshot:restore -- portfolio-snapshot-*.zip -- --yes   # destructive; s
 Admin UI: **`/admin/data-sync`** (Download / Upload / Snapshot, admin-only). Engine:
 `backend/src/data-sync/` — exclude `users`, `contact-messages`, payload-internal from sync.
 
+### Record identity & merge (sprint-15)
+Each content record now has a stable content-level **`uuid`** (auto-assigned on create by a
+`beforeChange` hook). Identity = `uuid`, so **renaming a record updates it in place** instead of
+duplicating it; relationships serialize as dual `{ uuid, key }` refs. v1 archives (sprint-14) still
+import unchanged.
+
+```bash
+cd backend
+npm run backfill:uuid                                          # one-time per env (assigns uuid to existing records)
+npm run merge -- authors <winnerUuid> <loserUuid> -- --dry-run # preview merging two records
+npm run merge -- authors <winnerUuid> <loserUuid>             # repoint relations + delete loser
+```
+Admin UI: **`/admin/data-sync`** → "Merge duplicates" card. Detail:
+[`docs/sprint-15/final-report.md`](docs/sprint-15/final-report.md).
+
 ### Theme
 Toggle via the sidebar button; persisted in `localStorage['portfolio-theme']`;
 `.dark` on `<html>` switches all tokens (both `--*` and `--n-*`).
@@ -177,8 +192,9 @@ Toggle via the sidebar button; persisted in `localStorage['portfolio-theme']`;
 | 12 | **Deploy OOM-proofing** — build moved to the GitHub runner + rsync; VPS only restarts. 2 GB swap added. ([final-report](docs/sprint-12/final-report.md), [architecture](docs/sprint-12/resources/architecture.md)) |
 | 13 | **Notion system across all pages + sidebar fix + SEO** — fixed mobile sidebar nav (z-index), warmed tokens + Notion component discipline (pill CTAs, 12px cards), SEO tier-up (`site` config, `@astrojs/sitemap`, per-page meta/OG/JSON-LD, `robots.txt`). Purple accent kept. ([final-report](docs/sprint-13/final-report.md)) |
 | 14 | **Data Sync, Backup & Bulk Import** — backend tool to export/import content as a portable `.zip` (JSON + Markdown bodies + media; upsert-merge by natural key) for local↔prod sync + bulk authoring, plus a raw-DB snapshot. Admin UI (`/admin/data-sync`) + CLI (`npm run export \| import \| snapshot`). ([final-report](docs/sprint-14/final-report.md)) |
+| 15 | **Content UUID identity & merge** — stable content-level `uuid` per record (rename-safe; replaces natural-key identity; `beforeChange` hook) + a merge tool (CLI + admin UI + `/api/data-merge`) that repoints all incoming relations and deletes the loser. `npm run backfill:uuid` + `npm run merge`. v1 archives still import. ([final-report](docs/sprint-15/final-report.md)) |
 
-Latest detail: [`docs/sprint-14/final-report.md`](docs/sprint-14/final-report.md).
+Latest detail: [`docs/sprint-15/final-report.md`](docs/sprint-15/final-report.md).
 
 ---
 

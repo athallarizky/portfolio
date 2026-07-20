@@ -175,6 +175,7 @@ export interface User {
  */
 export interface DocumentCategory {
   id: number;
+  uuid?: string | null;
   label: string;
   /**
    * URL-safe id, e.g. pinned, research, other
@@ -198,6 +199,7 @@ export interface DocumentCategory {
  */
 export interface Document {
   id: number;
+  uuid?: string | null;
   title: string;
   category: number | DocumentCategory;
   excerpt?: string | null;
@@ -223,6 +225,7 @@ export interface Document {
  */
 export interface Tag {
   id: number;
+  uuid?: string | null;
   name: string;
   slug: string;
   updatedAt: string;
@@ -234,6 +237,7 @@ export interface Tag {
  */
 export interface Author {
   id: number;
+  uuid?: string | null;
   name: string;
   initials: string;
   role?: string | null;
@@ -247,6 +251,7 @@ export interface Author {
  */
 export interface Article {
   id: number;
+  uuid?: string | null;
   title: string;
   slug: string;
   excerpt?: string | null;
@@ -299,6 +304,7 @@ export interface Article {
  */
 export interface Technology {
   id: number;
+  uuid?: string | null;
   name: string;
   slug: string;
   /**
@@ -314,6 +320,7 @@ export interface Technology {
  */
 export interface Project {
   id: number;
+  uuid?: string | null;
   title: string;
   slug: string;
   year: number;
@@ -397,6 +404,7 @@ export interface Project {
  */
 export interface SocialProfile {
   id: number;
+  uuid?: string | null;
   platform: string;
   /**
    * iconify icon, e.g. simple-icons:github
@@ -555,6 +563,7 @@ export interface UsersSelect<T extends boolean = true> {
  * via the `definition` "document-categories_select".
  */
 export interface DocumentCategoriesSelect<T extends boolean = true> {
+  uuid?: T;
   label?: T;
   slug?: T;
   icon?: T;
@@ -568,6 +577,7 @@ export interface DocumentCategoriesSelect<T extends boolean = true> {
  * via the `definition` "documents_select".
  */
 export interface DocumentsSelect<T extends boolean = true> {
+  uuid?: T;
   title?: T;
   category?: T;
   excerpt?: T;
@@ -589,6 +599,7 @@ export interface DocumentsSelect<T extends boolean = true> {
  * via the `definition` "tags_select".
  */
 export interface TagsSelect<T extends boolean = true> {
+  uuid?: T;
   name?: T;
   slug?: T;
   updatedAt?: T;
@@ -599,6 +610,7 @@ export interface TagsSelect<T extends boolean = true> {
  * via the `definition` "authors_select".
  */
 export interface AuthorsSelect<T extends boolean = true> {
+  uuid?: T;
   name?: T;
   initials?: T;
   role?: T;
@@ -611,6 +623,7 @@ export interface AuthorsSelect<T extends boolean = true> {
  * via the `definition` "articles_select".
  */
 export interface ArticlesSelect<T extends boolean = true> {
+  uuid?: T;
   title?: T;
   slug?: T;
   excerpt?: T;
@@ -638,6 +651,7 @@ export interface ArticlesSelect<T extends boolean = true> {
  * via the `definition` "technologies_select".
  */
 export interface TechnologiesSelect<T extends boolean = true> {
+  uuid?: T;
   name?: T;
   slug?: T;
   icon?: T;
@@ -649,6 +663,7 @@ export interface TechnologiesSelect<T extends boolean = true> {
  * via the `definition` "projects_select".
  */
 export interface ProjectsSelect<T extends boolean = true> {
+  uuid?: T;
   title?: T;
   slug?: T;
   year?: T;
@@ -701,6 +716,7 @@ export interface ProjectsSelect<T extends boolean = true> {
  * via the `definition` "social-profiles_select".
  */
 export interface SocialProfilesSelect<T extends boolean = true> {
+  uuid?: T;
   platform?: T;
   icon?: T;
   handle?: T;

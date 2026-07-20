@@ -8,6 +8,9 @@ export const Projects: CollectionConfig = {
     useAsTitle: 'title',
     group: 'Projects',
     defaultColumns: ['title', 'year', 'status'],
+    components: {
+      afterListTable: ['/data-sync/admin/InsertProjectFromJson#InsertProjectFromJson'],
+    },
   },
   access: {
     read: () => true,

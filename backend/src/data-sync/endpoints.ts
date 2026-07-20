@@ -4,10 +4,13 @@
 import type { Endpoint } from 'payload'
 
 import { exportToArchive } from './export'
+import { formatStamp } from './filenames'
 import { importFromArchive } from './import'
 import { createSnapshot } from './snapshot'
 import { mergeRecords, MergeError } from './merge'
 import { resolvePkgVersion } from './version'
+import { buildSingleCollectionArchive, SingleArchiveError } from './single'
+import { CONTENT_COLLECTIONS, type ContentCollection } from './types'
 
 const PAYLOAD_VERSION = resolvePkgVersion('payload')
 
@@ -38,7 +41,7 @@ export const dataExportEndpoint: Endpoint = {
       return new Response(new Uint8Array(buf), {
         headers: {
           'content-type': 'application/zip',
-          'content-disposition': 'attachment; filename="portfolio-data.zip"',
+          'content-disposition': `attachment; filename="portfolio-data-${formatStamp()}.zip"`,
         },
       })
     } catch (e) {
@@ -61,11 +64,47 @@ export const dataImportEndpoint: Endpoint = {
         return Response.json({ error: 'no file uploaded (field "file")' }, { status: 400 })
       }
       const dryRun = form.get('dryRun') === 'true'
+      const replaceAll = form.get('replaceAll') === 'true'
       const buf = Buffer.from(await file.arrayBuffer())
-      const report = await importFromArchive(req.payload, buf, { dryRun })
+      const report = await importFromArchive(req.payload, buf, { dryRun, replaceAll })
       return Response.json(report)
     } catch (e) {
-      return badRequest(e) // empty/corrupt zip, manifest mismatch, etc. → user error
+      return badRequest(e) // empty/corrupt zip, manifest mismatch, partial-archive replace-all → user error
+    }
+  },
+}
+
+/** POST /api/data-insert-one (json: { collection, row, dryRun? }) → ImportReport.
+ *  Wraps a single v2 row into an in-memory archive and imports it (idempotent upsert-by-uuid). */
+export const dataInsertOneEndpoint: Endpoint = {
+  path: '/data-insert-one',
+  method: 'post',
+  handler: async (req) => {
+    if (!req.user) return unauthorized()
+    try {
+      const body = (await req.json()) as {
+        collection?: string
+        row?: unknown
+        dryRun?: boolean
+      }
+      const { collection, row, dryRun } = body ?? {}
+      if (!collection || !CONTENT_COLLECTIONS.includes(collection as ContentCollection)) {
+        return Response.json(
+          { error: `collection must be one of: ${CONTENT_COLLECTIONS.join(', ')}` },
+          { status: 400 },
+        )
+      }
+      if (!row || typeof row !== 'object' || Array.isArray(row)) {
+        return Response.json({ error: 'row must be a single JSON object' }, { status: 400 })
+      }
+      const { buffer } = await buildSingleCollectionArchive(collection as ContentCollection, [
+        row as Record<string, unknown>,
+      ])
+      const report = await importFromArchive(req.payload, buffer, { dryRun: !!dryRun })
+      return Response.json(report)
+    } catch (e) {
+      if (e instanceof SingleArchiveError) return badRequest(e)
+      return serverError(e)
     }
   },
 }
@@ -81,7 +120,7 @@ export const dataSnapshotEndpoint: Endpoint = {
       return new Response(new Uint8Array(buf), {
         headers: {
           'content-type': 'application/zip',
-          'content-disposition': 'attachment; filename="portfolio-snapshot.zip"',
+          'content-disposition': `attachment; filename="portfolio-snapshot-${formatStamp()}.zip"`,
         },
       })
     } catch (e) {
@@ -125,6 +164,7 @@ export const dataMergeEndpoint: Endpoint = {
 export const dataSyncEndpoints: Endpoint[] = [
   dataExportEndpoint,
   dataImportEndpoint,
+  dataInsertOneEndpoint,
   dataSnapshotEndpoint,
   dataMergeEndpoint,
 ]

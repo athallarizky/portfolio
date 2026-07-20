@@ -1,8 +1,20 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import AdmZip from 'adm-zip'
 
 import { makeIdResolver, UnresolvedRelationError } from './relations'
-import { toRef, rewriteRelationsToIds, primeResolver } from './import'
+import { createZip } from './archive'
+import { CONTENT_COLLECTIONS, type ImportReport } from './types'
+import {
+  toRef,
+  rewriteRelationsToIds,
+  primeResolver,
+  assertFullArchive,
+  ReplaceAllError,
+  archiveIdentitySet,
+  collectReferenced,
+  replaceDrift,
+} from './import'
 
 // ---- toRef: v1 string vs v2 {uuid,key} parsing ----
 
@@ -127,4 +139,130 @@ test('primeResolver: skipped (no DB fetch) for collections already in the archiv
     new Set(['document-categories', 'tags', 'authors', 'technologies', 'articles']),
   )
   assert.deepEqual(fetched, [], 'must not fetch DB for collections already in the archive')
+})
+
+// ---- replace-all (sprint-17) ----
+
+test('assertFullArchive: throws when content collections are missing', () => {
+  assert.throws(() => assertFullArchive(new Set(['projects', 'articles'])), ReplaceAllError)
+})
+
+test('assertFullArchive: ok when all 8 content collections present', () => {
+  assert.doesNotThrow(() => assertFullArchive(new Set(CONTENT_COLLECTIONS)))
+})
+
+test('archiveIdentitySet: uuid when present, else natural key', () => {
+  const ids = archiveIdentitySet('projects', [
+    { uuid: 'u-1', slug: 'a' },
+    { slug: 'b' },
+  ] as Record<string, unknown>[])
+  assert.ok(ids.has('u-1'))
+  assert.ok(ids.has('b'))
+  assert.equal(ids.size, 2)
+})
+
+test('collectReferenced: gathers resolved target ids per target collection', async () => {
+  const resolver = makeIdResolver()
+  resolver.set('tags', 'ai', 1, 'u-ai')
+  resolver.set('authors', 'Atha', 10, 'u-atha')
+  const zip = new AdmZip(
+    await createZip([
+      {
+        path: 'collections/articles.json',
+        data: JSON.stringify([
+          {
+            slug: 'x',
+            tags: [{ uuid: 'u-ai', key: 'ai' }],
+            author: { uuid: 'u-atha', key: 'Atha' },
+            relatedArticles: [],
+          },
+        ]),
+      },
+    ]),
+  )
+  const refIds = collectReferenced(zip, '', resolver)
+  assert.deepEqual([...refIds.get('tags')!].sort(), [1])
+  assert.deepEqual([...refIds.get('authors')!].sort(), [10])
+})
+
+const emptyReport = (): ImportReport => ({
+  created: {},
+  updated: {},
+  unchanged: {},
+  deleted: {},
+  skippedReferenced: [],
+  errors: [],
+  dryRun: false,
+})
+
+test('replaceDrift: deletes absent records, keeps in-archive, skips referenced', async () => {
+  const archiveIdentities = new Map([['authors', new Set(['u-a'])]])
+  const refIds = new Map<string, Set<number | string>>([['authors', new Set([2])]]) // id 2 still referenced
+  const db = {
+    authors: [
+      { id: 1, uuid: 'u-a', name: 'A' }, // in archive → keep
+      { id: 2, uuid: 'u-b', name: 'B' }, // absent but referenced → skip
+      { id: 3, uuid: 'u-c', name: 'C' }, // absent, not referenced → delete
+    ],
+  }
+  const deleted: number[] = []
+  const payload: any = {
+    find: async ({ collection }: any) => ({ docs: db[collection as keyof typeof db] }),
+    delete: async ({ id }: any) => {
+      deleted.push(id)
+      return { id }
+    },
+  }
+  const report = emptyReport()
+  await replaceDrift(payload, archiveIdentities as any, refIds as any, report, false)
+  assert.deepEqual(deleted, [3])
+  assert.equal(report.deleted.authors, 1)
+  assert.equal(report.skippedReferenced.length, 1)
+  assert.equal(report.skippedReferenced[0].key, 'u-b')
+})
+
+test('replaceDrift: dry-run counts would-deletes without deleting', async () => {
+  const archiveIdentities = new Map([['authors', new Set(['u-a'])]])
+  const refIds = new Map<string, Set<number | string>>()
+  const db = {
+    authors: [
+      { id: 1, uuid: 'u-a', name: 'A' }, // in archive → keep
+      { id: 5, uuid: 'u-x', name: 'X' }, // absent → would delete
+    ],
+  }
+  const deleted: number[] = []
+  const payload: any = {
+    find: async ({ collection }: any) => ({ docs: db[collection as keyof typeof db] }),
+    delete: async ({ id }: any) => {
+      deleted.push(id)
+      return { id }
+    },
+  }
+  const report = emptyReport()
+  report.dryRun = true
+  await replaceDrift(payload, archiveIdentities as any, refIds as any, report, true)
+  assert.deepEqual(deleted, [], 'dry-run must not delete')
+  assert.equal(report.deleted.authors, 1, 'but counts the would-delete')
+})
+
+test('replaceDrift: a delete that throws (e.g. FK) is reported as an error without aborting the pass', async () => {
+  const archiveIdentities = new Map([['authors', new Set<string>([])]]) // both DB authors are drift
+  const refIds = new Map<string, Set<number | string>>()
+  const db = { authors: [{ id: 7, uuid: 'u-7', name: 'G' }, { id: 8, uuid: 'u-8', name: 'H' }] }
+  const deleted: number[] = []
+  const payload: any = {
+    find: async ({ collection }: any) => ({ docs: db[collection as keyof typeof db] }),
+    delete: async ({ id }: any) => {
+      if (id === 7) throw new Error('FK constraint')
+      deleted.push(id)
+      return { id }
+    },
+  }
+  const report = emptyReport()
+  await replaceDrift(payload, archiveIdentities as any, refIds as any, report, false)
+  assert.deepEqual(deleted, [8], 'the non-throwing delete still ran')
+  assert.equal(report.deleted.authors, 1)
+  assert.equal(report.errors.length, 1)
+  assert.equal(report.errors[0].key, 'u-7')
+  assert.match(report.errors[0].message, /delete failed/)
 })

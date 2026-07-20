@@ -7,15 +7,12 @@ import { getPayload } from 'payload'
 import config from '../../payload.config'
 import { exportToArchive } from '../export'
 import { resolvePkgVersion } from '../version'
+import { formatStamp } from '../filenames'
 
 const payloadVersion: string = resolvePkgVersion('payload')
 
-function timestamp(): string {
-  return new Date().toISOString().replace(/[:.]/g, '-')
-}
-
 async function run() {
-  const out = process.argv[2] ?? `portfolio-data-${timestamp()}.zip`
+  const out = process.argv[2] ?? `portfolio-data-${formatStamp()}.zip`
   const payload = await getPayload({ config })
 
   const buf = await exportToArchive(payload, {

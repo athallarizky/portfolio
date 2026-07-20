@@ -55,10 +55,20 @@ export interface ImportErrorEntry {
   message: string
 }
 
+export interface ReplacedSkipped {
+  collection: string
+  key: string
+  reason: string
+}
+
 export interface ImportReport {
   created: Record<string, number>
   updated: Record<string, number>
   unchanged: Record<string, number>
+  /** Sprint-17 replace-all: records deleted (per collection) because absent from the archive. */
+  deleted: Record<string, number>
+  /** Sprint-17 replace-all: records kept (not deleted) because still referenced by a surviving row. */
+  skippedReferenced: ReplacedSkipped[]
   errors: ImportErrorEntry[]
   /** Path of the pre-import DB backup, when a real import ran. */
   backupPath?: string

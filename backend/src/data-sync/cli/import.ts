@@ -1,5 +1,6 @@
-// CLI: `npm run import -- <archive.zip> [-- --dry-run]`
+// CLI: `npm run import -- <archive.zip> [-- --dry-run] [-- --replace]`
 // Dry-run prints the report with zero writes; a real run backs up payload.db first.
+// --replace: after upserting, delete records absent from the archive (a full archive is required).
 
 import fs from 'fs'
 import { getPayload } from 'payload'
@@ -10,21 +11,29 @@ import { importFromArchive } from '../import'
 async function run() {
   const args = process.argv.slice(2)
   const dryRun = args.includes('--dry-run')
+  const replaceAll = args.includes('--replace')
   const zipPath = args.find((a) => !a.startsWith('--'))
 
   if (!zipPath) {
-    console.error('Usage: npm run import -- <archive.zip> [-- --dry-run]')
+    console.error('Usage: npm run import -- <archive.zip> [-- --dry-run] [-- --replace]')
     process.exit(1)
   }
 
   const payload = await getPayload({ config })
   const buf = fs.readFileSync(zipPath)
-  const report = await importFromArchive(payload, buf, { dryRun })
+  const report = await importFromArchive(payload, buf, { dryRun, replaceAll })
 
-  console.log(`\n${dryRun ? '🔍 DRY RUN (no writes)' : '✅ IMPORT complete'}`)
+  const mode = replaceAll ? ' (replace-all)' : ''
+  console.log(`\n${dryRun ? '🔍 DRY RUN (no writes)' : '✅ IMPORT complete'}${mode}`)
   if (report.backupPath) console.log('  backup :', report.backupPath)
   console.log('  created:', JSON.stringify(report.created))
   console.log('  updated:', JSON.stringify(report.updated))
+  const deletedSum = Object.values(report.deleted).reduce((a, b) => a + b, 0)
+  if (deletedSum) console.log('  deleted:', JSON.stringify(report.deleted))
+  if (report.skippedReferenced.length) {
+    console.log(`  skipped (referenced): ${report.skippedReferenced.length}`)
+    for (const s of report.skippedReferenced) console.log(`    - [${s.collection}] ${s.key}: ${s.reason}`)
+  }
   if (report.errors.length) {
     console.log(`  errors : ${report.errors.length}`)
     for (const e of report.errors) console.log(`    - [${e.collection}] ${e.key}: ${e.message}`)

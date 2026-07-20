@@ -2,7 +2,7 @@
 
 > **For:** any LLM agent working on this repo in a fresh session.
 > **Read this first**, then the latest sprint record in [`docs/sprint-N/`](docs/)
-> (currently sprint-16 → [`docs/sprint-16/final-report.md`](docs/sprint-16/final-report.md)).
+> (currently sprint-17 → [`docs/sprint-17/final-report.md`](docs/sprint-17/final-report.md)).
 > **Owner:** Atha Thizky — Full-Stack Engineer (backend-leaning · TS/Go/Python · AI tooling).
 
 ---
@@ -150,12 +150,16 @@ cd backend
 npm run export                                      # content zip (sync / bulk-edit)
 npm run import -- portfolio-data-*.zip -- --dry-run # preview (no writes)
 npm run import -- portfolio-data-*.zip              # upsert-merge (backs up payload.db first)
+npm run import -- portfolio-data-*.zip -- --replace # FULL archive only → also delete drift (backs up first)
+npm run insert-one -- projects ../path/project.json # add/update ONE project from a v2 JSON row
 npm run snapshot                                    # whole-DB zip
 npm run snapshot:restore -- portfolio-snapshot-*.zip -- --yes   # destructive; stop backend
 ```
 
-Admin UI: **`/admin/data-sync`** (Download / Upload / Snapshot, admin-only). Engine:
-`backend/src/data-sync/` — exclude `users`, `contact-messages`, payload-internal from sync.
+Admin UI: **`/admin/data-sync`** — the import card has a **Merge / Replace-all radio** (replace-all =
+full archive only, deletes records not in the archive; preview-first + confirm) + Download / Snapshot.
+**`/admin/collections/projects`** has an "Add one project from JSON" panel (`/api/data-insert-one`).
+Engine: `backend/src/data-sync/` — exclude `users`, `contact-messages`, payload-internal from sync.
 
 ### Record identity & merge (sprint-15)
 Each content record now has a stable content-level **`uuid`** (auto-assigned on create by a
@@ -207,8 +211,9 @@ Toggle via the sidebar button; persisted in `localStorage['portfolio-theme']`;
 | 14 | **Data Sync, Backup & Bulk Import** — backend tool to export/import content as a portable `.zip` (JSON + Markdown bodies + media; upsert-merge by natural key) for local↔prod sync + bulk authoring, plus a raw-DB snapshot. Admin UI (`/admin/data-sync`) + CLI (`npm run export \| import \| snapshot`). ([final-report](docs/sprint-14/final-report.md)) |
 | 15 | **Content UUID identity & merge** — stable content-level `uuid` per record (rename-safe; replaces natural-key identity; `beforeChange` hook) + a merge tool (CLI + admin UI + `/api/data-merge`) that repoints all incoming relations and deletes the loser. `npm run backfill:uuid` + `npm run merge`. v1 archives still import. ([final-report](docs/sprint-15/final-report.md)) |
 | 16 | **Repo → Portfolio Project tool** — `tools/repo-to-project/` (manually-invoked skill) reads a local git repo and emits an importable `projects` entry (`.json` + `.md`); `npm run wrap:projects` zips it; import priming lets a projects-only archive resolve `techTags`. Idempotent re-gen (update in place, preserves manual polish). ([final-report](docs/sprint-16/final-report.md)) |
+| 17 | **Data-sync round-trip: filenames + insert-one + replace-all** — human-friendly `YYYY-MM-DD-HH-MM` zip names; insert one project from JSON on `/admin/collections/projects` (`/api/data-insert-one`, idempotent upsert-by-uuid); full-archive **replace-all** (Merge/Replace-all radio on the import card; `--replace`; deletes drift absent from the archive; `referencedIds` safety guard + backup + preview-first + confirm). ([final-report](docs/sprint-17/final-report.md)) |
 
-Latest detail: [`docs/sprint-16/final-report.md`](docs/sprint-16/final-report.md).
+Latest detail: [`docs/sprint-17/final-report.md`](docs/sprint-17/final-report.md).
 
 ---
 

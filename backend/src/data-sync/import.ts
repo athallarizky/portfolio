@@ -35,6 +35,8 @@ export interface ImportOptions {
   dryRun: boolean
   /** Directory for the pre-import backup (default: cwd). */
   backupDir?: string
+  /** Sprint-17: after upserting, delete records absent from the archive (requires a full archive). */
+  replaceAll?: boolean
 }
 
 // ---- helpers ----
@@ -119,6 +121,127 @@ export function backupDb(backupDir?: string, label = 'preimport'): string | unde
     return out
   } catch {
     return undefined
+  }
+}
+
+export class ReplaceAllError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'ReplaceAllError'
+  }
+}
+
+/** Replace-all needs every content collection in the archive so the full reference graph is present
+ *  (no orphan risk). Throws ReplaceAllError listing what's missing. */
+export function assertFullArchive(present: ReadonlySet<string>): void {
+  const missing = CONTENT_COLLECTIONS.filter((c) => !present.has(c))
+  if (missing.length) {
+    throw new ReplaceAllError(
+      `replace-all requires a full archive; missing collections: ${missing.join(', ')}`,
+    )
+  }
+}
+
+/** Identity of an archive row: uuid if present, else its natural key (string). Matches upsertDoc's
+ *  uuid-first → natural-key lookup, so "is this DB record in the archive?" is consistent. */
+export function archiveIdentitySet(
+  collection: ContentCollection,
+  rows: Record<string, any>[],
+): Set<string> {
+  const ids = new Set<string>()
+  for (const row of rows) {
+    const uuid = typeof row.uuid === 'string' && row.uuid ? row.uuid : undefined
+    ids.add(uuid ?? String(row[NATURAL_KEYS[collection]]))
+  }
+  return ids
+}
+
+/** Walk every archive row's relation fields and collect resolved target ids, keyed by target
+ *  collection. Replace-all uses this to skip deleting a record some surviving row still points at. */
+export function collectReferenced(
+  zip: AdmZip,
+  pfx: string,
+  resolver: IdResolver,
+): Map<ContentCollection, Set<string | number>> {
+  const refIds = new Map<ContentCollection, Set<string | number>>()
+  const add = (to: ContentCollection, id: number | string) => {
+    let s = refIds.get(to)
+    if (!s) {
+      s = new Set()
+      refIds.set(to, s)
+    }
+    s.add(id)
+  }
+  for (const collection of CONTENT_COLLECTIONS) {
+    const rels = RELATIONS[collection]
+    if (!rels) continue
+    const entry = safeReadEntry(zip, `${pfx}collections/${collection}.json`)
+    if (!entry) continue
+    const rows = JSON.parse(entry.toString('utf8')) as Record<string, any>[]
+    for (const row of rows) {
+      for (const rel of rels) {
+        const val = row[rel.field]
+        if (val == null) continue
+        const refs = (Array.isArray(val) ? val : [val])
+          .map((v) => toRef(v))
+          .filter((r): r is { uuid?: string; key: string } => r !== null)
+        for (const r of refs) {
+          const id = resolver.resolve(rel.to, r)
+          if (id !== undefined) add(rel.to, id)
+        }
+      }
+    }
+  }
+  return refIds
+}
+
+/** Replace-all drift pass: delete DB records whose identity isn't in the archive — unless still
+ *  referenced by a surviving row (refIds), which are reported + kept.
+ *
+ *  Deletes in REVERSE dependency order (children/leaves before parents) so a drift parent isn't
+ *  deleted while a drift child still references it (FK constraint) — e.g. documents before
+ *  document-categories, articles before tags/authors, projects before technologies. Each delete is
+ *  isolated so one failure (e.g. a surviving row still pointing at it in a hand-edited archive) is
+ *  reported as an error without aborting the rest of the pass. */
+export async function replaceDrift(
+  payload: Payload,
+  archiveIdentities: Map<ContentCollection, Set<string>>,
+  refIds: Map<ContentCollection, Set<string | number>>,
+  report: ImportReport,
+  dryRun: boolean,
+): Promise<void> {
+  const order = [...archiveIdentities.keys()].reverse() // children before parents (FK-safe)
+  for (const collection of order) {
+    const identities = archiveIdentities.get(collection)!
+    const res = await payload.find({ collection, depth: 0, limit: 0, pagination: false } as any)
+    for (const doc of res.docs as any[]) {
+      const uuid = typeof doc.uuid === 'string' && doc.uuid ? doc.uuid : undefined
+      const identity = uuid ?? String(doc[NATURAL_KEYS[collection]])
+      if (identities.has(identity)) continue // present in archive → keep
+      if (refIds.get(collection)?.has(doc.id)) {
+        report.skippedReferenced.push({
+          collection,
+          key: identity,
+          reason: 'still referenced by a surviving record',
+        })
+        continue
+      }
+      if (!dryRun) {
+        try {
+          await payload.delete({ collection, id: doc.id } as any)
+        } catch (e) {
+          // FK constraint / other delete failure — don't abort the pass; report + keep going so
+          // unrelated collections still converge.
+          report.errors.push({
+            collection: '(replace-all)',
+            key: identity,
+            message: `delete failed: ${e instanceof Error ? e.message : String(e)}`,
+          })
+          continue
+        }
+      }
+      report.deleted[collection] = (report.deleted[collection] ?? 0) + 1
+    }
   }
 }
 
@@ -349,6 +472,8 @@ export async function importFromArchive(
     created: {},
     updated: {},
     unchanged: {},
+    deleted: {},
+    skippedReferenced: [],
     errors: [],
     dryRun: opts.dryRun,
   }
@@ -359,6 +484,9 @@ export async function importFromArchive(
     if (zip.getEntry(`${pfx}collections/${c}.json`)) present.add(c)
   }
 
+  // Replace-all needs the full reference graph — refuse a partial archive before any work.
+  if (opts.replaceAll) assertFullArchive(present)
+
   // Prime the resolver with existing DB records for relation targets not in this archive, so a partial
   // archive (e.g. a projects-only generated import) still resolves relations. No-op for full archives.
   await primeResolver(payload, resolver, present)
@@ -367,8 +495,10 @@ export async function importFromArchive(
     report.backupPath = backupDb(opts.backupDir)
   }
 
+  const archiveIdentities = new Map<ContentCollection, Set<string>>()
   for (const collection of planImportOrder(present)) {
     const rows = readJson<Record<string, any>[]>(zip, `${pfx}collections/${collection}.json`)
+    if (opts.replaceAll) archiveIdentities.set(collection, archiveIdentitySet(collection, rows))
     for (const row of rows) {
       try {
         const outcome = await upsertDoc(payload, collection, row, editorConfig, zip, pfx, resolver, opts.dryRun)
@@ -409,6 +539,21 @@ export async function importFromArchive(
       report.errors.push({
         collection: `global:${g}`,
         key: g,
+        message: e instanceof Error ? e.message : String(e),
+      })
+    }
+  }
+
+  // Sprint-17: replace-all drift pass — delete records absent from the archive (a full archive was
+  // asserted above). Records still referenced by a surviving row are reported + kept.
+  if (opts.replaceAll) {
+    try {
+      const refIds = collectReferenced(zip, pfx, resolver)
+      await replaceDrift(payload, archiveIdentities, refIds, report, opts.dryRun)
+    } catch (e) {
+      report.errors.push({
+        collection: '(replace-all)',
+        key: '',
         message: e instanceof Error ? e.message : String(e),
       })
     }

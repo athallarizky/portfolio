@@ -1,21 +1,13 @@
 // CLI: `npm run wrap:projects -- <projects.json> [-- --out <path>]`
 // Wraps one-or-more v2 project rows into an importable zip (manifest + collections/projects.json).
-// Assigns a uuid to any row missing one. Output default: portfolio-projects-<YYYY-MM-DD-HH-MM>-<slug>.zip
-// (collision-safe: appends -2, -3, … if the file exists).
+// Archive building is shared with the admin/insert-one paths via buildSingleCollectionArchive.
+// Output default: portfolio-projects-<YYYY-MM-DD-HH-MM>-<slug>.zip (collision-safe: -2, -3, …).
 
 import fs from 'fs'
 import path from 'path'
-import { randomUUID } from 'node:crypto'
 
-import { buildManifest } from '../manifest'
-import { createZip, type ZipEntry } from '../archive'
-import { resolvePkgVersion } from '../version'
-
-function timestamp(): string {
-  const d = new Date()
-  const p = (n: number) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}-${p(d.getHours())}-${p(d.getMinutes())}`
-}
+import { formatStamp } from '../filenames'
+import { buildSingleCollectionArchive, SingleArchiveError } from '../single'
 
 /** Append -2, -3, … if `out` already exists, so a re-run never overwrites a prior zip. */
 function uniquePath(out: string): string {
@@ -47,44 +39,27 @@ async function run() {
     process.exit(1)
   }
 
-  let filled = 0
-  for (const row of rows) {
-    if (!row.uuid) {
-      row.uuid = randomUUID()
-      filled++
-    }
-    if (!row.title || !row.slug) {
-      console.error(`row missing required field (title/slug): slug=${String(row.slug ?? '?')}`)
-      process.exit(1)
-    }
-  }
-
-  const slug = String(rows[0].slug)
-  const out = outArg ?? `portfolio-projects-${timestamp()}-${slug}.zip`
+  const slug = String(rows[0].slug ?? '')
+  const out = outArg ?? `portfolio-projects-${formatStamp()}-${slug}.zip`
   const finalOut = uniquePath(out)
 
-  const entries: ZipEntry[] = [
-    { path: 'collections/projects.json', data: JSON.stringify(rows, null, 2) },
-  ]
-  entries.unshift({
-    path: 'manifest.json',
-    data: JSON.stringify(
-      buildManifest({
-        sourceEnv: 'generated',
-        payloadVersion: resolvePkgVersion('payload'),
-        counts: { projects: rows.length },
-        exportedAt: new Date().toISOString(),
-      }),
-      null,
-      2,
-    ),
-  })
+  let built
+  try {
+    built = await buildSingleCollectionArchive('projects', rows)
+  } catch (e) {
+    if (e instanceof SingleArchiveError) {
+      console.error(`❌ ${e.message}`)
+      process.exit(1)
+    }
+    throw e
+  }
 
   fs.mkdirSync(path.dirname(finalOut), { recursive: true })
-  const buf = await createZip(entries)
-  fs.writeFileSync(finalOut, buf)
-  console.log(`✅ Wrapped ${rows.length} project(s) → ${finalOut} (${buf.length.toLocaleString()} bytes)`)
-  if (filled) console.log(`   (${filled} row(s) got a fresh uuid)`)
+  fs.writeFileSync(finalOut, built.buffer)
+  console.log(
+    `✅ Wrapped ${rows.length} project(s) → ${finalOut} (${built.buffer.length.toLocaleString()} bytes)`,
+  )
+  if (built.filledUuids) console.log(`   (${built.filledUuids} row(s) got a fresh uuid)`)
   process.exit(0)
 }
 

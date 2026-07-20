@@ -20,7 +20,7 @@ import {
   type ContentCollection,
   type ImportReport,
 } from './types'
-import { NATURAL_KEYS, RELATIONS, RICH_TEXT_BODY } from './keys'
+import { NATURAL_KEYS, RELATIONS, RELATION_TARGETS, RICH_TEXT_BODY } from './keys'
 import { validateManifest } from './manifest'
 import { readZip, readJson, readEntry } from './archive'
 import { getEditorConfig, mdToLexical, type EditorConfig } from './converters'
@@ -119,6 +119,24 @@ export function backupDb(backupDir?: string, label = 'preimport'): string | unde
     return out
   } catch {
     return undefined
+  }
+}
+
+/** Populate the resolver with existing DB records for relation-target collections NOT in the archive,
+ *  so a partial archive (e.g. a projects-only generated import) still resolves relations
+ *  (e.g. techTags → technologies). Full archives: every target is in `present` → no-op. */
+export async function primeResolver(
+  payload: Payload,
+  resolver: IdResolver,
+  present: ReadonlySet<string>,
+): Promise<void> {
+  for (const target of RELATION_TARGETS) {
+    if (present.has(target)) continue
+    const res = await payload.find({ collection: target, depth: 0, limit: 0, pagination: false } as any)
+    for (const doc of res.docs as any[]) {
+      const key = doc[NATURAL_KEYS[target]]
+      if (key != null) resolver.set(target, String(key), doc.id, doc.uuid ?? undefined)
+    }
   }
 }
 
@@ -340,6 +358,10 @@ export async function importFromArchive(
   for (const c of CONTENT_COLLECTIONS) {
     if (zip.getEntry(`${pfx}collections/${c}.json`)) present.add(c)
   }
+
+  // Prime the resolver with existing DB records for relation targets not in this archive, so a partial
+  // archive (e.g. a projects-only generated import) still resolves relations. No-op for full archives.
+  await primeResolver(payload, resolver, present)
 
   if (!opts.dryRun) {
     report.backupPath = backupDb(opts.backupDir)

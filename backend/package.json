@@ -20,6 +20,7 @@
     "export": "cp payload.db payload.db.$(date +%Y%m%d-%H%M%S).bak 2>/dev/null; npx tsx src/data-sync/cli/export.ts",
     "import": "npx tsx src/data-sync/cli/import.ts",
     "merge": "npx tsx src/data-sync/cli/merge.ts",
+    "wrap:projects": "npx tsx src/data-sync/cli/wrap-projects.ts",
     "backfill:uuid": "cp payload.db payload.db.$(date +%Y%m%d-%H%M%S).bak 2>/dev/null; npx tsx src/data-sync/cli/backfill-uuid.ts",
     "snapshot": "npx tsx src/data-sync/cli/snapshot.ts",
     "snapshot:restore": "npx tsx src/data-sync/cli/snapshot-restore.ts",

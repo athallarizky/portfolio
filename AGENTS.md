@@ -2,7 +2,7 @@
 
 > **For:** any LLM agent working on this repo in a fresh session.
 > **Read this first**, then the latest sprint record in [`docs/sprint-N/`](docs/)
-> (currently sprint-15 → [`docs/sprint-15/final-report.md`](docs/sprint-15/final-report.md)).
+> (currently sprint-16 → [`docs/sprint-16/final-report.md`](docs/sprint-16/final-report.md)).
 > **Owner:** Atha Thizky — Full-Stack Engineer (backend-leaning · TS/Go/Python · AI tooling).
 
 ---
@@ -172,6 +172,19 @@ npm run merge -- authors <winnerUuid> <loserUuid>             # repoint relation
 Admin UI: **`/admin/data-sync`** → "Merge duplicates" card. Detail:
 [`docs/sprint-15/final-report.md`](docs/sprint-15/final-report.md).
 
+### Generate a project from a local repo (sprint-16)
+A manually-invoked tool at [`tools/repo-to-project/`](tools/repo-to-project/) turns a local git repo into a
+portfolio `projects` entry. In Claude Code: *"follow `tools/repo-to-project/SKILLS.md`, repo: <path>"* → it
+reads the repo (README, manifests, git, file tree), writes a v2 `.json` + a human `.md`, wraps an importable
+zip, and dry-run imports. Re-running **updates in place** (reuses uuid) and **preserves manual polish**.
+
+```bash
+cd backend
+npm run wrap:projects -- ../tools/repo-to-project/content/<slug>/project.json -- --out ../tools/repo-to-project/collection/<date>-<slug>.zip
+npm run import -- ../tools/repo-to-project/collection/<...>.zip -- --dry-run   # preview
+```
+Detail: [`docs/sprint-16/final-report.md`](docs/sprint-16/final-report.md).
+
 ### Theme
 Toggle via the sidebar button; persisted in `localStorage['portfolio-theme']`;
 `.dark` on `<html>` switches all tokens (both `--*` and `--n-*`).
@@ -193,8 +206,9 @@ Toggle via the sidebar button; persisted in `localStorage['portfolio-theme']`;
 | 13 | **Notion system across all pages + sidebar fix + SEO** — fixed mobile sidebar nav (z-index), warmed tokens + Notion component discipline (pill CTAs, 12px cards), SEO tier-up (`site` config, `@astrojs/sitemap`, per-page meta/OG/JSON-LD, `robots.txt`). Purple accent kept. ([final-report](docs/sprint-13/final-report.md)) |
 | 14 | **Data Sync, Backup & Bulk Import** — backend tool to export/import content as a portable `.zip` (JSON + Markdown bodies + media; upsert-merge by natural key) for local↔prod sync + bulk authoring, plus a raw-DB snapshot. Admin UI (`/admin/data-sync`) + CLI (`npm run export \| import \| snapshot`). ([final-report](docs/sprint-14/final-report.md)) |
 | 15 | **Content UUID identity & merge** — stable content-level `uuid` per record (rename-safe; replaces natural-key identity; `beforeChange` hook) + a merge tool (CLI + admin UI + `/api/data-merge`) that repoints all incoming relations and deletes the loser. `npm run backfill:uuid` + `npm run merge`. v1 archives still import. ([final-report](docs/sprint-15/final-report.md)) |
+| 16 | **Repo → Portfolio Project tool** — `tools/repo-to-project/` (manually-invoked skill) reads a local git repo and emits an importable `projects` entry (`.json` + `.md`); `npm run wrap:projects` zips it; import priming lets a projects-only archive resolve `techTags`. Idempotent re-gen (update in place, preserves manual polish). ([final-report](docs/sprint-16/final-report.md)) |
 
-Latest detail: [`docs/sprint-15/final-report.md`](docs/sprint-15/final-report.md).
+Latest detail: [`docs/sprint-16/final-report.md`](docs/sprint-16/final-report.md).
 
 ---
 

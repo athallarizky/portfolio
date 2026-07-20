@@ -34,7 +34,12 @@ backend/documents/*
 # Data-sync export/snapshot artifacts (build outputs, not source)
 backend/portfolio-data-*.zip
 backend/portfolio-snapshot-*.zip
+backend/portfolio-projects-*.zip
 backend/payload.test.db*
+
+# repo-to-project tool generated outputs (artifacts; regeneratable from the source repos)
+tools/repo-to-project/content/
+tools/repo-to-project/collection/
 
 # Temp / misc
 temp

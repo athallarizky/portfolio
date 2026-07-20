@@ -2,7 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
 import { makeIdResolver, UnresolvedRelationError } from './relations'
-import { toRef, rewriteRelationsToIds } from './import'
+import { toRef, rewriteRelationsToIds, primeResolver } from './import'
 
 // ---- toRef: v1 string vs v2 {uuid,key} parsing ----
 
@@ -93,4 +93,38 @@ test('rewriteRelationsToIds: missing required author throws', () => {
   const r = makeIdResolver()
   const row = { slug: 'x', title: 'X', tags: [], author: 'Nobody', relatedArticles: [] }
   assert.throws(() => rewriteRelationsToIds('articles', row, r), UnresolvedRelationError)
+})
+
+// ---- primeResolver: partial-archive relation resolution ----
+
+test('primeResolver: populates resolver from DB for targets absent from the archive', async () => {
+  const resolver = makeIdResolver()
+  const payload: any = {
+    find: async ({ collection }: any) =>
+      collection === 'technologies'
+        ? { docs: [{ id: 1, slug: 'go', uuid: 'u-go' }, { id: 2, slug: 'docker', uuid: 'u-docker' }] }
+        : { docs: [] },
+  }
+  // archive has only 'projects' → technologies absent → primed from DB
+  await primeResolver(payload, resolver, new Set(['projects']))
+  assert.equal(resolver.resolve('technologies', { key: 'go' }), 1)
+  assert.equal(resolver.resolve('technologies', { uuid: 'u-docker', key: 'docker' }), 2)
+})
+
+test('primeResolver: skipped (no DB fetch) for collections already in the archive', async () => {
+  const resolver = makeIdResolver()
+  let fetched: string[] = []
+  const payload: any = {
+    find: async ({ collection }: any) => {
+      fetched.push(collection)
+      return { docs: [] }
+    },
+  }
+  // every relation target is present in the archive → nothing fetched
+  await primeResolver(
+    payload,
+    resolver,
+    new Set(['document-categories', 'tags', 'authors', 'technologies', 'articles']),
+  )
+  assert.deepEqual(fetched, [], 'must not fetch DB for collections already in the archive')
 })

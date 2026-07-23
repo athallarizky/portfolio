@@ -646,6 +646,7 @@ project/
 │       │   ├── phase-1-report.md        # Per-phase reports
 │       │   └── ...
 │       ├── resources/
+│       │   ├── backlog.md              # Deferred items for next sprint
 │       │   ├── architecture.md          # Tech decisions + structure
 │       │   ├── data-design.md          # Schemas + pipelines
 │       │   ├── ux-flow.md              # Screens + interaction (UI projects)

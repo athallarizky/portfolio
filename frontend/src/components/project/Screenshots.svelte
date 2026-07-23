@@ -1,7 +1,6 @@
 <script lang="ts">
-  const _apiUrl = (import.meta as any).env?.PUBLIC_API_URL;
-  const API = _apiUrl || '/api';
-  const API_ORIGIN = _apiUrl ? _apiUrl.replace(/\/api\/?$/, '') : '';
+  const DEV = (import.meta as any).env?.DEV ?? false;
+  const API_ORIGIN = DEV ? 'http://localhost:3000' : '';
 
   export interface ScreenshotItem {
     id?: number

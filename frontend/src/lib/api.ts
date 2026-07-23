@@ -1,9 +1,9 @@
 export const API = import.meta.env.PUBLIC_API_URL || '/api';
 
-/** Backend origin for media file URLs. In dev (PUBLIC_API_URL set), point to backend port.
- *  In production (PUBLIC_API_URL empty), same origin — use empty string so paths stay relative. */
-const _apiUrl = import.meta.env.PUBLIC_API_URL;
-export const API_ORIGIN = _apiUrl ? _apiUrl.replace(/\/api\/?$/, '') : '';
+/** Backend origin for media file URLs (client-side image src).
+ *  Local dev (astro dev): ports differ → need full http://localhost:3000.
+ *  Production or build: same origin via nginx → relative /api/media/file/... */
+export const API_ORIGIN = import.meta.env.DEV ? 'http://localhost:3000' : '';
 
 export function mediaUrl(field: { url?: string | null } | null | undefined): string | null {
   if (!field?.url) return null;

@@ -1,7 +1,8 @@
 # Sprint-19 Final Report — Media Library Implementation
 
-> Status: ✅ Delivered | 2026-07-24
+> Status: ✅ Delivered + Deployed | 2026-07-24
 > Companion: [`../sprint-18/final-report.md`](../sprint-18/final-report.md) · root [`../../AGENTS.md`](../../AGENTS.md)
+> Production: ✅ frontend 200, admin 200, all APIs 200, media collection ready, no data loss
 
 ---
 
@@ -96,3 +97,26 @@ Helper: `mediaUrl(field)` in `api.ts` → resolves `.url` to absolute URL.
 | Dev server — project banner + screenshots | ✅ |
 | Dev server — article featured image | ✅ |
 | Dev server — homepage hero avatar | ✅ |
+| **Production — frontend** | ✅ 200 |
+| **Production — admin** | ✅ 200 |
+| **Production — all APIs** | ✅ 200 |
+| **Production — data integrity** | ✅ no data loss |
+
+## 6. Production Deploy Notes
+
+Deploy memerlukan 3 iterasi manual fix:
+
+1. **Tabel `media` tidak auto-dibuat** — `next start` tidak auto-push schema. Dibuat manual via SQLite DDL.
+2. **Kolom FK tidak ada** — `ALTER TABLE` untuk `authors.avatar_id`, `projects.banner_image_id`, `articles.featured_image_id`, `site_config.avatar_id`.
+3. **`payload_locked_documents_rels.media_id`** — tabel internal Payload juga perlu kolom baru. Tanpa ini `/admin` 500.
+
+Semua fix di-commit ke [`rca/prod-*.md`](./rca/).
+
+**Lesson:** setiap schema change harus include `npx payload migrate:create` + commit migration file + jalankan `npx payload migrate` di production setelah deploy. Jangan asumsikan `next start` auto-push seperti `next dev`.
+
+## 7. Post-Deploy Action (Owner)
+
+Re-upload konten visual via `/admin`:
+- Upload gambar ke **Media** collection
+- Assign ke Authors (avatar), Projects (banner + screenshots), Articles (featured image), SiteConfig (avatar)
+- Screenshots project lama sudah kosong (format diubah dari `{bannerColor,icon}` ke upload refs) — perlu upload ulang

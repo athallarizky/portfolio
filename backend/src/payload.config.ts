@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url'
 import { buildConfig } from 'payload'
 import { sqliteAdapter } from '@payloadcms/db-sqlite'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import sharp from 'sharp'
 
 import { Users } from './collections/Users'
 import { DocumentCategories } from './collections/DocumentCategories'
@@ -15,6 +16,7 @@ import { Technologies } from './collections/Technologies'
 import { Projects } from './collections/Projects'
 import { SocialProfiles } from './collections/SocialProfiles'
 import { ContactMessages } from './collections/ContactMessages'
+import { Media } from './collections/Media'
 
 import { SiteConfig } from './globals/SiteConfig'
 import { Home } from './globals/Home'
@@ -44,10 +46,11 @@ export default buildConfig({
       },
     },
   },
-  collections: [Users, DocumentCategories, Documents, Tags, Authors, Articles, Technologies, Projects, SocialProfiles, ContactMessages],
+  collections: [Users, DocumentCategories, Documents, Tags, Authors, Articles, Technologies, Projects, SocialProfiles, ContactMessages, Media],
   globals: [SiteConfig, Home, Nav],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || 'dev-secret-change-me',
+  sharp,
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },

@@ -14,6 +14,7 @@ export const NATURAL_KEYS: Record<ContentCollection, string> = {
   technologies: 'slug',
   projects: 'slug',
   'social-profiles': 'platform',
+  media: 'filename',
 }
 
 /** Relationships to rewrite, keyed by source collection. */
@@ -31,6 +32,7 @@ export const RELATIONS: Partial<Record<ContentCollection, RelationDef[]>> = {
 export const IMPORT_ORDER: ContentCollection[] = [
   'document-categories',
   'documents',
+  'media',
   'tags',
   'authors',
   'articles',

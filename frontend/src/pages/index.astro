@@ -7,11 +7,11 @@ import LiveClock from '../components/home/LiveClock.svelte';
 import MagneticButton from '../components/home/MagneticButton.svelte';
 import Reveal from '../components/home/Reveal.svelte';
 import GlowGrid from '../components/home/GlowGrid.svelte';
-import { safeFetch } from '../lib/api';
+import { safeFetch, API_ORIGIN } from '../lib/api';
 import type { Home, SiteConfig, SocialProfile, PaginatedResponse, Project, Article } from '../lib/api-types';
 
 const home = await safeFetch<Home>('/globals/home');
-const siteConfig = await safeFetch<SiteConfig>('/globals/site-config');
+const siteConfig = await safeFetch<SiteConfig>('/globals/site-config?depth=1');
 const socialProfiles = await safeFetch<PaginatedResponse<SocialProfile>>('/social-profiles?sort=order');
 const selectedWork = await safeFetch<PaginatedResponse<Project>>(
   '/projects?where[showOnHome][equals]=true&where[status][equals]=published&sort=order&limit=3&depth=1',
@@ -33,6 +33,8 @@ const about = home.about || [];
 const currently = home.currently || [];
 const skills = home.skills || [];
 const stats = home.stats || [];
+
+const avatarUrl = siteConfig.avatar?.thumbnailURL ? `${API_ORIGIN}${siteConfig.avatar.thumbnailURL}` : (siteConfig.avatar?.url ? `${API_ORIGIN}${siteConfig.avatar.url}` : null);
 ---
 
 <BaseLayout title="Home" pageTitle="Home" activeNav="/" description="Athalla Rizky — full-stack engineer building backend systems, AI tooling, and developer experience. Selected work, writing, and projects.">
@@ -44,7 +46,11 @@ const stats = home.stats || [];
       <SpotlightEffect client:visible />
       <div class="hero-row">
         <div class="hero-avatar">
-          <div class="avatar hero-avatar-face">{siteConfig.initials || '??'}</div>
+          {avatarUrl ? (
+            <img class="hero-avatar-face hero-avatar-img" src={avatarUrl} alt={siteConfig.name || 'Avatar'} loading="eager" />
+          ) : (
+            <div class="avatar hero-avatar-face">{siteConfig.initials || '??'}</div>
+          )}
           <span class="hero-status-dot" title="Available"></span>
         </div>
         <div class="hero-intro">

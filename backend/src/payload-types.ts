@@ -77,6 +77,7 @@ export interface Config {
     projects: Project;
     'social-profiles': SocialProfile;
     'contact-messages': ContactMessage;
+    media: Media;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -94,6 +95,7 @@ export interface Config {
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     'social-profiles': SocialProfilesSelect<false> | SocialProfilesSelect<true>;
     'contact-messages': ContactMessagesSelect<false> | ContactMessagesSelect<true>;
+    media: MediaSelect<false> | MediaSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -242,8 +244,56 @@ export interface Author {
   initials: string;
   role?: string | null;
   bio?: string | null;
+  avatar?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media".
+ */
+export interface Media {
+  id: number;
+  uuid?: string | null;
+  alt: string;
+  caption?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    card?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    hero?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -274,6 +324,7 @@ export interface Article {
     };
     [k: string]: unknown;
   } | null;
+  featuredImage?: (number | null) | Media;
   /**
    * CSS gradient for the banner, e.g. linear-gradient(135deg,#9936e6,#5b21b6)
    */
@@ -338,6 +389,7 @@ export interface Project {
    * iconify icon, e.g. solar:rocket-bold
    */
   bannerIcon?: string | null;
+  bannerImage?: (number | null) | Media;
   links?:
     | {
         label: string;
@@ -383,14 +435,7 @@ export interface Project {
         id?: string | null;
       }[]
     | null;
-  screenshots?:
-    | {
-        label?: string | null;
-        bannerColor?: string | null;
-        icon?: string | null;
-        id?: string | null;
-      }[]
-    | null;
+  screenshots?: (number | Media)[] | null;
   /**
    * ASCII directory tree or architecture diagram
    */
@@ -492,6 +537,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'contact-messages';
         value: number | ContactMessage;
+      } | null)
+    | ({
+        relationTo: 'media';
+        value: number | Media;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -615,6 +664,7 @@ export interface AuthorsSelect<T extends boolean = true> {
   initials?: T;
   role?: T;
   bio?: T;
+  avatar?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -632,6 +682,7 @@ export interface ArticlesSelect<T extends boolean = true> {
   publishedAt?: T;
   readMinutes?: T;
   body?: T;
+  featuredImage?: T;
   bannerColor?: T;
   bannerIcon?: T;
   relatedArticles?: T;
@@ -672,6 +723,7 @@ export interface ProjectsSelect<T extends boolean = true> {
   techTags?: T;
   bannerColor?: T;
   bannerIcon?: T;
+  bannerImage?: T;
   links?:
     | T
     | {
@@ -699,14 +751,7 @@ export interface ProjectsSelect<T extends boolean = true> {
         description?: T;
         id?: T;
       };
-  screenshots?:
-    | T
-    | {
-        label?: T;
-        bannerColor?: T;
-        icon?: T;
-        id?: T;
-      };
+  screenshots?: T;
   architecture?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -736,6 +781,60 @@ export interface ContactMessagesSelect<T extends boolean = true> {
   message?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media_select".
+ */
+export interface MediaSelect<T extends boolean = true> {
+  uuid?: T;
+  alt?: T;
+  caption?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        card?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        hero?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -807,6 +906,7 @@ export interface SiteConfig {
    * Show the documents/downloads page
    */
   documentsEnabled?: boolean | null;
+  avatar?: (number | null) | Media;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -910,6 +1010,7 @@ export interface SiteConfigSelect<T extends boolean = true> {
   location?: T;
   contactFormEnabled?: T;
   documentsEnabled?: T;
+  avatar?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

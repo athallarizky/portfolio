@@ -20,5 +20,6 @@ export const Authors: CollectionConfig = {
     { name: 'initials', type: 'text', required: true },
     { name: 'role', type: 'text' },
     { name: 'bio', type: 'textarea' },
+    { name: 'avatar', type: 'upload', relationTo: 'media' },
   ],
 }

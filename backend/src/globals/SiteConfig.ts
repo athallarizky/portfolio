@@ -18,5 +18,6 @@ export const SiteConfig: GlobalConfig = {
     { name: 'location', type: 'text', admin: { description: 'e.g. "Remote · UTC+7"' } },
     { name: 'contactFormEnabled', type: 'checkbox', defaultValue: true, admin: { description: 'Show the contact form and accept submissions' } },
     { name: 'documentsEnabled', type: 'checkbox', defaultValue: true, admin: { description: 'Show the documents/downloads page' } },
+    { name: 'avatar', type: 'upload', relationTo: 'media' },
   ],
 }

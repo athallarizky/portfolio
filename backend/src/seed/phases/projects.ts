@@ -22,7 +22,7 @@ export async function seedProjects(payload: Payload) {
       descriptor: proj.descriptor, bannerColor: proj.bannerColor, bannerIcon: proj.bannerIcon,
       techTags: techIds, links: proj.links, body, status: 'published', order: proj.order,
       showOnHome: proj.showOnHome ?? false,
-      features: proj.features, screenshots: proj.screenshots,
+      features: proj.features,
       architecture: proj.architecture,
     } as any
     const existing = await payload.find({ collection: 'projects', where: { slug: { equals: proj.slug } }, limit: 1 })

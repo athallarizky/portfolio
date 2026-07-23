@@ -12,9 +12,9 @@ For the given repo, write three things under `tools/repo-to-project/`:
 |---|---|
 | `content/<slug>/project.json` | a **v2 archive row** — importable via data-sync |
 | `content/<slug>/project.md` | a human-readable rendering (for the owner to review) |
-| `collection/<YYYY-MM-DD-HH-MM>-<slug>.zip` | the **importable zip** (dated history; collision-safe) |
+| `collection/<YYYY-MM-DD-HH-MM>-<slug>.zip` | the **importable zip** (dated history; collision-safe) — **full mode only** |
 
-Then preview the import (dry-run) and hand off. The owner applies it.
+Then hand off. In **full mode** you also wrap the zip and preview the import (dry-run). The owner applies it.
 
 All paths are relative to the **repo root** (`portfolio/`). Run backend CLI steps from `backend/`.
 
@@ -23,10 +23,15 @@ All paths are relative to the **repo root** (`portfolio/`). Run backend CLI step
 ## Inputs
 
 - `<repo>` — absolute path to a local git repo (required). Everything else is derived.
+- `<mode>` — **ask the user first** (unless they already specified). Two modes:
+  - **content-only** — write `project.json` + `project.md` only. No backend, no zip, no dry-run. Use this when the owner just wants the copy fast (iterate on excerpt/body, apply later).
+  - **full** (default if unclear) — also wrap the importable zip (step 4) and dry-run import against the backend (step 5) to verify it lands cleanly.
 
 ---
 
 ## Procedure
+
+> **First action:** if `<mode>` wasn't specified up front, ask the user — *content-only (just the `.md` + `.json`)* vs *full (also zip + dry-run against the backend)*. Steps 4–6 branch on the answer.
 
 ### Step 0 — Resolve identity + snapshot existing polish (idempotency)
 
@@ -132,6 +137,10 @@ fields (so updates preserve them — see schema below):
 
 ### Step 4 — Wrap into the importable zip
 
+> **full mode only.** In **content-only mode**, skip this and step 5 — go straight to step 6.
+> (The zip is only needed for the import CLI. To apply later via the admin UI's "Add one project from
+> JSON" panel at `/admin/collections/projects`, the raw `project.json` is enough.)
+
 ```bash
 cd backend && npm run wrap:projects -- ../tools/repo-to-project/content/<slug>/project.json \
   -- --out ../tools/repo-to-project/collection/<YYYY-MM-DD-HH-MM>-<slug>.zip
@@ -140,6 +149,8 @@ cd backend && npm run wrap:projects -- ../tools/repo-to-project/content/<slug>/p
 makes the filename collision-safe.)
 
 ### Step 5 — Preview (dry-run import)
+
+> **full mode only.** Needs the backend running (`cd backend && npm run dev`).
 
 ```bash
 cd backend && npm run import -- ../tools/repo-to-project/collection/<…>-<slug>.zip -- --dry-run
@@ -151,10 +162,10 @@ Expect `created: { projects: 1 }` (new) or `updated: { projects: 1 }` (existing 
 ### Step 6 — Hand off
 
 Tell the owner, in plain language:
-- what was generated (title, slug, year, tech, links);
-- the dry-run result (created vs updated, any errors);
-- any **unmatched techs** (suggest adding them as `technologies`, or mapping manually);
-- to apply: drop `--dry-run` from step 5.
+- what was generated (title, slug, year, tech, links) — **always**;
+- any **unmatched techs** (suggest adding them as `technologies`, or mapping manually) — **always**;
+- **full mode:** the dry-run result (created vs updated, any errors); to apply, drop `--dry-run` from step 5;
+- **content-only mode:** to apply later, either re-run in full mode, or upload `project.json` via the admin's "Add one project from JSON" panel at `/admin/collections/projects`.
 
 ---
 
@@ -225,5 +236,6 @@ The destructive "archive = single source of truth" mode is **sprint-17** — not
 - **Year unknown** (no git, no manifest) → **stop and ask** (the field is required).
 - **Slug collision with an unrelated existing project** → the import would *update* that project. If the
   repo is genuinely different, ask the owner for a distinct slug before generating.
-- **Backend not running** → skip the DB lookup (step 0 falls back to content/ or fresh uuid); the dry-run
-  import (step 5) needs the backend, so tell the owner to start it (`cd backend && npm run dev`).
+- **Backend not running** → skip the DB lookup (step 0 falls back to content/ or fresh uuid). In **full
+  mode**, the dry-run import (step 5) needs the backend — either start it (`cd backend && npm run dev`) or
+  fall back to **content-only mode** for this run. **content-only mode** never needs the backend.

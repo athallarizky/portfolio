@@ -33,6 +33,7 @@ export const Projects: CollectionConfig = {
     },
     { name: 'bannerColor', type: 'text', admin: { description: 'CSS gradient, e.g. linear-gradient(135deg,#9936e6,#5b21b6)' } },
     { name: 'bannerIcon', type: 'text', admin: { description: 'iconify icon, e.g. solar:rocket-bold' } },
+    { name: 'bannerImage', type: 'upload', relationTo: 'media' },
     {
       name: 'links',
       type: 'array',
@@ -72,12 +73,9 @@ export const Projects: CollectionConfig = {
     },
     {
       name: 'screenshots',
-      type: 'array',
-      fields: [
-        { name: 'label', type: 'text' },
-        { name: 'bannerColor', type: 'text' },
-        { name: 'icon', type: 'text' },
-      ],
+      type: 'upload',
+      relationTo: 'media',
+      hasMany: true,
     },
     { name: 'architecture', type: 'code', admin: { language: 'plaintext', description: 'ASCII directory tree or architecture diagram' } },
   ],

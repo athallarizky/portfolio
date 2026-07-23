@@ -84,23 +84,22 @@ export interface ExportOptions {
   exportedAt: string
 }
 
-/** Resolve the on-disk upload directory for the `documents` collection — Payload's
- *  configured staticDir if available, else `<cwd>/documents`. */
-export function resolveMediaDir(payload: Payload): string {
-  const docs = (payload as any).collections?.['documents']
-  if (docs?.upload?.staticDir) return docs.upload.staticDir as string
-  return path.resolve(process.cwd(), 'documents')
+/** Resolve the on-disk upload directory for a collection — Payload's
+ *  configured staticDir if available, else `<cwd>/<collectionSlug>`. */
+export function resolveMediaDir(payload: Payload, collectionSlug: string): string {
+  const coll = (payload as any).collections?.[collectionSlug]
+  if (coll?.upload?.staticDir) return coll.upload.staticDir as string
+  return path.resolve(process.cwd(), collectionSlug)
 }
 
 export async function exportToArchive(payload: Payload, opts: ExportOptions): Promise<Buffer> {
   const maps = await buildIdRefMaps(payload)
   const editorConfig = await getEditorConfig(payload)
-  const mediaDir = resolveMediaDir(payload)
   const entries: ZipEntry[] = []
   const counts: Record<string, number> = {}
 
   for (const collection of CONTENT_COLLECTIONS) {
-    const isUpload = collection === 'documents'
+    const isUpload = collection === 'documents' || collection === 'media'
     const res = await payload.find({ collection, depth: 0, limit: 0, pagination: false } as any)
     const rows = (res.docs as any[]).map((doc) => {
       const clean = stripInternal(doc, isUpload)
@@ -114,13 +113,13 @@ export async function exportToArchive(payload: Payload, opts: ExportOptions): Pr
     entries.push({ path: `collections/${collection}.json`, data: JSON.stringify(rows, null, 2) })
     counts[collection] = rows.length
 
-    // Upload collection: bundle each file's bytes into media/.
     if (isUpload) {
+      const mediaDir = resolveMediaDir(payload, collection)
       for (const row of rows) {
         if (!row.filename) continue
         try {
           entries.push({
-            path: `media/${row.filename}`,
+            path: `media/${collection}/${row.filename}`,
             data: fs.readFileSync(path.join(mediaDir, row.filename)),
           })
         } catch {

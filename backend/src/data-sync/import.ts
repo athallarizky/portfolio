@@ -332,7 +332,8 @@ async function upsertDoc(
   }
 
   // Upload collection: `filename` is auto-managed by Payload, not a data field.
-  if (collection === 'documents') {
+  const isUpload = collection === 'documents' || collection === 'media'
+  if (isUpload) {
     delete data.filename
   }
 
@@ -363,8 +364,13 @@ async function upsertDoc(
     return { status: exists ? 'updated' : 'created', id: existingId, key }
   }
 
-  if (collection === 'documents') {
-    const bytes = row.filename ? safeReadEntry(zip, `${pfx}media/${row.filename}`) : null
+  if (isUpload) {
+    // Backwards compat: v2 exports use media/<collection>/<filename>, v1 exports use media/<filename> (documents only).
+    const newPath = `${pfx}media/${collection}/${row.filename}`
+    const legacyPath = `${pfx}media/${row.filename}`
+    const bytes = row.filename
+      ? (safeReadEntry(zip, newPath) ?? safeReadEntry(zip, legacyPath))
+      : null
     const file =
       bytes && row.filename
         ? { data: bytes, mimetype: inferMimetype(row.filename), name: row.filename, size: bytes.length }
@@ -373,7 +379,7 @@ async function upsertDoc(
       await payload.update({ collection, id: existingId, data, ...(file ? { file } : {}) } as any)
       return { status: 'updated', id: existingId, key }
     }
-    if (!file) throw new Error(`document "${key}" has no media file in the archive`)
+    if (!file) throw new Error(`"${collection}" record "${key}" has no media file in the archive`)
     const created = await payload.create({ collection, data, file } as any)
     return { status: 'created', id: created.id, key }
   }

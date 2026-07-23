@@ -10,6 +10,7 @@ export const CONTENT_COLLECTIONS = [
   'technologies',
   'projects',
   'social-profiles',
+  'media',
 ] as const
 export type ContentCollection = (typeof CONTENT_COLLECTIONS)[number]
 

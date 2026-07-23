@@ -1,8 +1,33 @@
 <script lang="ts">
-  interface Shot { bannerColor?: string | null; icon?: string | null; label?: string | null }
+  const API = (import.meta as any).env?.PUBLIC_API_URL || 'http://localhost:3000/api';
+  const API_ORIGIN = API.replace(/\/api\/?$/, '');
 
-  interface Props { items: Shot[] }
+  export interface ScreenshotItem {
+    id?: number
+    alt?: string | null
+    url?: string | null
+    thumbnailURL?: string | null
+    filename?: string | null
+    width?: number | null
+    height?: number | null
+    /** Legacy fallback: bannerColor + icon when no image */
+    bannerColor?: string | null
+    icon?: string | null
+    label?: string | null
+  }
+
+  interface Props { items: ScreenshotItem[] }
   let { items }: Props = $props()
+
+  function imgUrl(s: ScreenshotItem): string | null {
+    if (s.url) return s.url.startsWith('http') ? s.url : `${API_ORIGIN}${s.url}`
+    if (s.filename) return `${API_ORIGIN}/api/media/file/${s.filename}`
+    return null
+  }
+  function thumbUrl(s: ScreenshotItem): string | null {
+    if (s.thumbnailURL) return s.thumbnailURL.startsWith('http') ? s.thumbnailURL : `${API_ORIGIN}${s.thumbnailURL}`
+    return imgUrl(s)
+  }
 
   let open = $state(false)
   let index = $state(0)
@@ -25,7 +50,6 @@
   }
   const toggleZoom = () => { scale = scale > 1 ? 1 : 2.2 }
 
-  // drag-to-pan (pointer events — mouse + touch)
   let drag = false
   let sx = 0; let sy = 0; let ox = 0; let oy = 0
   const onDown = (e: PointerEvent) => {
@@ -46,7 +70,6 @@
     else if (e.key === 'ArrowRight') goto(1)
   }
 
-  // Move the overlay to <body> so it escapes any ancestor overflow / transform / stacking context.
   const portal = (node: HTMLElement) => {
     document.body.appendChild(node)
     return { destroy() { node.remove() } }
@@ -63,11 +86,16 @@
     <button
       type="button"
       class="thumb"
-      style={`background:${s.bannerColor || 'linear-gradient(135deg,#9936e6,#5b21b6)'}`}
+      class:has-image={!!imgUrl(s)}
+      style={imgUrl(s) ? '' : `background:${s.bannerColor || 'linear-gradient(135deg,#9936e6,#5b21b6)'}`}
       onclick={() => show(i)}
-      aria-label="Open screenshot"
+      aria-label={s.alt || s.label || 'Open screenshot'}
     >
-      <iconify-icon icon={s.icon || 'solar:gallery-linear'} width="48" height="48" style="color:#fff; opacity:.6"></iconify-icon>
+      {#if imgUrl(s)}
+        <img src={thumbUrl(s) || imgUrl(s)!} alt={s.alt || s.label || ''} loading="lazy" />
+      {:else}
+        <iconify-icon icon={s.icon || 'solar:gallery-linear'} width="48" height="48" style="color:#fff; opacity:.6"></iconify-icon>
+      {/if}
       <span class="expand-hint"><iconify-icon icon="solar:maximize-square-bold" width="16" height="16"></iconify-icon></span>
     </button>
   {/each}
@@ -75,7 +103,6 @@
 
 {#if open}
   <div class="lightbox" use:portal role="dialog" aria-modal="true" aria-label="Screenshot viewer">
-    <!-- backdrop: click to close + drag/wheel surface -->
     <div
       class="lb-backdrop"
       onclick={close}
@@ -86,10 +113,12 @@
       onpointercancel={onUp}
     ></div>
 
-    <!-- the preview itself (above backdrop; clicks on it don't close) -->
     <div
       class="lb-photo"
-      style={`transform: translate(${x}px, ${y}px) scale(${scale}); background:${items[index].bannerColor || 'linear-gradient(135deg,#9936e6,#5b21b6)'}`}
+      class:lb-has-img={!!imgUrl(items[index])}
+      style={imgUrl(items[index])
+        ? ``
+        : `transform: translate(${x}px, ${y}px) scale(${scale}); background:${items[index].bannerColor || 'linear-gradient(135deg,#9936e6,#5b21b6)'}`}
       onclick={(e) => e.stopPropagation()}
       ondblclick={toggleZoom}
       onpointerdown={onDown}
@@ -99,7 +128,21 @@
       onwheel={onWheel}
       role="img"
     >
-      <iconify-icon icon={items[index].icon || 'solar:gallery-linear'} width="140" height="140" style="color:#fff; opacity:.5"></iconify-icon>
+      {#if imgUrl(items[index])}
+        <img
+          src={imgUrl(items[index])!}
+          alt={items[index].alt || items[index].label || ''}
+          style={`transform: translate(${x}px, ${y}px) scale(${scale})`}
+          ondblclick={toggleZoom}
+          onpointerdown={onDown}
+          onpointermove={onMove}
+          onpointerup={onUp}
+          onpointercancel={onUp}
+          onwheel={onWheel}
+        />
+      {:else}
+        <iconify-icon icon={items[index].icon || 'solar:gallery-linear'} width="140" height="140" style="color:#fff; opacity:.5"></iconify-icon>
+      {/if}
     </div>
 
     <button class="lb-btn lb-close" onclick={close} aria-label="Close">
@@ -127,6 +170,10 @@
     transition: transform .15s ease;
   }
   .thumb:hover { transform: translateY(-2px); }
+  .thumb.has-image { background: var(--card) !important; }
+  .thumb img {
+    width: 100%; height: 100%; object-fit: cover;
+  }
   .expand-hint {
     position: absolute; top: 8px; right: 8px;
     display: flex; align-items: center; justify-content: center;
@@ -138,7 +185,6 @@
   .thumb:focus-visible .expand-hint { opacity: 1; }
   .thumb:focus-visible { outline: 2px solid var(--secondary); outline-offset: 2px; }
 
-  /* overlay is portaled to <body> — fully viewport-rooted, above everything */
   .lightbox {
     position: fixed; inset: 0; z-index: 9999;
     display: flex; align-items: center; justify-content: center;
@@ -160,6 +206,18 @@
     transform-origin: center center; will-change: transform;
     transition: transform .08s ease-out; user-select: none;
     cursor: zoom-in; touch-action: none;
+    overflow: hidden;
+  }
+  .lb-photo.lb-has-img {
+    background: var(--card) !important;
+    width: min(90vw, none); max-width: 90vw;
+    height: auto; max-height: 85vh;
+  }
+  .lb-photo img {
+    max-width: 90vw; max-height: 85vh; object-fit: contain;
+    border-radius: 12px;
+    transform-origin: center center;
+    cursor: zoom-in; user-select: none;
   }
   .lb-btn {
     position: absolute; z-index: 2;

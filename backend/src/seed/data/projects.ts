@@ -12,7 +12,6 @@ export interface SeedProject {
   techNames: string[]
   links: { label: string; icon: string; url: string }[]
   features: { icon: string; heading: string; description: string }[]
-  screenshots?: { bannerColor: string; icon: string }[]
   architecture?: string
   order: number
   showOnHome?: boolean
@@ -31,12 +30,6 @@ export const PROJECTS: SeedProject[] = [
       { icon: 'solar:tag-bold-duotone', heading: 'Tags & references', description: 'Wiki-style [[links]] between notes, plus nested tags for organization.' },
       { icon: 'solar:smartphone-linear', heading: 'Cross-platform', description: 'Web, macOS, Windows, Linux, and Android — all from one codebase via Tauri.' },
       { icon: 'solar:lock-keyhole-minimalistic-linear', heading: 'Self-hosted & private', description: 'Your data never leaves your server. Optional end-to-end encryption.' },
-    ],
-    screenshots: [
-      { bannerColor: 'linear-gradient(135deg,#9936e6,#5b21b6)', icon: 'solar:widget-5-bold-duotone' },
-      { bannerColor: 'linear-gradient(135deg,#3b82f6,#1e3a8a)', icon: 'solar:chat-round-dots-linear' },
-      { bannerColor: 'linear-gradient(135deg,#22c55e,#15803d)', icon: 'solar:document-text-outline' },
-      { bannerColor: 'linear-gradient(135deg,#f97316,#831843)', icon: 'solar:magnifer-linear' },
     ],
     architecture: `noteflow/\n├── app/           # React + Vite + Tauri\n│   ├── src/\n│   └── src-tauri/\n├── server/        # tRPC + Express + AI\n│   ├── routerTrpc/\n│   └── aiServer/\n├── shared/        # types & helpers\n└── prisma/        # schema & migrations`,
     order: 1,

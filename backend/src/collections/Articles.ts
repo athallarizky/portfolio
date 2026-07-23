@@ -34,6 +34,7 @@ export const Articles: CollectionConfig = {
     { name: 'publishedAt', type: 'date', required: true },
     { name: 'readMinutes', type: 'number', min: 1 },
     { name: 'body', type: 'richText' },
+    { name: 'featuredImage', type: 'upload', relationTo: 'media' },
     { name: 'bannerColor', type: 'text', admin: { description: 'CSS gradient for the banner, e.g. linear-gradient(135deg,#9936e6,#5b21b6)' } },
     { name: 'bannerIcon', type: 'text', admin: { description: 'iconify icon for the banner, e.g. solar:rocket-bold' } },
     {

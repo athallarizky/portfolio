@@ -1,15 +1,13 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { renderLexical } from '../../lib/render-lexical';
-import { safeFetch } from '../../lib/api';
+import { safeFetch, mediaUrl, API_ORIGIN } from '../../lib/api';
 import type { Article, PaginatedResponse } from '../../lib/api-types';
 
 export const prerender = false;
 
 const { slug } = Astro.params;
 
-// Fetch all published articles so we can derive "related" by shared tags (tech stack),
-// instead of the manual (always-empty) relatedArticles field.
 const all = await safeFetch<PaginatedResponse<Article>>('/articles?where[status][equals]=published&sort=-publishedAt&depth=1');
 const article = (all.docs || []).find((a) => a.slug === slug);
 
@@ -28,14 +26,20 @@ const relatedArticles = (all.docs || [])
 
 const bannerColor = article.bannerColor || 'linear-gradient(135deg,#9936e6,#5b21b6)';
 const bannerIcon = article.bannerIcon || 'solar:rocket-bold';
+const bannerUrl = article.featuredImage?.sizes?.hero?.url ? `${API_ORIGIN}${article.featuredImage.sizes.hero.url}` : mediaUrl(article.featuredImage);
+const authorAvatarUrl = article.author.avatar?.thumbnailURL ? `${API_ORIGIN}${article.author.avatar.thumbnailURL}` : mediaUrl(article.author.avatar);
 ---
 
 <BaseLayout title={article.title} pageTitle={article.title} activeNav="/blogs" mesh={false} description={article.excerpt || `${article.title} — an article by Athalla Rizky.`}>
   <div class="article-layout mt-4">
     <div class="article-main">
       <div class="detail-header">
-        <div style={`height: 180px; border-radius: 16px; background: ${bannerColor}; display:flex; align-items:center; justify-content:center;`}>
-          <iconify-icon icon={bannerIcon} width="72" height="72" style="color:#fff; opacity:.7"></iconify-icon>
+        <div style={`height: 180px; border-radius: 16px; background: ${bannerUrl ? 'var(--card)' : bannerColor}; display:flex; align-items:center; justify-content:center; overflow:hidden;`}>
+          {bannerUrl ? (
+            <img src={bannerUrl} alt={article.title} style="width:100%; height:100%; object-fit:cover;" loading="lazy" />
+          ) : (
+            <iconify-icon icon={bannerIcon} width="72" height="72" style="color:#fff; opacity:.7"></iconify-icon>
+          )}
         </div>
         <div class="detail-meta" style="margin-top:1rem">
           <span class="detail-title">{article.title}</span>
@@ -54,7 +58,13 @@ const bannerIcon = article.bannerIcon || 'solar:rocket-bold';
       <div class="prose mt-4" set:html={renderLexical(article.body)}></div>
 
       <div class="author-card">
-        <div class="author-avatar">{article.author.initials}</div>
+        <div class="author-avatar">
+          {authorAvatarUrl ? (
+            <img src={authorAvatarUrl} alt={article.author.name} style="width:100%; height:100%; object-fit:cover; border-radius:50%;" loading="lazy" />
+          ) : (
+            article.author.initials
+          )}
+        </div>
         <div class="author-info">
           <div class="author-name">{article.author.name}</div>
           {article.author.role && <div class="author-role">{article.author.role}</div>}

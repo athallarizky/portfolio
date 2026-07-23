@@ -8,4 +8,5 @@ export const siteConfig: SiteConfig = {
   status: 'Open to side-projects',
   timezone: 'UTC+7',
   location: 'Remote · UTC+7',
+  avatar: null,
 };

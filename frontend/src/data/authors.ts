@@ -8,6 +8,7 @@ export const authors: PaginatedResponse<Author> = {
       initials: 'AT',
       role: 'Full-Stack Engineer · Backend · AI tooling',
       bio: 'I write about backend systems, developer experience, and running software projects with AI agents. Follow along — new posts every other week.',
+      avatar: null,
     },
   ],
   totalDocs: 1,

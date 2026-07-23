@@ -42,12 +42,27 @@ export interface Tag {
   slug: string;
 }
 
+export interface Media {
+  id: number;
+  alt: string;
+  caption: string | null;
+  filename: string | null;
+  mimeType: string | null;
+  filesize: number | null;
+  width: number | null;
+  height: number | null;
+  url: string | null;
+  thumbnailURL: string | null;
+  sizes: Record<string, { filename: string | null; width: number | null; height: number | null; url: string | null }> | null;
+}
+
 export interface Author {
   id: number;
   name: string;
   initials: string;
   role: string | null;
   bio: string | null;
+  avatar: Pick<Media, 'id' | 'alt' | 'filename' | 'width' | 'height' | 'url' | 'thumbnailURL'> | null;
 }
 
 export interface Article {
@@ -60,6 +75,7 @@ export interface Article {
   publishedAt: string;
   readMinutes: number | null;
   body: LexicalRoot;
+  featuredImage: Pick<Media, 'id' | 'alt' | 'filename' | 'width' | 'height' | 'url' | 'thumbnailURL'> | null;
   bannerColor: string | null;
   bannerIcon: string | null;
   relatedArticles: number[];
@@ -83,6 +99,7 @@ export interface Project {
   descriptor: string | null;
   bannerColor: string | null;
   bannerIcon: string | null;
+  bannerImage: Pick<Media, 'id' | 'alt' | 'filename' | 'width' | 'height' | 'url' | 'thumbnailURL'> | null;
   techTags: Technology[];
   links: { label: string; url: string | null; icon: string | null }[];
   body: LexicalRoot;
@@ -90,7 +107,7 @@ export interface Project {
   order: number;
   showOnHome?: boolean;
   features: { icon: string | null; heading: string | null; description: string | null }[];
-  screenshots: { label: string | null; bannerColor: string | null; icon: string | null }[];
+  screenshots: Pick<Media, 'id' | 'alt' | 'filename' | 'width' | 'height' | 'url' | 'thumbnailURL'>[];
   architecture: string | null;
   seo: { metaTitle: string | null; metaDescription: string | null; ogImage: string | null } | null;
 }
@@ -116,6 +133,7 @@ export interface SiteConfig {
   location: string | null;
   contactFormEnabled?: boolean | null;
   documentsEnabled?: boolean | null;
+  avatar: Pick<Media, 'id' | 'alt' | 'filename' | 'width' | 'height' | 'url' | 'thumbnailURL'> | null;
 }
 
 export interface Home {

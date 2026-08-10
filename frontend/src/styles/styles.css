@@ -956,6 +956,7 @@ a { color: inherit; text-decoration: none; }
 .hero-row { position: relative; z-index: 1; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
 .hero-avatar { position: relative; flex-shrink: 0; }
 .hero-avatar-face { width: 76px; height: 76px; font-size: 26px; box-shadow: var(--shadow); }
+.hero-avatar-img { aspect-ratio: 1/1; object-fit: cover; border-radius: var(--radius); }
 .hero-status-dot {
   position: absolute; right: 2px; bottom: 2px; z-index: 2;
   width: 16px; height: 16px; border-radius: 50%;
@@ -1089,6 +1090,16 @@ a { color: inherit; text-decoration: none; }
   border-radius: 16px;
   padding: 32px;
 }
+.dark .home .hero { background: linear-gradient(180deg, var(--n-canvas) 0%, #0a0a1a 100%); }
+.home .hero-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: rgba(0, 0, 0, .15);
+  pointer-events: none;
+  border-radius: inherit;
+}
+.dark .home .hero-overlay { background: rgba(0, 0, 0, .28); }
 .home .hero-grid {
   background-image: radial-gradient(circle, color-mix(in srgb, var(--n-ink) 7%, transparent) 1px, transparent 1.6px);
   background-size: 22px 22px;
@@ -1181,6 +1192,12 @@ a { color: inherit; text-decoration: none; }
 .dark .home .card.is-hoverable:hover { box-shadow: none; }
 
 /* Currently = lavender tint card */
+.home .home-side-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-self: start;
+}
 .home .card.is-currently {
   background: var(--n-tint-lavender);
   border-color: color-mix(in srgb, var(--n-tint-lavender-ink) 12%, var(--n-tint-lavender));

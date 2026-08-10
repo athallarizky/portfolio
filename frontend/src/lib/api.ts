@@ -12,7 +12,8 @@ const DEFAULT_EMPTY_DOCS = { docs: [] };
 
 export async function safeFetch<T>(path: string): Promise<T & { docs?: unknown[] }> {
   try {
-    const res = await fetch(`${API}${path}`);
+    const encoded = path.replace(/\[/g, '%5B').replace(/\]/g, '%5D');
+    const res = await fetch(`${API}${encoded}`);
     if (!res.ok) return DEFAULT_EMPTY_DOCS as T & { docs?: unknown[] };
     return await res.json();
   } catch {

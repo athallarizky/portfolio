@@ -1,6 +1,5 @@
 <script lang="ts">
-  const DEV = (import.meta as any).env?.DEV ?? false;
-  const API_ORIGIN = DEV ? 'http://localhost:3000' : '';
+  import { API_ORIGIN } from '../../lib/api';
 
   export interface ScreenshotItem {
     id?: number

@@ -8,6 +8,15 @@ import type { Nav, SiteConfig } from '../lib/api-types';
 const nav = await safeFetch<Nav>('/globals/nav');
 const siteConfig = await safeFetch<SiteConfig>('/globals/site-config');
 
+const contactEnabled = siteConfig.contactFormEnabled !== false;
+const docsEnabled = siteConfig.documentsEnabled !== false;
+
+const filteredMenu = (nav.menuItems || []).filter((item) => {
+  if (!contactEnabled && item.href === '/contact') return false;
+  if (!docsEnabled && item.href === '/documents') return false;
+  return true;
+});
+
 interface Props {
   title: string;
   pageTitle: string;
@@ -93,7 +102,7 @@ const ogImage = new URL(image, origin).href;
     <Sidebar
       client:load
       activeNav={activeNav}
-      menuItems={nav.menuItems || []}
+      menuItems={filteredMenu}
       connectLinks={nav.connectLinks || []}
       initials={siteConfig.initials || '??'}
       name={siteConfig.name || 'Portfolio'}

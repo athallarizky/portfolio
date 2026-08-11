@@ -23,6 +23,7 @@ const latestWriting = await safeFetch<PaginatedResponse<Article>>(
 const homeProfiles = (socialProfiles.docs || []).filter((p: SocialProfile) => p.showOnHome);
 const workDocs = selectedWork.docs || [];
 const writeDocs = latestWriting.docs || [];
+const contactEnabled = siteConfig.contactFormEnabled !== false;
 
 const visible = new Set(
   home.showItems || ['hero', 'stats', 'featuredProjects', 'latestWriting', 'about', 'currently', 'skills', 'findMe', 'contactCta'],
@@ -223,7 +224,7 @@ const avatarUrl = siteConfig.avatar?.thumbnailURL ? `${API_ORIGIN}${siteConfig.a
     )}
 
     {/* CONTACT CTA — scroll reveal + magnetic button */}
-    {visible.has('contactCta') && (
+    {visible.has('contactCta') && contactEnabled && (
       <Reveal client:visible delay=".05s">
         <div class="card is-hoverable glowable contact-cta mt-4">
           <iconify-icon icon="solar:chat-round-dots-linear" width="32" height="32" style="color:var(--secondary);"></iconify-icon>
@@ -240,7 +241,7 @@ const avatarUrl = siteConfig.avatar?.thumbnailURL ? `${API_ORIGIN}${siteConfig.a
     )}
 
     <div class="home-foot mt-4 text-center text-desc text-sm">
-      Made with <iconify-icon icon="solar:heart-bold" width="14" height="14" style="color:var(--secondary); vertical-align:middle;"></iconify-icon> by {siteConfig.name}
+      Made with <iconify-icon icon="solar:cup-hot-bold" width="14" height="14" style="color:var(--secondary); vertical-align:middle;"></iconify-icon> by {siteConfig.name}
     </div>
   </div>
 </BaseLayout>

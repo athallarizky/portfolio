@@ -8,7 +8,7 @@ export const prerender = false;
 
 const { slug } = Astro.params;
 
-const all = await safeFetch<PaginatedResponse<Article>>('/articles?where[status][equals]=published&sort=-publishedAt&depth=1');
+const all = await safeFetch<PaginatedResponse<Article>>('/articles?where[status][equals]=published&sort=-publishedAt&depth=2');
 const article = (all.docs || []).find((a) => a.slug === slug);
 
 if (!article) {

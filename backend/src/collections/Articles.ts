@@ -7,6 +7,9 @@ export const Articles: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     group: 'Blog',
+    components: {
+      afterListTable: ['/data-sync/admin/InsertArticleFromJson#InsertArticleFromJson'],
+    },
   },
   access: {
     read: () => true,

@@ -41,6 +41,14 @@ backend/payload.test.db*
 tools/repo-to-project/content/
 tools/repo-to-project/collection/
 
+# article-polish tool generated outputs (artifacts; regeneratable from the source drafts)
+tools/article-polish/content/
+tools/article-polish/collection/
+
+# article-polish samples — keep the folder, ignore contents
+tools/article-polish/samples/*
+!tools/article-polish/samples/.gitkeep
+
 # Temp / misc
 temp
 *.log

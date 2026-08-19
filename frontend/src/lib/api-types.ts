@@ -174,13 +174,15 @@ export interface LexicalRoot {
 }
 
 export type LexicalNode =
-  | { type: 'paragraph'; children: LexicalText[]; direction: string; format: string; indent: number; version: number }
-  | { type: 'heading'; tag: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'; children: LexicalText[]; direction: string; format: string; indent: number; version: number }
+  | { type: 'paragraph'; children: LexicalNode[]; direction: string; format: string; indent: number; version: number }
+  | { type: 'heading'; tag: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'; children: LexicalNode[]; direction: string; format: string; indent: number; version: number }
   | { type: 'code'; language: string; children: LexicalText[]; direction: string; format: string; indent: number; version: number }
   | { type: 'quote'; children: LexicalNode[]; direction: string; format: string; indent: number; version: number }
   | { type: 'list'; listType: 'bullet' | 'number'; children: LexicalNode[]; direction: string; format: string; indent: number; version: number }
   | { type: 'listitem'; children: LexicalNode[]; direction: string; format: string; indent: number; version: number }
-  | { type: 'upload'; value: { id: number }; fields: null; relationTo: string; version: number };
+  | { type: 'link'; children: LexicalNode[]; fields: { linkType: string; newTab: boolean; url: string } | null; direction: string | null; format: string; indent: number; version: number }
+  | { type: 'upload'; value: { id: number }; fields: null; relationTo: string; version: number }
+  | LexicalText;
 
 export interface LexicalText {
   type: 'text';

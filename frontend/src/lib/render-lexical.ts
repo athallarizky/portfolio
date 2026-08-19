@@ -27,11 +27,18 @@ function renderText(node: LexicalText): string {
 
 function renderNode(node: LexicalNode): string {
   switch (node.type) {
+    case 'text':
+      return renderText(node);
     case 'paragraph':
-      return `<p>${node.children.map(renderText).join('')}</p>`;
+      return `<p>${node.children.map(renderNode).join('')}</p>`;
     case 'heading': {
       const tag = node.tag;
-      return `<${tag}>${node.children.map(renderText).join('')}</${tag}>`;
+      return `<${tag}>${node.children.map(renderNode).join('')}</${tag}>`;
+    }
+    case 'link': {
+      const url = node.fields?.url ?? '';
+      const newTab = node.fields?.newTab ? ' target="_blank" rel="noopener noreferrer"' : '';
+      return `<a href="${escapeHtml(url)}"${newTab}>${node.children.map(renderNode).join('')}</a>`;
     }
     case 'code':
       return `<pre><code${node.language ? ` class="language-${node.language}"` : ''}>${escapeHtml(node.children.map(t => t.text).join(''))}</code></pre>`;

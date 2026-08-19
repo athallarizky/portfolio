@@ -2,7 +2,7 @@
 
 > **For:** any LLM agent working on this repo in a fresh session.
 > **Read this first**, then the latest sprint record in [`docs/sprint-N/`](docs/)
-> (currently sprint-22 → [`docs/sprint-22/final-report.md`](docs/sprint-22/final-report.md)).
+> (currently sprint-23 → [`docs/sprint-23/final-report.md`](docs/sprint-23/final-report.md)).
 > **Owner:** Atha Thizky — Full-Stack Engineer (backend-leaning · TS/Go/Python · AI tooling).
 
 ---
@@ -53,7 +53,7 @@ portfolio/
 ├── DESIGN.md                      ← Notion design spec — Home page source of truth (sprint-10)
 ├── docs/
 │   ├── GUIDE.md                   ← the phased AI workflow (plan → build → verify → report)
-│   └── sprint-1..22/              ← sprint records (plan, tasks, reports, final-report)
+│   └── sprint-1..23/              ← sprint records (plan, tasks, reports, final-report)
 ├── frontend/                      ← Astro 7 + Svelte 5 SSR app
 │   ├── astro.config.mjs           ← node adapter, SSR
 │   ├── src/
@@ -201,6 +201,23 @@ zips it for a dry-run import. Author must exist (resolved by `authors.name`); ta
 exist (by slug); no media handling — add featured/inline images in admin after import.
 Detail: [`docs/sprint-21/final-report.md`](docs/sprint-21/final-report.md).
 
+### Publish content to prod (sprint-23 — GitHub is the source of truth)
+Articles/projects live as JSON in git (`tools/article-polish/content/*/formatted/`,
+`tools/repo-to-project/content/*/project.json`, refs in `tools/content/refs/`).
+Publishing = GitHub Actions **Publish Article / Publish Project** (manual dispatch, dry-run
+checkbox): the runner builds a full-set zip via `npm run wrap:publish -- --articles|--projects`,
+logs in with the service account, and POSTs to `/api/data-import` with `replaceOnly=<collection>`
+— the target collection converges 1:1 with git (absent rows deleted); refs upsert only.
+
+- Authoring happens via the git pipeline (article-polish / repo-to-project → commit) — a draft
+  created only in the prod admin will be **deleted by the next publish**.
+- Cosmetic fields (images, seo, showOnHome…) are omitted from the JSONs → admin polish survives.
+- Refresh refs after admin tag/technology changes: `npm run refs:export` → commit.
+- Sync local 1:1: `npm run wrap:publish -- --articles` + `npm run import -- <zip> -- --replace-only articles` (same for projects).
+- Publish rows must carry a stable `uuid` (wrap:publish refuses otherwise).
+
+Detail: [`docs/sprint-23/final-report.md`](docs/sprint-23/final-report.md).
+
 ### Theme
 Toggle via the sidebar button; persisted in `localStorage['portfolio-theme']`;
 `.dark` on `<html>` switches all tokens (both `--*` and `--n-*`).
@@ -229,8 +246,9 @@ Toggle via the sidebar button; persisted in `localStorage['portfolio-theme']`;
 | 20 | **Logic + UI bug fixes** — `lib/env.ts` single source of truth (`isDev`/`API_ORIGIN`, `MODE` not `DEV`); safeFetch bracket-encoding fix; showItems restore; hero restructure (fixed avatar, location chip, WebGL aurora background); sidebar reorder. 2 RCAs. ([final-report](docs/sprint-20/final-report.md)) |
 | 21 | **Article-polish tool** — `tools/article-polish/` (SKILLS.md 6-step workflow: Markdown draft → AI polish → Lexical JSON → wrap → dry-run import); article upload fix (`depth=1` → `depth=2`); InsertArticleFromJson admin UI + `wrap:articles` CLI. ([final-report](docs/sprint-21/final-report.md)) |
 | 22 | **First real content publish** — the first article (*How to Learn New Things in the AI Era*, casual BI, first `samples/` style anchor) + the `ai-guided-learning` playbook as a project entry, cross-linked, in one combined content zip (tags + technologies + article + project); link-node renderer 500 fixed (`render-lexical.ts` recurses, `link` case added — [RCA](docs/sprint-22/rca/2026-08-19-lexical-link-node-500.md)). Prod apply = owner via admin (**no direct VPS access** — agent prepares + verifies locally). ([final-report](docs/sprint-22/final-report.md)) |
+| 23 | **Content publish pipeline (GitHub = source of truth)** — scoped replace-all (`replaceOnly` on import CLI + `/api/data-import`; drift-deletion per target collection only, refs never deleted); `wrap:publish` builds the full-set zip from git-tracked content JSONs + refs manifest (`npm run refs:export`); workflows `publish-article`/`publish-project` run entirely on the GH runner → service-account login → REST import (zero VPS execution). Content JSONs/MDs now tracked in git. **Contract: articles/projects are authored via git — prod-admin drafts die on next publish; cosmetic fields survive (omitted on upsert).** ([final-report](docs/sprint-23/final-report.md)) |
 
-Latest detail: [`docs/sprint-22/final-report.md`](docs/sprint-22/final-report.md).
+Latest detail: [`docs/sprint-23/final-report.md`](docs/sprint-23/final-report.md).
 
 ---
 

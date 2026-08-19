@@ -90,6 +90,21 @@ npm run wrap:projects -- ../tools/repo-to-project/content/<slug>/project.json --
 npm run import -- ../tools/repo-to-project/collection/<...>.zip -- --dry-run
 ```
 
+### Publish to production (GitHub Actions)
+
+Article/project content is **sourced from git** (`tools/*/content/**.json` + `tools/content/refs/`).
+Actions → **Publish Article** / **Publish Project** (manual dispatch, dry-run checkbox) builds the
+full-set zip on the runner and imports it over the API with **scoped replace-all** — prod converges
+1:1 with git for that collection (rows absent from git are deleted; tags/technologies refs upsert
+only; image/cosmetic polish done in the admin survives). Drafts that live only in the prod admin
+are deleted by the next publish — author via the git pipeline.
+
+```bash
+cd backend
+npm run refs:export        # refresh tools/content/refs/ after admin tag/tech changes
+npm run wrap:publish -- --articles   # build the publish zip locally (same as the runner)
+```
+
 ## 🛠 Verification
 
 ```bash

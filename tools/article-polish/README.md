@@ -15,8 +15,8 @@ Claude reads `SKILLS.md`, polishes the draft, and writes:
 tools/article-polish/
 ├── content/<slug>/
 │   ├── draft/input.md          # your raw draft (untouched)
-│   ├── polished/article.md     # AI-polished Markdown (review)
-│   └── formatted/article.json  # v2 archive row — copy into admin
+│   ├── article.md              # AI-polished Markdown (review)
+│   └── article.json             # v2 archive row — import source
 └── collection/<date>-<slug>.zip   # importable zip (full mode only)
 ```
 
@@ -33,13 +33,13 @@ The AI reads them for writing style guidance — sentence length, tone, heading 
 
 1. Open the admin at `/admin/collections/articles`
 2. Click **"＋ Create new from JSON"** above the list
-3. Paste the contents of `content/<slug>/formatted/article.json`
+3. Paste the contents of `content/<slug>/article.json`
 4. Click **Preview** → **Apply**
 
 Or, via CLI (needs backend running):
 
 ```bash
-cd backend && npm run wrap:articles -- ../tools/article-polish/content/<slug>/formatted/article.json \
+cd backend && npm run wrap:articles -- ../tools/article-polish/content/<slug>/article.json \
   -- --out ../tools/article-polish/collection/<date>-<slug>.zip
 npm run import -- ../tools/article-polish/collection/<date>-<slug>.zip
 ```

@@ -1,0 +1,22 @@
+[
+  {
+    "uuid": "1d7a810b-ca2c-43f7-bf21-4d7fc8190254",
+    "name": "Workflow",
+    "slug": "workflow"
+  },
+  {
+    "uuid": "ac20a733-c729-462e-93e4-680632243453",
+    "name": "Learning",
+    "slug": "learning"
+  },
+  {
+    "uuid": "98333a70-dbad-441c-b0d9-6875b3ba17ae",
+    "name": "AI",
+    "slug": "ai"
+  },
+  {
+    "uuid": "035b4cd7-e960-47c5-95a1-bacdb0d7bbe8",
+    "name": "Github",
+    "slug": "github"
+  }
+]

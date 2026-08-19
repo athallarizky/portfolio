@@ -65,8 +65,18 @@ export const dataImportEndpoint: Endpoint = {
       }
       const dryRun = form.get('dryRun') === 'true'
       const replaceAll = form.get('replaceAll') === 'true'
+      // Sprint-23 scoped replace: `replaceOnly=articles` (csv) — drift-deletion only for the
+      // listed collections; everything else upserts only. Ignored when replaceAll is set.
+      const replaceOnly = form.get('replaceOnly')
+      const replaceCollections = typeof replaceOnly === 'string' && replaceOnly
+        ? replaceOnly.split(',').map((s) => s.trim()).filter(Boolean)
+        : undefined
       const buf = Buffer.from(await file.arrayBuffer())
-      const report = await importFromArchive(req.payload, buf, { dryRun, replaceAll })
+      const report = await importFromArchive(req.payload, buf, {
+        dryRun,
+        replaceAll,
+        replaceCollections: replaceCollections as ContentCollection[] | undefined,
+      })
       return Response.json(report)
     } catch (e) {
       return badRequest(e) // empty/corrupt zip, manifest mismatch, partial-archive replace-all → user error

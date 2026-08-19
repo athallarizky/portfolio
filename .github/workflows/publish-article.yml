@@ -1,0 +1,22 @@
+name: Publish Article
+
+# Sprint-23: converge the prod `articles` collection 1:1 with git.
+# Every run ships the FULL article set from tools/article-polish/content/*/formatted/
+# plus the refs manifest, with replaceOnly=articles (drift = deleted).
+# Implementation lives in publish.yml — this is just the dispatch button.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (preview the report, no writes)'
+        type: boolean
+        default: false
+
+jobs:
+  publish:
+    uses: ./.github/workflows/publish.yml
+    with:
+      collection: articles
+      dry_run: ${{ inputs.dry_run }}
+    secrets: inherit

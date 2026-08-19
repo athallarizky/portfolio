@@ -10,6 +10,7 @@ import {
   rewriteRelationsToIds,
   primeResolver,
   assertFullArchive,
+  assertReplaceCollectionsPresent,
   ReplaceAllError,
   archiveIdentitySet,
   collectReferenced,
@@ -149,6 +150,28 @@ test('assertFullArchive: throws when content collections are missing', () => {
 
 test('assertFullArchive: ok when all 8 content collections present', () => {
   assert.doesNotThrow(() => assertFullArchive(new Set(CONTENT_COLLECTIONS)))
+})
+
+// ---- assertReplaceCollectionsPresent (sprint-23 scoped replace) ----
+
+test('assertReplaceCollectionsPresent: throws when a target collection is absent from the archive', () => {
+  assert.throws(
+    () => assertReplaceCollectionsPresent(['articles'], new Set(['tags', 'technologies'])),
+    ReplaceAllError,
+  )
+})
+
+test('assertReplaceCollectionsPresent: throws on names that are not content collections', () => {
+  assert.throws(
+    () => assertReplaceCollectionsPresent(['users' as never], new Set(['users'])),
+    ReplaceAllError,
+  )
+})
+
+test('assertReplaceCollectionsPresent: ok when every target is present', () => {
+  assert.doesNotThrow(() =>
+    assertReplaceCollectionsPresent(['articles'], new Set(['tags', 'articles', 'technologies'])),
+  )
 })
 
 test('archiveIdentitySet: uuid when present, else natural key', () => {

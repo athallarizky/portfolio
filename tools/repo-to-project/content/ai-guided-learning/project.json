@@ -1,0 +1,22 @@
+{
+  "uuid": "9ea93585-0834-4130-8777-6c39fa3f22a0",
+  "title": "AI-Guided Learning Playbook",
+  "slug": "ai-guided-learning",
+  "year": 2026,
+  "excerpt": "A SKILL.md playbook that turns any AI agent into a strict learning coach — research-first, architecture-next, phased build — with one hard rule: the agent explains and guides, but never writes the code.",
+  "descriptor": "Personal",
+  "techTags": [
+    "ai-agents",
+    "productivity"
+  ],
+  "links": [
+    {
+      "label": "Source",
+      "icon": "mdi:github",
+      "url": "https://github.com/athallarizky/agent-playbooks"
+    }
+  ],
+  "body": "## Overview\n\nAI-Guided Learning is a playbook — a single `SKILL.md` briefing that turns any AI agent into a strict learning coach. You say something like *\"I want to learn [X] by building [Y]\"*, and the agent takes over the teaching structure instead of the keyboard.\n\nThe workflow is four steps. **Research** first: current state of the technology, ecosystem, best practices, known deprecations and gotchas — shared before anything is built. **Architecture design** next: a `docs/plan.md` with a concepts glossary, ASCII architecture diagram, full file tree, and a numbered phase roadmap, agreed with you before a single line is written. **Phase breakdown** then splits the build into sequential phase files, each containing the goal, new concepts, complete copy-pasteable code with inline comments, a short why-we-wrote-it-this-way per block, and how to test that the phase works. **Iterate** last: you code one phase at a time, bring the errors back, and the agent diagnoses and explains — never advancing until the current phase compiles and works.\n\nThe hard rule that makes it learning instead of vibe coding: the agent is forbidden from writing the code. It plans, explains, and reviews — you type. Every question and every error that surfaces while typing becomes the actual lesson. The thinking behind this workflow is written up in [How to Learn New Things in the AI Era](/blogs/how-to-learn-new-things-in-ai-era).",
+  "architecture": "agent-playbooks/                      # the collection this playbook lives in\n├── ai-guided-learning/\n│   └── SKILL.md                      # the playbook — trigger phrases + 4-step workflow\n├── git-workflow/SKILL.md             # sibling playbooks (commits, audits, no auto-push)\n├── security-audit/SKILL.md           # secrets/PII scan before commit or publish\n├── linkedin-writing/                 # + samples/ — 5 published posts as style refs\n├── sprint-driven-development/SKILL.md\n├── repo-triage/SKILL.md              # malware/supply-chain scan for fresh clones\n├── AGENTS.md                         # how to install these as agent skills\n└── README.md                         # the catalog\n\n# format: pure Markdown — no runtime, no deps. Runs on any LLM agent.",
+  "status": "published"
+}

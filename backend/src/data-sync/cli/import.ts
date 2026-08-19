@@ -1,6 +1,8 @@
-// CLI: `npm run import -- <archive.zip> [-- --dry-run] [-- --replace]`
+// CLI: `npm run import -- <archive.zip> [-- --dry-run] [-- --replace] [-- --replace-only <csv>]`
 // Dry-run prints the report with zero writes; a real run backs up payload.db first.
 // --replace: after upserting, delete records absent from the archive (a full archive is required).
+// --replace-only articles,projects: sprint-23 scoped replace — drift-deletion only for the listed
+// collections (each must be in the archive); everything else upserts only.
 
 import fs from 'fs'
 import { getPayload } from 'payload'
@@ -12,18 +14,26 @@ async function run() {
   const args = process.argv.slice(2)
   const dryRun = args.includes('--dry-run')
   const replaceAll = args.includes('--replace')
-  const zipPath = args.find((a) => !a.startsWith('--'))
+  const roIdx = args.indexOf('--replace-only')
+  const replaceCollections = roIdx !== -1
+    ? (args[roIdx + 1] ?? '').split(',').map((s) => s.trim()).filter(Boolean)
+    : undefined
+  const zipPath = args.find((a) => !a.startsWith('--') && a !== args[roIdx + 1])
 
   if (!zipPath) {
-    console.error('Usage: npm run import -- <archive.zip> [-- --dry-run] [-- --replace]')
+    console.error('Usage: npm run import -- <archive.zip> [-- --dry-run] [-- --replace] [-- --replace-only articles,projects]')
     process.exit(1)
   }
 
   const payload = await getPayload({ config })
   const buf = fs.readFileSync(zipPath)
-  const report = await importFromArchive(payload, buf, { dryRun, replaceAll })
+  const report = await importFromArchive(payload, buf, {
+    dryRun,
+    replaceAll,
+    replaceCollections: replaceCollections as import('../types').ContentCollection[] | undefined,
+  })
 
-  const mode = replaceAll ? ' (replace-all)' : ''
+  const mode = replaceAll ? ' (replace-all)' : replaceCollections?.length ? ` (replace-only: ${replaceCollections.join(',')})` : ''
   console.log(`\n${dryRun ? '🔍 DRY RUN (no writes)' : '✅ IMPORT complete'}${mode}`)
   if (report.backupPath) console.log('  backup :', report.backupPath)
   console.log('  created:', JSON.stringify(report.created))

@@ -1,0 +1,22 @@
+name: Publish Project
+
+# Sprint-23: converge the prod `projects` collection 1:1 with git.
+# Every run ships the FULL project set from tools/repo-to-project/content/*/project.json
+# plus the refs manifest, with replaceOnly=projects (drift = deleted).
+# Implementation lives in publish.yml — this is just the dispatch button.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (preview the report, no writes)'
+        type: boolean
+        default: false
+
+jobs:
+  publish:
+    uses: ./.github/workflows/publish.yml
+    with:
+      collection: projects
+      dry_run: ${{ inputs.dry_run }}
+    secrets: inherit

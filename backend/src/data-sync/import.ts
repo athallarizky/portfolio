@@ -37,6 +37,11 @@ export interface ImportOptions {
   backupDir?: string
   /** Sprint-17: after upserting, delete records absent from the archive (requires a full archive). */
   replaceAll?: boolean
+  /** Sprint-23: scoped replace-all — drift-deletion runs ONLY for these collections (each must be
+   *  present in the archive, i.e. the archive carries their full row set). Other collections —
+   *  including refs like tags/technologies — upsert only and are never deleted. Ignored when
+   *  replaceAll is set. */
+  replaceCollections?: ContentCollection[]
 }
 
 // ---- helpers ----
@@ -138,6 +143,28 @@ export function assertFullArchive(present: ReadonlySet<string>): void {
   if (missing.length) {
     throw new ReplaceAllError(
       `replace-all requires a full archive; missing collections: ${missing.join(', ')}`,
+    )
+  }
+}
+
+/** Sprint-23 scoped replace: every named collection must be in the archive — its drift-deletion
+ *  semantics assume the archive carries that collection's FULL row set, so a partial file would
+ *  delete records that are merely absent from the file. Throws ReplaceAllError listing what's
+ *  missing. Also rejects names that aren't content collections. */
+export function assertReplaceCollectionsPresent(
+  want: ContentCollection[],
+  present: ReadonlySet<string>,
+): void {
+  const invalid = want.filter((c) => !CONTENT_COLLECTIONS.includes(c))
+  if (invalid.length) {
+    throw new ReplaceAllError(
+      `replace-only collections must be content collections; unknown: ${invalid.join(', ')}`,
+    )
+  }
+  const missing = want.filter((c) => !present.has(c))
+  if (missing.length) {
+    throw new ReplaceAllError(
+      `replace-only requires these collections in the archive: ${missing.join(', ')}`,
     )
   }
 }
@@ -491,7 +518,11 @@ export async function importFromArchive(
   }
 
   // Replace-all needs the full reference graph — refuse a partial archive before any work.
+  // Scoped replace (sprint-23) needs the target collections' full row sets instead.
   if (opts.replaceAll) assertFullArchive(present)
+  else if (opts.replaceCollections?.length) {
+    assertReplaceCollectionsPresent(opts.replaceCollections, present)
+  }
 
   // Prime the resolver with existing DB records for relation targets not in this archive, so a partial
   // archive (e.g. a projects-only generated import) still resolves relations. No-op for full archives.
@@ -502,9 +533,12 @@ export async function importFromArchive(
   }
 
   const archiveIdentities = new Map<ContentCollection, Set<string>>()
+  const scopedReplace = new Set(opts.replaceAll ? [] : (opts.replaceCollections ?? []))
   for (const collection of planImportOrder(present)) {
     const rows = readJson<Record<string, any>[]>(zip, `${pfx}collections/${collection}.json`)
-    if (opts.replaceAll) archiveIdentities.set(collection, archiveIdentitySet(collection, rows))
+    if (opts.replaceAll || scopedReplace.has(collection)) {
+      archiveIdentities.set(collection, archiveIdentitySet(collection, rows))
+    }
     for (const row of rows) {
       try {
         const outcome = await upsertDoc(payload, collection, row, editorConfig, zip, pfx, resolver, opts.dryRun)
@@ -550,9 +584,11 @@ export async function importFromArchive(
     }
   }
 
-  // Sprint-17: replace-all drift pass — delete records absent from the archive (a full archive was
-  // asserted above). Records still referenced by a surviving row are reported + kept.
-  if (opts.replaceAll) {
+  // Sprint-17 replace-all / sprint-23 scoped replace drift pass — delete records absent from the
+  // archive, for the collections in archiveIdentities (all of them for replaceAll; only the
+  // requested ones for replaceCollections). Records still referenced by a surviving row are
+  // reported + kept.
+  if (opts.replaceAll || opts.replaceCollections?.length) {
     try {
       const refIds = collectReferenced(zip, pfx, resolver)
       await replaceDrift(payload, archiveIdentities, refIds, report, opts.dryRun)

@@ -1,0 +1,38 @@
+[
+  {
+    "uuid": "4b489338-2c2e-4772-a9ff-e72f05479cb7",
+    "name": "AI Agents",
+    "slug": "ai-agents",
+    "icon": "solar:bot"
+  },
+  {
+    "uuid": "fad9d47e-c012-40b1-8baa-badacc35ac09",
+    "name": "Github",
+    "slug": "github",
+    "icon": "simple-icons:github"
+  },
+  {
+    "uuid": "6cbec781-4d0b-43d3-968f-28262f86f937",
+    "name": "Productivity",
+    "slug": "productivity",
+    "icon": "simple-icons:lightning"
+  },
+  {
+    "uuid": "0cebd205-2aaa-42bd-936b-a4ff369539f7",
+    "name": "Tools",
+    "slug": "tools",
+    "icon": "simple-icons:setuptools"
+  },
+  {
+    "uuid": "3c00d719-c27a-4e29-9e65-4b6489d496bd",
+    "name": "JavaScript",
+    "slug": "javascript",
+    "icon": "simple-icons:javascript"
+  },
+  {
+    "uuid": "4b7dc5be-8337-46c9-bf6a-89a6d3b17ab0",
+    "name": "TypeScript",
+    "slug": "typescript",
+    "icon": "simple-icons:typescript"
+  }
+]

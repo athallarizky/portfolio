@@ -37,13 +37,19 @@ backend/portfolio-snapshot-*.zip
 backend/portfolio-projects-*.zip
 backend/payload.test.db*
 
-# repo-to-project tool generated outputs (artifacts; regeneratable from the source repos)
-tools/repo-to-project/content/
+# Content pipeline (sprint-23): git is the source of truth for articles/projects.
+# zips are build artifacts (regeneratable); drafts are private raw notes — both ignored.
+# The import-source rows under content/ ARE tracked.
 tools/repo-to-project/collection/
-
-# article-polish tool generated outputs (artifacts; regeneratable from the source drafts)
-tools/article-polish/content/
 tools/article-polish/collection/
+tools/collection/
+
+# article-polish: ignore everything under content/ except the import source + review artifact
+# (flat per-slug layout, same shape as repo-to-project: content/<slug>/{draft/, article.md, article.json})
+tools/article-polish/content/**
+!tools/article-polish/content/**/
+!tools/article-polish/content/*/article.json
+!tools/article-polish/content/*/article.md
 
 # article-polish samples — keep the folder, ignore contents
 tools/article-polish/samples/*

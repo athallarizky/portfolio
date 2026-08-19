@@ -1,0 +1,71 @@
+name: Publish Content
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Content publish pipeline (sprint-23) — GitHub is the source of truth.
+#
+# Called by publish-article.yml / publish-project.yml. Runs ENTIRELY on the
+# GitHub runner — the VPS only receives an authenticated HTTPS call to its
+# existing /api/data-import endpoint (same path as the admin UI). Nothing
+# executes on the box.
+#
+# Flow:
+#   1. Build the publish zip from git: wrap:publish --articles|--projects
+#      bundles ALL rows of that collection from tools/ + the refs manifest
+#      (tools/content/refs/ — refresh with `npm run refs:export`).
+#   2. scripts/publish-content.mjs logs in with the service account and POSTs
+#      the zip with replaceOnly=<collection> — scoped replace-all: the target
+#      collection converges 1:1 with git (absent rows are deleted); refs
+#      (tags/technologies) upsert only.
+#
+# ⚠️ Contract: articles/projects are authored via the git pipeline
+# (tools/article-polish + tools/repo-to-project → commit). Drafts created
+# directly in the prod admin will be deleted by the next publish.
+#
+# Secrets (GitHub → Settings → Secrets and variables → Actions):
+#   PUBLISH_EMAIL    — Payload service-account email
+#   PUBLISH_PASSWORD — Payload service-account password
+#   PUBLISH_BASE     — optional env override (defaults to https://athallarizky.com)
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  workflow_call:
+    inputs:
+      collection:
+        description: 'Target collection: articles | projects'
+        required: true
+        type: string
+      dry_run:
+        description: 'Preview the report without writing'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Build publish zip from git sources
+        working-directory: backend
+        run: |
+          npm ci
+          npm run wrap:publish -- --${{ inputs.collection }} -- --out ../publish.zip
+
+      - name: Publish via API (scoped replace-all)
+        env:
+          PUBLISH_EMAIL: ${{ secrets.PUBLISH_EMAIL }}
+          PUBLISH_PASSWORD: ${{ secrets.PUBLISH_PASSWORD }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          FLAGS=""
+          [ "$DRY_RUN" = "true" ] && FLAGS="--dry-run"
+          node scripts/publish-content.mjs publish.zip --collection ${{ inputs.collection }} $FLAGS

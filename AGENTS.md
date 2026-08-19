@@ -2,7 +2,7 @@
 
 > **For:** any LLM agent working on this repo in a fresh session.
 > **Read this first**, then the latest sprint record in [`docs/sprint-N/`](docs/)
-> (currently sprint-17 → [`docs/sprint-17/final-report.md`](docs/sprint-17/final-report.md)).
+> (currently sprint-22 → [`docs/sprint-22/final-report.md`](docs/sprint-22/final-report.md)).
 > **Owner:** Atha Thizky — Full-Stack Engineer (backend-leaning · TS/Go/Python · AI tooling).
 
 ---
@@ -34,7 +34,7 @@ motion). Do not introduce a new visual language.
 | Frontend | **Astro 7** (SSR, `@astrojs/node` adapter) + **Svelte 5** islands (`client:visible`) |
 | Styling | One shared `frontend/src/styles/styles.css` — plain CSS, CSS variables for theming |
 | Data | Backend REST via `safeFetch` (`frontend/src/lib/api.ts`); types in `frontend/src/lib/api-types.ts` |
-| Backend | **PayloadCMS 3** — Next.js + SQLite (dev) + Lexical rich text, vanilla TS config |
+| Backend | **PayloadCMS 3** — Next.js + SQLite (dev) + Lexical rich text + media sizes (sharp), vanilla TS config |
 | Icons | `iconify-icon` web component — **Solar** for UI, **simple-icons** for brand logos |
 | Font | **Inter** (Google Fonts) + `ui-monospace` (system) for code/label accents |
 | Design spec | [`DESIGN.md`](DESIGN.md) (notion) — source of truth for the **Home** page only |
@@ -53,7 +53,7 @@ portfolio/
 ├── DESIGN.md                      ← Notion design spec — Home page source of truth (sprint-10)
 ├── docs/
 │   ├── GUIDE.md                   ← the phased AI workflow (plan → build → verify → report)
-│   └── sprint-1..11/              ← sprint records (plan, tasks, reports, final-report)
+│   └── sprint-1..22/              ← sprint records (plan, tasks, reports, final-report)
 ├── frontend/                      ← Astro 7 + Svelte 5 SSR app
 │   ├── astro.config.mjs           ← node adapter, SSR
 │   ├── src/
@@ -62,17 +62,21 @@ portfolio/
 │   │   ├── layouts/BaseLayout.astro   ← app shell (sidebar + header + .content-scroll)
 │   │   ├── components/home/       ← Svelte islands: TypedRole, CountUpStats, SpotlightEffect,
 │   │   │                            LiveClock, MagneticButton, Reveal, GlowGrid
-│   │   ├── lib/                   ← api.ts (safeFetch), api-types.ts, render-lexical.ts, actions/glow.ts
+│   │   ├── lib/                   ← api.ts (safeFetch), env.ts (isDev/API_ORIGIN), api-types.ts,
+│   │   │                            render-lexical.ts, actions/glow.ts
 │   │   ├── styles/styles.css      ← single stylesheet (theme tokens + components + home `--n-*` layer)
 │   │   └── data/                  ← legacy per-collection TS (home.ts removed sprint-10)
 │   └── package.json               ← dev/build/preview (astro)
 ├── backend/                       ← PayloadCMS 3
 │   ├── src/payload.config.ts      ← collections, globals, cors, sqlite adapter
 │   ├── src/collections/           ← Users, DocumentCategories, Documents, Tags, Authors,
-│   │                                Articles, Technologies, Projects, SocialProfiles
+│   │                                Articles, Technologies, Projects, SocialProfiles, Media
 │   ├── src/globals/               ← SiteConfig, Home, Nav
 │   ├── src/seed.ts                ← npm run seed — seeds all (per-phase scripts: seed:projects, …)
+│   ├── src/data-sync/             ← export/import/snapshot/merge engine (sprint-14..17)
 │   └── payload.db                 ← SQLite (gitignored)
+├── tools/                         ← repo-to-project, article-polish (SKILLS.md-driven)
+├── scripts/                       ← deploy.sh + VPS setup helpers
 └── temp/blinko/                   ← reference clone — DESIGN SOURCE ONLY, do not ship
 ```
 
@@ -189,6 +193,14 @@ npm run import -- ../tools/repo-to-project/collection/<...>.zip -- --dry-run   #
 ```
 Detail: [`docs/sprint-16/final-report.md`](docs/sprint-16/final-report.md).
 
+### Polish an article from Markdown (sprint-21)
+`tools/article-polish/` turns a raw Markdown draft into a published-quality Lexical
+article. In Claude Code: *"follow `tools/article-polish/SKILLS.md`, input: path/to/article.md"* —
+stages under `content/<slug>/draft → polished → formatted`, then `npm run wrap:articles`
+zips it for a dry-run import. Author must exist (resolved by `authors.name`); tags must
+exist (by slug); no media handling — add featured/inline images in admin after import.
+Detail: [`docs/sprint-21/final-report.md`](docs/sprint-21/final-report.md).
+
 ### Theme
 Toggle via the sidebar button; persisted in `localStorage['portfolio-theme']`;
 `.dark` on `<html>` switches all tokens (both `--*` and `--n-*`).
@@ -212,8 +224,13 @@ Toggle via the sidebar button; persisted in `localStorage['portfolio-theme']`;
 | 15 | **Content UUID identity & merge** — stable content-level `uuid` per record (rename-safe; replaces natural-key identity; `beforeChange` hook) + a merge tool (CLI + admin UI + `/api/data-merge`) that repoints all incoming relations and deletes the loser. `npm run backfill:uuid` + `npm run merge`. v1 archives still import. ([final-report](docs/sprint-15/final-report.md)) |
 | 16 | **Repo → Portfolio Project tool** — `tools/repo-to-project/` (manually-invoked skill) reads a local git repo and emits an importable `projects` entry (`.json` + `.md`); `npm run wrap:projects` zips it; import priming lets a projects-only archive resolve `techTags`. Idempotent re-gen (update in place, preserves manual polish). ([final-report](docs/sprint-16/final-report.md)) |
 | 17 | **Data-sync round-trip: filenames + insert-one + replace-all** — human-friendly `YYYY-MM-DD-HH-MM` zip names; insert one project from JSON on `/admin/collections/projects` (`/api/data-insert-one`, idempotent upsert-by-uuid); full-archive **replace-all** (Merge/Replace-all radio on the import card; `--replace`; deletes drift absent from the archive; `referencedIds` safety guard + backup + preview-first + confirm). ([final-report](docs/sprint-17/final-report.md)) |
+| 18 | **Docs-only wrap-up** — media-cleanup backlog item invalidated by code audit (Payload 3 `deleteAssociatedFiles` → orphaned files impossible via normal paths); replace-all observed in prod, no issues. ([final-report](docs/sprint-18/final-report.md)) |
+| 19 | **Media library** — new `media` upload collection (thumbnail/card/hero sizes via sharp, `alt`/`caption`), upload fields wired into Authors (`avatar`), Projects (`bannerImage`, `screenshots` hasMany), Articles (`featuredImage`), SiteConfig; frontend renders images with gradient+icon fallback. ([final-report](docs/sprint-19/final-report.md)) |
+| 20 | **Logic + UI bug fixes** — `lib/env.ts` single source of truth (`isDev`/`API_ORIGIN`, `MODE` not `DEV`); safeFetch bracket-encoding fix; showItems restore; hero restructure (fixed avatar, location chip, WebGL aurora background); sidebar reorder. 2 RCAs. ([final-report](docs/sprint-20/final-report.md)) |
+| 21 | **Article-polish tool** — `tools/article-polish/` (SKILLS.md 6-step workflow: Markdown draft → AI polish → Lexical JSON → wrap → dry-run import); article upload fix (`depth=1` → `depth=2`); InsertArticleFromJson admin UI + `wrap:articles` CLI. ([final-report](docs/sprint-21/final-report.md)) |
+| 22 | **First real content publish** — the first article (*How to Learn New Things in the AI Era*, casual BI, first `samples/` style anchor) + the `ai-guided-learning` playbook as a project entry, cross-linked, in one combined content zip (tags + technologies + article + project); link-node renderer 500 fixed (`render-lexical.ts` recurses, `link` case added — [RCA](docs/sprint-22/rca/2026-08-19-lexical-link-node-500.md)). Prod apply = owner via admin (**no direct VPS access** — agent prepares + verifies locally). ([final-report](docs/sprint-22/final-report.md)) |
 
-Latest detail: [`docs/sprint-17/final-report.md`](docs/sprint-17/final-report.md).
+Latest detail: [`docs/sprint-22/final-report.md`](docs/sprint-22/final-report.md).
 
 ---
 

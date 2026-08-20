@@ -1,0 +1,14 @@
+{
+  "uuid": "c1f845d1-f657-4729-a831-5bcf9185c181",
+  "title": "Multiple Claude Profile Setup",
+  "slug": "multiple-claude-profile",
+  "excerpt": "If you code with Claude Code and juggle more than one profile or provider, keep each profile’s config separate — every profile gets its own environment, and multiple instances run without clashing.",
+  "tags": [
+    "ai"
+  ],
+  "author": "Athalla Rizky",
+  "publishedAt": "2026-08-20",
+  "readMinutes": 1,
+  "body": "## Why split configs\n\nIf you use Claude Code with more than one profile or provider, it's much nicer to keep each profile's config separate. Every profile gets its own environment, and you can run multiple instances at once without them stepping on each other.\n\n## The setup\n\nIt's one small shell function — drop it into `.zshrc` or `.bashrc`:\n\n```bash\n# Setup separated configuration for claude code\n_claude_with_profile() {\n  export CLAUDE_CONFIG_DIR=\"$1\"\n  command claude \"${@:2}\"\n}\n\n# Personal profile (default)\nclaude() {\n  _claude_with_profile \"$HOME/.claude\" \"$@\"\n}\n\n# Second profile (zai)\nzai-claude() {\n  _claude_with_profile \"$HOME/.zai-claude\" --dangerously-skip-permissions \"$@\"\n}\n```\n\nFrom there, create each config directory under `$HOME` and adjust its `settings.json` for the provider it uses.\n\n## What you get\n\nEverything stays tidy: switching context is trivial, and running several sessions side by side with different configs just works. It fits whether you're on a personal account, another provider, or a dedicated agent setup.\n\nTo start a session, just run: `claude`, `zai-claude`, `agentrouter-claude`.",
+  "status": "published"
+}

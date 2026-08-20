@@ -1,5 +1,51 @@
 [
   {
+    "uuid": "032224cf-acb1-45e6-8652-92f1f428384f",
+    "name": "Chroma",
+    "slug": "chroma"
+  },
+  {
+    "uuid": "3cb73346-3253-4424-b6fe-2d06f16995b1",
+    "name": "Go",
+    "slug": "go",
+    "icon": "simple-icons:go"
+  },
+  {
+    "uuid": "a6ee835f-0777-4a10-913c-a117d86da721",
+    "name": "TailwindCSS",
+    "slug": "tailwindcss",
+    "icon": "simple-icons:tailwindcss"
+  },
+  {
+    "uuid": "e6a42e64-6bdd-4ae3-a957-961f17ea2be0",
+    "name": "OpenAI",
+    "slug": "openai",
+    "icon": "simple-icons:openai"
+  },
+  {
+    "uuid": "a2e8354c-8687-4c0d-a43d-e4c31af791e9",
+    "name": "RAG",
+    "slug": "rag"
+  },
+  {
+    "uuid": "cdd2f02a-058f-40e9-8e2a-23c6b13ce1c9",
+    "name": "React",
+    "slug": "react",
+    "icon": "simple-icons:react"
+  },
+  {
+    "uuid": "f22d57a9-b615-4184-8fca-83820e1be1af",
+    "name": "Docker",
+    "slug": "docker",
+    "icon": "simple-icons:docker"
+  },
+  {
+    "uuid": "e1ff072e-185d-4d44-8cef-94ff95a3e1ed",
+    "name": "FastAPI",
+    "slug": "fastapi",
+    "icon": "simple-icons:fastapi"
+  },
+  {
     "uuid": "fad9d47e-c012-40b1-8baa-badacc35ac09",
     "name": "Github",
     "slug": "github",

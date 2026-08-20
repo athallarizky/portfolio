@@ -31,6 +31,10 @@ The user should also specify:
 - **author name** (e.g. `"Athalla Rizky"`) — must match an existing `authors` record by name.
 - **publishedAt** — ISO date. Default: today.
 - **tags** — comma-separated tag names. If not specified, detect from content.
+- **language & tone** — default: **English, professional but casual** — clear, direct,
+  conversational; no corporate stiffness, no slang overload. If the raw draft is in another
+  language, **translate while polishing** unless the owner says otherwise. Keep technical
+  terms as-is.
 
 ---
 

@@ -101,4 +101,20 @@ Phase 0 (✅) ──┬──► Phase 1 (✅ git sources + refs)
 | 2 — Engine + CLI | 5 | 2.5h | ✅ |
 | 3 — Workflows | 4 | 2.5h | ✅ |
 | 4 — Verify + docs | 4 | 1.5h | ✅ |
-| **Total** | **21** | **~8h** | |
+| 5 — English polish policy (addendum) | 4 | 0.5h | ✅ |
+| **Total** | **25** | **~8.5h** | |
+
+---
+
+## Phase 5 — English polish policy (addendum, same session)
+
+> Owner decision post-delivery: article output language becomes **English — professional but casual**.
+
+| ID  | Task | Difficulty | Dependencies | Status |
+|-----|------|------------|--------------|--------|
+| 5.1 | SKILLS.md: language & tone policy (default English, professional-casual; translate non-EN drafts while polishing) | Easy | — | ✅ |
+| 5.2 | Re-polish `how-to-learn-new-things-in-ai-era` in English (same uuid → update in place); 552 words, 3 min | Medium | 5.1 | ✅ |
+| 5.3 | Refresh `samples/` style anchor with the English version | Easy | 5.2 | ✅ |
+| 5.4 | wrap:publish → `import --replace-only articles` → `updated: {articles:1}`, 0 errors; API + page render verified | Easy | 5.2 | ✅ |
+
+> Prod impact: none yet — the first owner dispatch will carry the English version (nothing BI ever landed on prod).

@@ -92,7 +92,15 @@ PUBLISH_PASSWORD='<strong password>' npm run publish:account -- --email publish@
 - Backlog: `article-polish` as invocable skill · SKILLS.md Markdown-body note · renderer `console.warn` on unknown nodes · `slack-rag` prod entry goes live with the first Publish Project run.
 - Gotcha to remember: publish zips are gitignored build artifacts — the pipeline builds them fresh each run; never hand-edit a zip.
 
-## 9. Sprint stats
+## 9. Addendum — English polish policy (same session, post-delivery)
+
+Owner decision: article output language is now **English — professional but casual** (was casual Bahasa Indonesia).
+`article-polish` SKILLS.md carries the policy (translate non-English drafts while polishing); the sprint-22 article
+was re-polished in English (same uuid → updated in place), the `samples/` style anchor now reflects the English
+tone, and the local DB was re-converged via `import --replace-only articles` (`updated`, 0 errors). No prod impact —
+nothing had landed yet, so the first dispatch ships the English version.
+
+## 10. Sprint stats
 
 - 21 tasks, 5 phases · 4 phase reports · 76/76 tests green · 2 builds clean
 - New: 3 CLIs, 1 engine option, 1 runner script, 3 workflows, refs manifest · git surface: content JSONs/MDs now tracked

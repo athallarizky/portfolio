@@ -81,8 +81,8 @@ PUBLISH_PASSWORD='<strong password>' npm run publish:account -- --email publish@
 1. **Deploy first** (the sprint-22 renderer fix must be live before the article lands): push → Actions → "Deploy to VPS".
 2. Create the service account on **prod**: SSH-free option — run locally against prod is NOT possible; do it in the prod admin (`/admin` → Users → Add) with a strong password. (Or one-off: `cd backend && PUBLISH_PASSWORD=… npm run publish:account` on the VPS.)
 3. GitHub → Settings → Secrets → Actions: add `PUBLISH_EMAIL` + `PUBLISH_PASSWORD`.
-4. Actions → **Publish Article** → Run workflow with **dry_run ✓** → expect `created: {articles:1, tags:3}`, 0 errors.
-5. Run again with dry_run ✗ (real). Then **Publish Project** (dry-run → real) → expect `created: {projects:2}` (ai-guided-learning + slack-rag) on prod.
+4. Actions → **Publish Article** → Run workflow with **dry_run ✓** → expect `created: {articles:1, tags:3}`, 0 errors. *(verified live 2026-08-20 — exact match)*
+5. Run again with dry_run ✗ (real). Then **Publish Project** (dry-run → real) → expect `created: {projects:1}` (slack-rag — the `ai-guided-learning` entry was removed by owner decision before first publish: it belongs to an article, not a project; refs trimmed back to 5 technologies).
 6. Spot-check prod `/blogs` + `/projects` (light/dark/mobile), then polish images in admin (featuredImage/banner).
 
 ## 8. Sprint-24 handoff
@@ -92,7 +92,15 @@ PUBLISH_PASSWORD='<strong password>' npm run publish:account -- --email publish@
 - Backlog: `article-polish` as invocable skill · SKILLS.md Markdown-body note · renderer `console.warn` on unknown nodes · `slack-rag` prod entry goes live with the first Publish Project run.
 - Gotcha to remember: publish zips are gitignored build artifacts — the pipeline builds them fresh each run; never hand-edit a zip.
 
-## 9. Addendum — English polish policy (same session, post-delivery)
+## 9. Addendum — English polish policy + ai-guided-learning descoped (same session)
+
+Two owner decisions post-delivery: (1) article output language is now **English — professional but casual**
+(`article-polish` SKILLS.md carries the policy; the sprint-22 article was re-polished, same uuid, and the
+`samples/` anchor refreshed). (2) The `ai-guided-learning` **project** entry was removed — the topic belongs
+to an article, not a project. The entry was deleted from git, the article's cross-link now points at the
+GitHub repo, the `ai-agents` technology was dropped (it existed only for that entry; refs back to 5), and the
+local DB re-converged — `import --replace-only projects` deleted the drift row live (`deleted: {projects:1}`).
+No prod impact: nothing had landed yet.
 
 Owner decision: article output language is now **English — professional but casual** (was casual Bahasa Indonesia).
 `article-polish` SKILLS.md carries the policy (translate non-English drafts while polishing); the sprint-22 article

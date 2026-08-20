@@ -1,11 +1,5 @@
 [
   {
-    "uuid": "4b489338-2c2e-4772-a9ff-e72f05479cb7",
-    "name": "AI Agents",
-    "slug": "ai-agents",
-    "icon": "solar:bot"
-  },
-  {
     "uuid": "fad9d47e-c012-40b1-8baa-badacc35ac09",
     "name": "Github",
     "slug": "github",

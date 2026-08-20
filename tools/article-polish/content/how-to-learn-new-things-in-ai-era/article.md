@@ -60,7 +60,7 @@ It all comes down to two things: **memorize** and **understand**. Not "done buil
 
 This way you don't lose the essence of coding. You still write, read, and understand the code line by line — instead of having it all generated for you. As a bonus, your muscle memory for writing code stays intact.
 
-This workflow is now packaged as a playbook you can point any agent at: the [AI-Guided Learning Playbook](/projects/ai-guided-learning). Point your agent to it, name the technology and the project you want to learn, and the rest runs itself.
+This workflow is now packaged as a playbook you can point any agent at: the [AI-Guided Learning Playbook](https://github.com/athallarizky/agent-playbooks). Point your agent to it, name the technology and the project you want to learn, and the rest runs itself.
 
 ---
 

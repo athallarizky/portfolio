@@ -1,28 +1,34 @@
 # repo-to-project
 
-Generate a portfolio **project** entry from a local git repo. Reads the repo (README, manifests, git
-remote, file tree) and produces a portable `.json` (importable via data-sync) + a human-readable `.md`.
+Generate a portfolio **project** entry from a local git repo, a raw draft, or both. Reads the repo
+(README, manifests, git remote, file tree) and/or polishes your draft, and produces a portable
+`.json` (importable via data-sync) + a human-readable `.md`.
 
 ## Invoke (manual)
 
-In Claude Code, point at this procedure and give a repo path:
+In Claude Code, point at this procedure and give a repo path and/or a draft:
 
 > *follow `tools/repo-to-project/SKILLS.md`, repo: ~/development/foo*
+> *follow `tools/repo-to-project/SKILLS.md`, draft: ~/notes/my-project.md, repo: ~/development/foo*
 
-Claude reads `SKILLS.md`, scans the repo, and writes:
+When both are given, the **draft owns the narrative** (title/excerpt/body — polished, English
+professional-casual) and the **repo owns the metadata** (year, links, architecture, tech verification).
+
+Claude reads `SKILLS.md`, scans the sources, and writes:
 
 ```
 tools/repo-to-project/
-├── content/<slug>/project.json   # v2 archive row (importable)
-├── content/<slug>/project.md     # human-readable sheet
-└── collection/<date>-<slug>.zip  # importable zip (dated, collision-safe)
+├── content/<slug>/draft/          # raw draft snapshot (gitignored; only when a draft was given)
+├── content/<slug>/project.json    # v2 archive row (importable)
+├── content/<slug>/project.md      # human-readable sheet
+└── collection/<date>-<slug>.zip   # importable zip (dated, collision-safe)
 ```
 
 Then previews the import (dry-run). You apply it with `npm run import -- <zip>` (drop `--dry-run`).
 
 ## What it fills vs leaves blank
 
-**Fills** (from the repo): `title, slug, year, excerpt, descriptor, techTags, links, body, architecture, status, uuid`.
+**Fills** (from the draft and/or repo): `title, slug, year, excerpt, descriptor, techTags, links, body, architecture, status, uuid`.
 **Omits** (you polish in the admin): `bannerColor, bannerIcon, features, screenshots, seo, order, showOnHome`.
 
 Re-running on a repo that's already a project **updates it in place** (reuses its uuid) and **preserves
@@ -35,7 +41,8 @@ as `technologies` in the admin, or map manually.
 
 ## Requirements
 
-- The repo is a local git repo (for remote/year/file-tree).
+- At least one input: a local git repo (for remote/year/file-tree) and/or a Markdown draft.
+  Draft-only runs ask you for the `year` (required) and omit `links`/`architecture` unless known.
 - The backend runs for the dry-run import + the tech-slug/uuid DB lookups: `cd backend && npm run dev`.
 - Import happens via data-sync (`npm run import`); the generated `.json` is also the input format for the
   future CMS one-by-one insert (sprint-17).

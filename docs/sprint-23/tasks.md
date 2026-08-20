@@ -75,7 +75,7 @@ login ✓ → articles dry-run ✓ → articles REAL ✓ (backup + 0 errors) →
 | 4.1 | Local E2E via REST (proves login/multipart/replaceOnly plumbing) | Medium | 3.3 | ✅ |
 | 4.2 | YAML sanity ✓ · backend `npm test` 76/76 ✓ · backend build ✓ (frontend untouched this sprint) | Easy | 4.1 | ✅ |
 | 4.3 | Phase reports + final-report + AGENTS.md sprint row + README pipeline section | Easy | 4.2 | ✅ |
-| 4.4 | **Owner:** create prod service account + GitHub secrets → first dispatch (dry-run, then real — doubles as the sprint-22 content apply + slack-rag publish) | Easy | 3.4 | ⬜ owner |
+| 4.4 | **Owner:** create prod service account + GitHub secrets → first dispatch (dry-run, then real — doubles as the sprint-22 content apply + slack-rag publish) | Easy | 3.4 | ✅ 2026-08-20 |
 
 ---
 

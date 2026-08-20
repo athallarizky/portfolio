@@ -1,6 +1,6 @@
 # Sprint-23 Final Report — Content Publish Pipeline (GitHub → prod)
 
-> Status: ✅ Delivered locally — first prod dispatch pending owner | 2026-08-19
+> Status: ✅ Delivered + live in production (first dispatch complete 2026-08-20) | 2026-08-19
 > Audience: sprint-24 context + owner review. Read this + [`../../AGENTS.md`](../../AGENTS.md).
 > Companion: [`plan.md`](./plan.md) · [`tasks.md`](./tasks.md) · reports in [`reports/`](./reports/)
 
@@ -61,8 +61,8 @@
 - [x] Backend `npm run build` clean · workflow YAML parsed clean · frontend untouched
 - [x] Local E2E over REST (exact runner path): login ✓ · articles dry-run ✓ · articles real ✓ (+backup, 0 errors) · projects dry-run ✓
 - [x] Deletion path proven live: junk `test123` article deleted by `--replace-only articles`; tags untouched
-- [x] Local DB now 1:1 with git: articles = 1 (`how-to-learn-…`), projects = 5 (slack-rag created from git)
-- [ ] **Owner:** first prod dispatch (below)
+- [x] Local DB now 1:1 with git: articles = 1 (`how-to-learn-…`), projects = 4 (slack-rag from git; ai-guided-learning descoped)
+- [x] **Owner first dispatch — done 2026-08-20:** deploy → Publish Article (dry ✓ / real ✓: created 3 tags + 1 EN article) → Publish Project (dry ✓ / real ✓: created slack-rag). Prod verified 1:1: articles 1, projects 4, techs 5, detail page renders with links (renderer fix live).
 
 ## 6. How to run
 

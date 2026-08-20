@@ -255,9 +255,10 @@ The destructive "archive = single source of truth" mode is **sprint-17** — not
 
 - **No README** → derive title from the draft / dir name / manifest; write a short generic excerpt; flag it for the owner.
 - **No git remote** → omit `links`.
-- **Draft-only (no repo)** → no git/manifest to mine: `year` → **ask the owner** (required); `links` →
-  omit unless the draft carries a URL; `architecture` → omit unless the draft implies one. Flag all
-  three in the handoff (step 6).
+- **Draft-only (no repo)** → **ask the owner for the repo first** (local path or GitHub URL) — owner
+  rule 2026-08-20; only proceed draft-only if there really is no repo. With no git/manifest to mine:
+  `year` → **ask the owner** (required); `links` → omit unless the draft carries a URL;
+  `architecture` → omit unless the draft implies one. Flag all three in the handoff (step 6).
 - **Both draft + repo** → the draft owns the narrative — don't let README wording override it. The repo
   only fills metadata (year, links, architecture, tech verification).
 - **Year unknown** (no git, no manifest) → **stop and ask** (the field is required).

@@ -4,8 +4,8 @@
 
 An end-to-end AI + RAG system for finding kos (Indonesian boarding houses): classifies POI vs area queries, scrapes listings by postal code, and recommends via semantic search plus an LLM.
 
-**Tech:** go, javascript, rag, chroma
-**Source:** —
+**Tech:** go, fastapi, docker, typescript, rag, chroma, openai
+**Source:** https://github.com/athallarizky/rent-house-ai
 
 ## Overview
 
@@ -25,7 +25,17 @@ I recently built an end-to-end AI + RAG system for finding kos — Indonesian bo
 - The better the model, the better the results, and the heavier the compute. This project tried two: bge-m3 and e5-small-embedding.
 - The scraper is written in Go, whose goroutines let it run several tasks at once — the three query variants ("kos", "kosan", "kost") for one postal code execute in parallel instead of sequentially.
 
----
+## Architecture
 
-> **Draft-only run:** no repo attached — `links` and `architecture` omitted.
-> `year` inferred as 2026 from the draft ("kemarin"). Fix the JSON if that's off.
+```
+rent-house-ai/
+├── api/                              # FastAPI — auth, search, orchestrator, POI
+├── services/
+│   ├── scraper/google-maps-scraper/  # Go — postal-code + POI scraping (goroutines)
+│   ├── data-processor/               # parse, normalize, dedup, enrich pipeline
+│   ├── rag-engine/                   # chromadb + sentence-transformers + openai
+│   └── geo-router/                   # TypeScript — classify POI vs area, expand postal codes
+├── docs/                             # sprint reports + RCAs
+├── docker-compose.yml
+└── Dockerfile.{api,geo,web}
+```

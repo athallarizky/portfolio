@@ -1,15 +1,17 @@
-# repo-to-project — generate a portfolio project from a local repo
+# repo-to-project — generate a portfolio project from a repo, a draft, or both
 
 > **Manually invoked.** When the user says something like
-> *"follow `tools/repo-to-project/SKILLS.md`, repo: ~/development/foo"* — run this procedure end-to-end.
-> You are generating a portfolio `projects` entry from a local git repo.
+> *"follow `tools/repo-to-project/SKILLS.md`, repo: ~/development/foo"* or
+> *"follow `tools/repo-to-project/SKILLS.md`, draft: ~/notes/my-project.md"* — run this procedure end-to-end.
+> You are generating a portfolio `projects` entry from a local git repo and/or a raw draft.
 
 ## What this produces
 
-For the given repo, write three things under `tools/repo-to-project/`:
+For the given input, write under `tools/repo-to-project/`:
 
 | Path | Purpose |
 |---|---|
+| `content/<slug>/draft/<original>.md` | the raw, unmodified draft you started with (gitignored) — **only when a draft was given** |
 | `content/<slug>/project.json` | a **v2 archive row** — importable via data-sync |
 | `content/<slug>/project.md` | a human-readable rendering (for the owner to review) |
 | `collection/<YYYY-MM-DD-HH-MM>-<slug>.zip` | the **importable zip** (dated history; collision-safe) — **full mode only** |
@@ -22,10 +24,20 @@ All paths are relative to the **repo root** (`portfolio/`). Run backend CLI step
 
 ## Inputs
 
-- `<repo>` — absolute path to a local git repo (required). Everything else is derived.
+- `<draft.md>` — path to a Markdown draft (**optional**). The owner's raw write-up of the project.
+  When present, it is the **primary source** for `title`, `excerpt`, and `body` — you **polish** it
+  (restructure, tighten, fix grammar), never copy it verbatim.
+- `<repo>` — absolute path to a local git repo (**optional but recommended**). Supplies the metadata
+  a draft can't: `year`, `links`, `techTags`, `architecture`.
+- At least **one** of `<draft.md>` / `<repo>` must be given. **Precedence when both are:**
+  draft wins for narrative (`title`/`excerpt`/`body`), repo wins for metadata (`year`/`links`/
+  `architecture`/`techTags` — techs named in the draft are verified against the repo's manifests).
 - `<mode>` — **ask the user first** (unless they already specified). Two modes:
   - **content-only** — write `project.json` + `project.md` only. No backend, no zip, no dry-run. Use this when the owner just wants the copy fast (iterate on excerpt/body, apply later).
   - **full** (default if unclear) — also wrap the importable zip (step 4) and dry-run import against the backend (step 5) to verify it lands cleanly.
+- **language & tone** — same policy as `article-polish`: **English, professional but casual** — clear,
+  direct, conversational. If the draft is in another language, **translate while polishing** unless the
+  owner says otherwise. Keep technical terms as-is.
 
 ---
 
@@ -35,7 +47,8 @@ All paths are relative to the **repo root** (`portfolio/`). Run backend CLI step
 
 ### Step 0 — Resolve identity + snapshot existing polish (idempotency)
 
-1. `slug` ← slugify the repo's directory name: `basename` → lowercase → `replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')`.
+1. `slug` ← slugify the repo's directory name (`basename`), or — draft-only — the project title / draft
+   filename: lowercase → `replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')`.
 2. Find an **existing** project with this slug, in this order:
    - `tools/repo-to-project/content/<slug>/project.json` (a prior run) → reuse its `uuid`; remember its
      cosmetic fields (`bannerColor, bannerIcon, features, screenshots, seo, order, showOnHome`).
@@ -45,9 +58,14 @@ All paths are relative to the **repo root** (`portfolio/`). Run backend CLI step
 3. **If an existing project was found → this run is an UPDATE.** You will **omit** the cosmetic fields
    (step 3) so the import preserves the owner's manual polish. (See *Merge semantics* below.)
 
-### Step 1 — Read the repo
+### Step 1 — Read the sources
 
-Run these (substitute `<repo>`):
+**If a draft was given:** first snapshot it — copy the file, unmodified, to
+`content/<slug>/draft/<original>.md` (gitignored). Then read it in full. It anchors the narrative:
+what the project does, why it exists, how it works — and **its leading H1 (`# …`), when present,
+is the title** (verbatim — see the Extract rules below).
+
+**If a repo was given:** run these (substitute `<repo>`):
 
 ```bash
 # Title + description
@@ -71,19 +89,23 @@ git -C <repo> ls-files 2>/dev/null | head -60
 ```
 
 Extract:
-- **title** — README H1, else `package.json` `name` humanized, else the dir name Title-Cased.
-- **excerpt** — one sentence: the README's first paragraph / tagline. Author it crisp (don't copy-paste a wall).
+- **title** — if the draft opens with an H1 (`# …`), that heading **is the title** — carried verbatim
+  (strip the leading `# `), never re-authored, and excluded from the body. Else README H1, else
+  `package.json` `name` humanized, else the dir name Title-Cased.
+- **excerpt** — one sentence, authored crisp (don't copy-paste a wall): the draft's thesis when given, else the README's first paragraph / tagline.
 - **year** — year of the first commit; fallback `package.json`; if unknown, **stop and ask the owner** (the field is required).
 - **links** — `[{ label: "Source", icon: "mdi:github", url: <origin> }]`. Normalize `git@github.com:u/r.git` → `https://github.com/u/r`. If no remote → omit `links`.
 - **architecture** — a depth-limited ASCII tree (top 2–3 levels, ~15–25 lines) built from `ls-files`. Collapse deep/irrelevant dirs (`node_modules`, `dist`, `.git`, `vendor`, lockfiles). End with `…` if truncated.
 
 ### Step 2 — Map technologies → slugs
 
-Detect tech from the manifests + README, then map to **slugs** via the table below. Detection hints:
+Detect tech from the manifests + README + draft narrative, then map to **slugs** via the table below. Detection hints:
 `package.json` deps (`react`, `next`, `@prisma/client`, `@trpc/server`, `express`, `ioredis`/`redis`,
 `vite`, `tailwindcss`, `typescript`, `@tauri-apps/*`, `mobx`, `openai`); `go.mod` (`spf13/cobra`→cobra,
 go itself); `Cargo.toml` (`wasm-bindgen`→wasm); `pyproject`/`requirements` (`fastapi`, `pgvector`→postgres,
 `openai`); a `Dockerfile`/`docker-compose.yml`→docker. README keyword matches (RAG, SSE, Edge, HNSW, S3).
+Techs named in a draft: **confirmed** in draft-only runs (the owner wrote them); when a repo is also
+given, verify them against the manifests before including.
 
 **Collect anything that looks like a tech but doesn't map → report it (step 6); do not put unmatched
 slugs in `techTags`.**
@@ -177,12 +199,12 @@ Tell the owner, in plain language:
 | `title` | fill | README / manifest |
 | `slug` | fill | step 0 |
 | `year` | fill (required — ask if unknown) | git first commit |
-| `excerpt` | fill (1 sentence) | README |
+| `excerpt` | fill (1 sentence) | draft / README |
 | `descriptor` | fill (infer) | signals |
 | `techTags` | fill (slugs only) | step 2 |
 | `links` | fill (Source) | git remote |
-| `body` | fill (Markdown) | README |
-| `architecture` | fill (ASCII tree) | `ls-files` |
+| `body` | fill (Markdown) | draft (polished) / README |
+| `architecture` | fill (ASCII tree) | `ls-files` — draft-only: omit unless the draft implies one |
 | `status` | fill `"published"` | default |
 | `bannerColor`, `bannerIcon` | **OMIT** | owner polishes in admin |
 | `features`, `screenshots` | **OMIT** | owner polishes in admin |
@@ -231,8 +253,13 @@ The destructive "archive = single source of truth" mode is **sprint-17** — not
 
 ## Edge cases
 
-- **No README** → derive title from the dir name / manifest; write a short generic excerpt; flag it for the owner.
+- **No README** → derive title from the draft / dir name / manifest; write a short generic excerpt; flag it for the owner.
 - **No git remote** → omit `links`.
+- **Draft-only (no repo)** → no git/manifest to mine: `year` → **ask the owner** (required); `links` →
+  omit unless the draft carries a URL; `architecture` → omit unless the draft implies one. Flag all
+  three in the handoff (step 6).
+- **Both draft + repo** → the draft owns the narrative — don't let README wording override it. The repo
+  only fills metadata (year, links, architecture, tech verification).
 - **Year unknown** (no git, no manifest) → **stop and ask** (the field is required).
 - **Slug collision with an unrelated existing project** → the import would *update* that project. If the
   repo is genuinely different, ask the owner for a distinct slug before generating.

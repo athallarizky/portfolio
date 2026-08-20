@@ -44,7 +44,7 @@ The user should also specify:
 
 ### Step 0 — Resolve identity + snapshot existing polish (idempotency)
 
-1. `slug` ← slugify from the article title or input filename: lowercase → `replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')`.
+1. `slug` ← slugify from the article title (draft H1 if present) or input filename: lowercase → `replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')`.
 2. Find an **existing** article with this slug, in this order:
    - `tools/article-polish/content/<slug>/article.json` (a prior run) → reuse its `uuid`; remember its cosmetic fields.
    - else, if the backend is reachable: `curl -s 'http://localhost:3000/api/articles?where[slug][equals]=<slug>&depth=0'` → if `totalDocs>0`, reuse `docs[0].uuid`.
@@ -54,15 +54,18 @@ The user should also specify:
 ### Step 1 — Read input + style reference
 
 1. Read the user's Markdown file — the full content. Copy it to `content/<slug>/draft/`, preserving its original filename.
-2. Read all Markdown files in `tools/article-polish/samples/` (`.md` files). These are the owner's published articles used as **style reference**.
-3. From each sample article, analyze:
+2. **Title rule:** if the draft opens with an H1 (`# …`), that heading **is the title** — carry it over
+   verbatim (strip the leading `# `), don't re-author it, and don't repeat it inside the body. Only when
+   there is no leading H1 does the AI author a title (or derive one from the filename — see *Edge cases*).
+3. Read all Markdown files in `tools/article-polish/samples/` (`.md` files). These are the owner's published articles used as **style reference**.
+4. From each sample article, analyze:
    - **Average sentence/paragraph length**
    - **Heading structure** — h2 vs h3 frequency, section depth
    - **Tone/mood** — formal vs conversational, use of "I"/"we"/"you"
    - **List usage** — bullet vs numbered, how items are introduced
    - **Code blocks** — how often, language annotations, inline vs block
    - **Paragraph breaks** — typical spacing between sections
-4. Synthesize 3-5 clear "style rules" to pass to the AI.
+5. Synthesize 3-5 clear "style rules" to pass to the AI.
 
 ### Step 2 — AI polish + Lexical conversion
 
@@ -72,7 +75,8 @@ Generate the polished article body in **Lexical rich text JSON** format. Prompt 
 - The style rules extracted from samples
 - The Lexical node specification below
 
-Also ask the AI to generate: **title**, **excerpt** (1–2 sentences), and **tags** (as existing slugs).
+Also ask the AI to generate: **excerpt** (1–2 sentences) and **tags** (as existing slugs). The **title**
+comes from step 1's title rule (draft H1 verbatim) — the AI only authors one when the draft has no leading H1.
 
 **Lexical node specification:**
 

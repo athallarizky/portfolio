@@ -33,7 +33,24 @@ const hero = home.hero || { eyebrow: '', name: 'Portfolio' };
 const about = home.about || [];
 const currently = home.currently || [];
 const skills = home.skills || [];
-const stats = home.stats || [];
+
+// Stats: values may be live tokens instead of manual numbers (sprint-26) —
+//   auto:projects → published projects count
+//   auto:languages → distinct technologies referenced across published projects
+// Everything else passes through untouched, so admin-managed stats keep working.
+const allProjects = await safeFetch<PaginatedResponse<Project>>(
+  '/projects?where[status][equals]=published&sort=order&limit=100&depth=1',
+);
+const projectDocs = allProjects.docs || [];
+const usedTech = new Set<string>();
+projectDocs.forEach((p) => (p.techTags || []).forEach((t) => usedTech.add(String(t.slug ?? t.id))));
+const AUTO_STATS: Record<string, number> = {
+  'auto:projects': projectDocs.length,
+  'auto:languages': usedTech.size,
+};
+const stats = (home.stats || []).map((s) =>
+  s.value in AUTO_STATS ? { ...s, value: String(AUTO_STATS[s.value]) } : s,
+);
 
 const avatarUrl = siteConfig.avatar?.thumbnailURL ? `${API_ORIGIN}${siteConfig.avatar.thumbnailURL}` : (siteConfig.avatar?.url ? `${API_ORIGIN}${siteConfig.avatar.url}` : null);
 ---

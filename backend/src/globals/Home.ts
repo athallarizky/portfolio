@@ -21,7 +21,15 @@ export const Home: GlobalConfig = {
       name: 'stats',
       type: 'array',
       fields: [
-        { name: 'value', type: 'text', required: true },
+        {
+          name: 'value',
+          type: 'text',
+          required: true,
+          admin: {
+            description:
+              'Manual number, or a live token: auto:projects (published projects count), auto:languages (distinct technologies used across projects)',
+          },
+        },
         { name: 'suffix', type: 'text' },
         { name: 'label', type: 'text', required: true },
       ],

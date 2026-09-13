@@ -79,6 +79,8 @@ jobs:
             --exclude 'payload.db' \
             --exclude 'payload.db.*' \
             --exclude '*.bak' \
+            --exclude 'portfolio-data-*.zip' \
+            --exclude 'portfolio-snapshot-*.zip' \
             --exclude 'node_modules' \
             --exclude '.next/cache' \
             --exclude '/documents' \

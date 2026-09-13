@@ -58,6 +58,17 @@ Menulis harness minimal dari nol hanya memakan waktu beberapa jam, tapi efeknya 
 2. Loop yang mengecek: *"Apakah model minta menjalankan tool, atau tugasnya sudah selesai?"*
 3. Kalau minta tool, jalankan fungsinya, masukkan hasilnya ke riwayat, lalu ulangi.
 
+Keseluruhan loop-nya, dari ujung ke ujung:
+
+```
+user turn ──▶ history[] ──▶ ask() ──▶ [ Claude Model ]
+                    ▲                        │
+                    │ stream (SSE)           │ tool_use
+                    ▼                        ▼
+        tool_result[] ◀── runTool() ◀── (Promise.all)
+└────────── loop until stop_reason !== "tool_use" ──────────┘
+```
+
 Begitu kamu paham fondasi sederhananya, kamu tidak lagi melihat AI agent sebagai kotak hitam yang ajaib — melainkan sebagai software biasa yang bisa kamu bongkar, pahami, dan kendalikan sepenuhnya.
 
 ---

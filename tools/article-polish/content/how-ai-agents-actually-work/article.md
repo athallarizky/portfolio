@@ -60,6 +60,17 @@ Building a minimal harness from scratch takes less than an afternoon, but it com
 2. A loop that asks: *"Did the model ask to run a tool, or is it done?"*
 3. If it asked for a tool, run it, append the answer, and repeat.
 
+The whole loop, end to end:
+
+```
+user turn ──▶ history[] ──▶ ask() ──▶ [ Claude Model ]
+                    ▲                        │
+                    │ stream (SSE)           │ tool_use
+                    ▼                        ▼
+        tool_result[] ◀── runTool() ◀── (Promise.all)
+└────────── loop until stop_reason !== "tool_use" ──────────┘
+```
+
 Once you see how simple the foundation really is, you stop treating AI agents as black magic — and start treating them as software you can inspect, understand, and control.
 
 ---

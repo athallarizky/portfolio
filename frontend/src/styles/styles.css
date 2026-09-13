@@ -637,29 +637,58 @@ a { color: inherit; text-decoration: none; }
   .blog-filter { position: static; order: -1; }
 }
 
-/* Language switcher (sprint-25) — static EN|ID pill on list headers + detail titles.
-   Matches the chip vocabulary; no motion beyond the existing transition tokens. */
-.lang-switch {
+/* Language switch (sprint-26) — sliding on/off-style toggle with flag emoji:
+   the knob carries the active locale, the other side stays dimmed as the hint.
+   Pure CSS (no motion for reduced-motion users beyond a short transform). */
+.lang-toggle {
+  display: inline-flex;
+  text-decoration: none;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.lang-toggle-track {
+  position: relative;
+  display: inline-flex;
+  width: 62px;
+  height: 30px;
+  border-radius: 9999px;
+  border: 1px solid var(--border);
+  background: var(--background);
+  transition: background .15s ease;
+}
+.lang-toggle:hover .lang-toggle-track { background: var(--hover); }
+.lang-toggle-opt {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  width: 50%;
+  font-size: 13px;
+  line-height: 1;
+  opacity: .35;
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+}
+.lang-toggle-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 27px;
+  height: 24px;
+  border-radius: 9999px;
+  background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 9999px;
-  padding: 2px;
-  gap: 2px;
-  flex-shrink: 0;
+  box-shadow: var(--shadow);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+  transition: transform .18s ease;
 }
-.lang-option {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: .04em;
-  padding: 3px 10px;
-  border-radius: 9999px;
-  color: var(--desc);
-  text-decoration: none;
-  transition: background .15s ease, color .15s ease;
+.lang-toggle-knob.is-id { transform: translateX(30px); }
+@media (prefers-reduced-motion: reduce) {
+  .lang-toggle-knob { transition: none; }
 }
-.lang-option:hover { color: var(--foreground); background: var(--hover); }
-.lang-option.is-active { background: var(--primary); color: var(--primary-foreground); }
 
 
 /* ---------- Article detail: related-articles sidebar ---------- */

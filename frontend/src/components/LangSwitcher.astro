@@ -1,6 +1,7 @@
 ---
-// Static EN|ID pill switcher (sprint-25) — links only, no JS island.
-// UI chrome stays English: the labels are locale codes, not translated words.
+// Language switch (sprint-26): a sliding on/off-style toggle. The knob carries the
+// CURRENT locale's flag; the dimmed flag on the other side hints where the click goes.
+// One anchor to the counterpart URL — pure CSS, no JS island.
 interface Props {
   current: 'en' | 'id'
   enHref: string
@@ -8,9 +9,36 @@ interface Props {
 }
 
 const { current, enHref, idHref } = Astro.props;
+
+const target =
+  current === 'en'
+    ? { href: idHref, label: 'Baca dalam Bahasa Indonesia' }
+    : { href: enHref, label: 'Read in English' };
 ---
 
-<div class="lang-switch" role="group" aria-label="Content language">
-  <a href={enHref} class="lang-option" class:is-active={current === 'en'} aria-current={current === 'en' ? 'page' : undefined}>EN</a>
-  <a href={idHref} class="lang-option" class:is-active={current === 'id'} aria-current={current === 'id' ? 'page' : undefined}>ID</a>
-</div>
+<a href={target.href} class="lang-toggle" title={target.label} aria-label={target.label}>
+  <span class="lang-toggle-track">
+    <span class="lang-toggle-opt" aria-hidden="true">🇬🇧</span>
+    <span class="lang-toggle-opt" aria-hidden="true">🇮🇩</span>
+    <span class:list={['lang-toggle-knob', current === 'id' && 'is-id']} aria-hidden="true">
+      {current === 'en' ? '🇬🇧' : '🇮🇩'}
+    </span>
+  </span>
+</a>
+
+<!-- Switching locale must REPLACE the history entry, not push — rapid EN↔ID toggling
+     would otherwise bury the real previous page in the back stack. Delegated + guarded
+     so multiple instances on one page bind exactly one listener. -->
+<script is:inline>
+  (function () {
+    if (window.__langToggleReplace) return;
+    window.__langToggleReplace = true;
+    document.addEventListener('click', function (e) {
+      if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      var a = e.target.closest && e.target.closest('a.lang-toggle');
+      if (!a) return;
+      e.preventDefault();
+      location.replace(a.href);
+    });
+  })();
+</script>

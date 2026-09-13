@@ -19,9 +19,10 @@ export const Articles: CollectionConfig = {
   },
   fields: [
     uuidField,
-    { name: 'title', type: 'text', required: true },
+    // Sprint-24: localized fields — EN canonical, optional ID overlay (slug/relations stay shared).
+    { name: 'title', type: 'text', required: true, localized: true },
     { name: 'slug', type: 'text', required: true, unique: true },
-    { name: 'excerpt', type: 'textarea' },
+    { name: 'excerpt', type: 'textarea', localized: true },
     {
       name: 'tags',
       type: 'relationship',
@@ -36,7 +37,7 @@ export const Articles: CollectionConfig = {
     },
     { name: 'publishedAt', type: 'date', required: true },
     { name: 'readMinutes', type: 'number', min: 1 },
-    { name: 'body', type: 'richText' },
+    { name: 'body', type: 'richText', localized: true },
     { name: 'featuredImage', type: 'upload', relationTo: 'media' },
     { name: 'bannerColor', type: 'text', admin: { description: 'CSS gradient for the banner, e.g. linear-gradient(135deg,#9936e6,#5b21b6)' } },
     { name: 'bannerIcon', type: 'text', admin: { description: 'iconify icon for the banner, e.g. solar:rocket-bold' } },
@@ -57,8 +58,8 @@ export const Articles: CollectionConfig = {
       type: 'group',
       admin: { description: 'SEO metadata' },
       fields: [
-        { name: 'metaTitle', type: 'text' },
-        { name: 'metaDescription', type: 'textarea' },
+        { name: 'metaTitle', type: 'text', localized: true },
+        { name: 'metaDescription', type: 'textarea', localized: true },
         { name: 'ogImage', type: 'text', admin: { description: 'URL or path to OG image' } },
       ],
     },

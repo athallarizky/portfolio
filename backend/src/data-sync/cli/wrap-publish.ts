@@ -19,6 +19,8 @@ import { formatStamp } from '../filenames'
 import { NATURAL_KEYS } from '../keys'
 import { buildManifest } from '../manifest'
 import { resolvePkgVersion } from '../version'
+import { archiveSchemaVersion } from '../locales'
+import { attachOverlaySibling } from '../single'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = path.resolve(__dirname, '..', '..', '..', '..')
@@ -127,6 +129,15 @@ async function run() {
   const rows = readRows(sources, collection)
   validatePublishRows(collection, rows, sources)
 
+  // Sprint-24: optional `<name>.id.json` siblings ride along as locales.id overlays
+  // (validated: same uuid+slug, localized fields only). ID stays optional per row.
+  const bilingualSources: string[] = []
+  sources.forEach((src, i) => {
+    if (attachOverlaySibling(src, collection, rows[i] as Record<string, any>)) {
+      bilingualSources.push(path.basename(path.dirname(src)))
+    }
+  })
+
   // 2. Refs always ride along so relations resolve without any admin pre-work.
   const refs = readRefs()
 
@@ -148,6 +159,9 @@ async function run() {
         payloadVersion: resolvePkgVersion('payload'),
         counts: Object.fromEntries(Object.entries(files).map(([c, rs]) => [c, rs.length])),
         exportedAt: new Date().toISOString(),
+        // EN-only publish → v2 (importable by the currently-deployed importer);
+        // any bilingual row → v3.
+        schemaVersion: archiveSchemaVersion([rows as Record<string, unknown>[]]),
       }),
       null,
       2,
@@ -163,6 +177,9 @@ async function run() {
   console.log(`✅ publish zip → ${path.relative(process.cwd(), out)} (${buffer.length.toLocaleString()} bytes)`)
   console.log(`   ${collection}: ${rows.length} row(s) [${sources.map((s) => path.basename(path.dirname(s))).join(', ')}]`)
   console.log(`   refs: tags ${refs.tags.length}, technologies ${refs.technologies.length}`)
+  if (bilingualSources.length) {
+    console.log(`   id overlays: ${bilingualSources.length}/${rows.length} row(s) [${bilingualSources.join(', ')}]`)
+  }
   console.log(`   apply with: npm run import -- ${path.relative(process.cwd(), out)} -- --replace-only ${collection}`)
   process.exit(0)
 }

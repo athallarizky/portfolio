@@ -56,6 +56,21 @@ export const RICH_TEXT_BODY: Partial<Record<ContentCollection, string>> = {
   projects: 'body',
 }
 
+// ---- Locale overlay model (sprint-24) ----
+
+/** Canonical/default locale — its values live at the archive-row top level (v2 shape). */
+export const DEFAULT_LOCALE = 'en'
+/** Locales that ride in archive rows as `locales.<code>` overlays (everything but the default). */
+export const OVERLAY_LOCALES = ['id'] as const
+
+/** collection → localized field paths (dotted for group subfields). Single source of
+ *  truth for the data-sync overlay model — keep in lockstep with the `localized: true`
+ *  flags in the collection configs (Articles/Projects). */
+export const LOCALIZED_FIELDS: Partial<Record<ContentCollection, readonly string[]>> = {
+  articles: ['title', 'excerpt', 'body', 'seo.metaTitle', 'seo.metaDescription'],
+  projects: ['title', 'excerpt', 'body', 'features', 'seo.metaTitle', 'seo.metaDescription'],
+}
+
 /** A relationship pointing AT a collection (the inverse of a RelationDef) — used by merge. */
 export interface InverseRelation {
   fromCollection: ContentCollection

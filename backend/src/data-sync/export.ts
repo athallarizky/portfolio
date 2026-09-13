@@ -16,10 +16,11 @@ import {
   type ArchiveManifest,
   type RelationRef,
 } from './types'
-import { NATURAL_KEYS, RELATIONS, RELATION_TARGETS, RICH_TEXT_BODY } from './keys'
+import { NATURAL_KEYS, RELATIONS, RELATION_TARGETS, RICH_TEXT_BODY, LOCALIZED_FIELDS } from './keys'
 import { buildManifest } from './manifest'
 import { createZip, type ZipEntry } from './archive'
 import { getEditorConfig, lexicalToMd } from './converters'
+import { splitLocalizedRow, rowHasOverlay, type LocaleOverlays } from './locales'
 
 /** Per target collection: Map<id-as-string, { uuid, key }> — the v2 dual-reference form. */
 export type IdRefMaps = Map<ContentCollection, Map<string, RelationRef>>
@@ -97,19 +98,36 @@ export async function exportToArchive(payload: Payload, opts: ExportOptions): Pr
   const editorConfig = await getEditorConfig(payload)
   const entries: ZipEntry[] = []
   const counts: Record<string, number> = {}
+  let anyOverlay = false
 
   for (const collection of CONTENT_COLLECTIONS) {
     const isUpload = collection === 'documents' || collection === 'media'
-    const res = await payload.find({ collection, depth: 0, limit: 0, pagination: false } as any)
+    // Localized collections read with locale:'all' so translations survive the export;
+    // splitLocalizedRow then normalizes to the v3 row shape (EN flat + locales.<code>).
+    const localized = !!LOCALIZED_FIELDS[collection]
+    const res = await payload.find({
+      collection,
+      depth: 0,
+      limit: 0,
+      pagination: false,
+      ...(localized ? { locale: 'all' } : {}),
+    } as any)
     const rows = (res.docs as any[]).map((doc) => {
       const clean = stripInternal(doc, isUpload)
       rewriteRelations(clean, collection, maps)
+      if (localized) splitLocalizedRow(collection, clean)
       const bodyField = RICH_TEXT_BODY[collection]
       if (bodyField && clean[bodyField]) {
         clean[bodyField] = lexicalToMd(clean[bodyField], editorConfig)
       }
+      for (const overlay of Object.values((clean.locales as LocaleOverlays | undefined) ?? {})) {
+        if (bodyField && overlay?.[bodyField]) {
+          overlay[bodyField] = lexicalToMd(overlay[bodyField], editorConfig)
+        }
+      }
       return clean
     })
+    if (rows.some(rowHasOverlay)) anyOverlay = true
     entries.push({ path: `collections/${collection}.json`, data: JSON.stringify(rows, null, 2) })
     counts[collection] = rows.length
 
@@ -141,6 +159,8 @@ export async function exportToArchive(payload: Payload, opts: ExportOptions): Pr
     payloadVersion: opts.payloadVersion,
     counts,
     exportedAt: opts.exportedAt,
+    // EN-only export → v2 (deployed-importer compatible); any overlay → v3.
+    schemaVersion: anyOverlay ? 3 : 2,
   })
   entries.unshift({ path: 'manifest.json', data: JSON.stringify(manifest, null, 2) })
 

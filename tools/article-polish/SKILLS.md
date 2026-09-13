@@ -13,6 +13,8 @@ For the given input, write under `tools/article-polish/`:
 | `content/<slug>/draft/<original>.md` | the raw, unmodified draft you started with (gitignored) |
 | `content/<slug>/article.md` | AI-polished Markdown (for human review — the PR diff) |
 | `content/<slug>/article.json` | **v2 archive row** — the import source the publish pipeline reads |
+| `content/<slug>/article.id.md` | **optional** Indonesian translation of the polished article (review copy) |
+| `content/<slug>/article.id.json` | **optional** ID overlay sibling — rides the EN row into bilingual publishes |
 
 Plus, in **full mode**: `collection/<YYYY-MM-DD-HH-MM>-<slug>.zip` (importable via CLI).
 
@@ -181,6 +183,42 @@ Write at the slug root (flat layout, same shape as repo-to-project):
 | `seo` | **OMIT** | owner polishes |
 | `relatedArticles` | **OMIT** | owner polishes |
 
+### Step 3b — Optional: Indonesian translation (`article.id.*`)
+
+> Only when the owner asks for a translation (or a `draft/<original>.id.md` was given). The EN
+> article (step 3) must exist first — the translation is an overlay on it, never standalone.
+
+1. Translate the **polished** article (not the raw draft) into **Bahasa Indonesia**:
+   natural, professional-casual — same voice as the EN piece, no stiff machine-translation feel.
+   Structure maps 1:1 (same headings order/list shapes). **Keep technical terms, code, tool
+   names, and proper nouns in English.** Title + excerpt + seo (if authored) translate too;
+   `readMinutes` stays shared (never localized).
+2. Write **`content/<slug>/article.id.md`** — the review copy, same header block as
+   `article.md` (title/excerpt in ID).
+3. Write **`content/<slug>/article.id.json`** — the overlay sibling. Identity keys are
+   **required and must match the EN row** (validated at wrap time):
+
+```jsonc
+{
+  "uuid": "<same as article.json>",
+  "slug": "<slug>",
+  "title": "Judul…",
+  "excerpt": "Ringkasan 1–2 kalimat…",
+  "body": "# Judul\n\nIsi dalam Markdown…"   // Markdown string (Lexical JSON also accepted)
+  // "seo": { "metaTitle": "…", "metaDescription": "…" } — only when authored
+}
+```
+
+**Allowed keys:** `uuid`, `slug`, `title`, `excerpt`, `body`, `seo.metaTitle`,
+`seo.metaDescription` — anything else is refused by the wrap tools (typo guard).
+`uuid`/`slug` are stripped when merging; the rest becomes the row's `locales.id`.
+
+4. Re-runs are idempotent per locale: updating the translation rewrites the `.id.*` files
+   with the same uuid; the EN files are untouched; imports write only the `id` locale
+   (the `en` locale and admin-only polish are never clobbered).
+5. Step 4's `wrap:articles` **auto-attaches** the sibling when it sits next to
+   `article.json` — no extra flags. Same for `wrap:publish` in the CI pipeline.
+
 ### Step 4 — Wrap into the importable zip
 
 > **full mode only.** In **content-only mode**, skip this and step 5.
@@ -221,7 +259,9 @@ tools/article-polish/
 ├── content/<slug>/                # flat per-slug layout (git-tracked files marked ★)
 │   ├── draft/<original>.md        # raw Markdown draft (untouched, gitignored)
 │   ├── article.md              ★  # AI-polished Markdown (review / PR diff)
-│   └── article.json             ★  # v2 import row — the publish pipeline source
+│   ├── article.json             ★  # v2 import row — the publish pipeline source
+│   ├── article.id.md            ★  # optional Indonesian review copy (sprint-24)
+│   └── article.id.json          ★  # optional ID overlay sibling (sprint-24)
 └── collection/
     └── <YYYY-MM-DD-HH-MM>-<slug>.zip  # importable zip (full mode only, gitignored)
 ```

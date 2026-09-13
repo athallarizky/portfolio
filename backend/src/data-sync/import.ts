@@ -20,10 +20,11 @@ import {
   type ContentCollection,
   type ImportReport,
 } from './types'
-import { NATURAL_KEYS, RELATIONS, RELATION_TARGETS, RICH_TEXT_BODY } from './keys'
+import { NATURAL_KEYS, RELATIONS, RELATION_TARGETS, RICH_TEXT_BODY, LOCALIZED_FIELDS, DEFAULT_LOCALE, OVERLAY_LOCALES } from './keys'
 import { validateManifest } from './manifest'
 import { readZip, readJson, readEntry } from './archive'
 import { getEditorConfig, mdToLexical, type EditorConfig } from './converters'
+import { type LocaleOverlays } from './locales'
 import {
   makeIdResolver,
   planImportOrder,
@@ -337,25 +338,65 @@ export function rewriteRelationsToIds(
 
 type UpsertOutcome = { status: 'created' | 'updated'; id?: number | string; key: string }
 
+/** Sprint-24: localized collections write the top-level (EN) row with an explicit
+ *  `locale` so the write provably targets the default locale — never an overlay. */
+function writeLocaleFor(collection: ContentCollection): string | undefined {
+  return LOCALIZED_FIELDS[collection] ? DEFAULT_LOCALE : undefined
+}
+
+/** Sprint-24: apply a row's locale overlays — one targeted update per overlay locale,
+ *  carrying ONLY the fields present in the overlay. Absent locales are never written
+ *  (Payload per-locale writes are isolated), so an EN-only publish cannot clobber
+ *  translations. In dry-run the overlays are only counted. */
+async function applyOverlays(
+  payload: Payload,
+  collection: ContentCollection,
+  docId: number | string,
+  locales: LocaleOverlays | undefined,
+  bodyField: string | undefined,
+  getEditor: () => Promise<EditorConfig>,
+  dryRun: boolean,
+  report: ImportReport,
+): Promise<void> {
+  if (!locales || typeof locales !== 'object') return
+  for (const locale of OVERLAY_LOCALES) {
+    const overlay = locales[locale]
+    if (!overlay || typeof overlay !== 'object' || Object.keys(overlay).length === 0) continue
+    const data: Record<string, any> = { ...overlay }
+    if (dryRun) {
+      report.localeOverlays[collection] = (report.localeOverlays[collection] ?? 0) + 1
+      continue
+    }
+    if (bodyField && typeof data[bodyField] === 'string') {
+      data[bodyField] = mdToLexical(data[bodyField], await getEditor())
+    }
+    await payload.update({ collection, id: docId, locale, data } as any)
+    report.localeOverlays[collection] = (report.localeOverlays[collection] ?? 0) + 1
+  }
+}
+
 async function upsertDoc(
   payload: Payload,
   collection: ContentCollection,
   row: Record<string, any>,
-  editorConfig: EditorConfig,
+  getEditor: () => Promise<EditorConfig>,
   zip: AdmZip,
   pfx: string,
   resolver: IdResolver,
   dryRun: boolean,
+  locales: LocaleOverlays | undefined,
+  report: ImportReport,
 ): Promise<UpsertOutcome> {
   const keyField = NATURAL_KEYS[collection]
   const key = String(row[keyField])
   const uuid = typeof row.uuid === 'string' && row.uuid ? row.uuid : undefined
   let data = rewriteRelationsToIds(collection, row, resolver)
+  const writeLocale = writeLocaleFor(collection)
 
   // MD → Lexical for rich-text bodies.
   const bodyField = RICH_TEXT_BODY[collection]
   if (bodyField && typeof data[bodyField] === 'string') {
-    data[bodyField] = mdToLexical(data[bodyField], editorConfig)
+    data[bodyField] = mdToLexical(data[bodyField], await getEditor())
   }
 
   // Upload collection: `filename` is auto-managed by Payload, not a data field.
@@ -388,6 +429,7 @@ async function upsertDoc(
 
   if (dryRun) {
     // Still track existing ids so downstream relations can resolve in dry-run.
+    await applyOverlays(payload, collection, existingId!, locales, bodyField, getEditor, true, report)
     return { status: exists ? 'updated' : 'created', id: existingId, key }
   }
 
@@ -411,12 +453,27 @@ async function upsertDoc(
     return { status: 'created', id: created.id, key }
   }
 
+  let docId: number | string
   if (exists) {
-    await payload.update({ collection, id: existingId, data } as any)
-    return { status: 'updated', id: existingId, key }
+    await payload.update({
+      collection,
+      id: existingId,
+      data,
+      ...(writeLocale ? { locale: writeLocale } : {}),
+    } as any)
+    docId = existingId
+  } else {
+    const created = await payload.create({
+      collection,
+      data,
+      ...(writeLocale ? { locale: writeLocale } : {}),
+    } as any)
+    docId = created.id
   }
-  const created = await payload.create({ collection, data } as any)
-  return { status: 'created', id: created.id, key }
+
+  // Locale overlays (sprint-24) — after the EN row exists, targeted per-locale writes.
+  await applyOverlays(payload, collection, docId, locales, bodyField, getEditor, dryRun, report)
+  return { status: exists ? 'updated' : 'created', id: docId, key }
 }
 
 /** 2nd pass: resolve self-referential relations (articles.relatedArticles). Returns docs touched. */
@@ -499,7 +556,10 @@ export async function importFromArchive(
   const manifest = readJson<ArchiveManifest>(zip, `${pfx}manifest.json`)
   validateManifest(manifest)
 
-  const editorConfig = await getEditorConfig(payload)
+  // Lazy editor config — building the Lexical config is expensive; only rich-text
+  // conversions need it (also lets unit tests run importFromArchive on a mock payload).
+  let editorConfig: EditorConfig | null = null
+  const getEditor = async () => (editorConfig ??= await getEditorConfig(payload))
   const resolver = makeIdResolver()
   const report: ImportReport = {
     created: {},
@@ -507,6 +567,7 @@ export async function importFromArchive(
     unchanged: {},
     deleted: {},
     skippedReferenced: [],
+    localeOverlays: {},
     errors: [],
     dryRun: opts.dryRun,
   }
@@ -541,7 +602,20 @@ export async function importFromArchive(
     }
     for (const row of rows) {
       try {
-        const outcome = await upsertDoc(payload, collection, row, editorConfig, zip, pfx, resolver, opts.dryRun)
+        // v3 rows: split the locale overlays out — the top level is the EN (default) row.
+        const { locales, ...enRow } = row
+        const outcome = await upsertDoc(
+          payload,
+          collection,
+          enRow,
+          getEditor,
+          zip,
+          pfx,
+          resolver,
+          opts.dryRun,
+          locales as LocaleOverlays | undefined,
+          report,
+        )
         bump(report, outcome.status, collection)
         if (outcome.id !== undefined) {
           const rowUuid = typeof row.uuid === 'string' && row.uuid ? row.uuid : undefined

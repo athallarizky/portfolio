@@ -104,7 +104,7 @@ export interface Config {
   db: {
     defaultIDType: number;
   };
-  fallbackLocale: null;
+  fallbackLocale: ('false' | 'none' | 'null') | false | null | ('en' | 'id') | ('en' | 'id')[];
   globals: {
     'site-config': SiteConfig;
     home: Home;
@@ -115,7 +115,7 @@ export interface Config {
     home: HomeSelect<false> | HomeSelect<true>;
     nav: NavSelect<false> | NavSelect<true>;
   };
-  locale: null;
+  locale: 'en' | 'id';
   widgets: {
     collections: CollectionsWidget;
   };

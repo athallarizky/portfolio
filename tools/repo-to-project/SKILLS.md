@@ -14,6 +14,8 @@ For the given input, write under `tools/repo-to-project/`:
 | `content/<slug>/draft/<original>.md` | the raw, unmodified draft you started with (gitignored) — **only when a draft was given** |
 | `content/<slug>/project.json` | a **v2 archive row** — importable via data-sync |
 | `content/<slug>/project.md` | a human-readable rendering (for the owner to review) |
+| `content/<slug>/project.id.md` | **optional** Indonesian translation review copy (sprint-24) |
+| `content/<slug>/project.id.json` | **optional** ID overlay sibling — rides the EN row into bilingual publishes |
 | `collection/<YYYY-MM-DD-HH-MM>-<slug>.zip` | the **importable zip** (dated history; collision-safe) — **full mode only** |
 
 Then hand off. In **full mode** you also wrap the zip and preview the import (dry-run). The owner applies it.
@@ -156,6 +158,38 @@ fields (so updates preserve them — see schema below):
 
 `descriptor` inference: has `LICENSE` + public remote → `Personal · OSS`; obvious work/internal →
 `Work · Internal tooling`; toy/experiment → `Experiment`; else `Personal`. The owner can edit.
+
+### Step 3b — Optional: Indonesian translation (`project.id.*`)
+
+> Only when the owner asks for a translation. The EN project (step 3) must exist first — the
+> translation is an overlay on it, never standalone.
+
+1. Translate `title`, `excerpt`, and `body` into **Bahasa Indonesia** — natural,
+   professional-casual, structure maps 1:1. **Technical terms, code, tool names, tech slugs
+   (`techTags`), links, and `architecture` stay as-is** (they are shared, never localized).
+2. Write **`content/<slug>/project.id.md`** — the review copy (title/excerpt/body in ID).
+3. Write **`content/<slug>/project.id.json`** — the overlay sibling. Identity keys are
+   **required and must match the EN row** (validated at wrap time):
+
+```jsonc
+{
+  "uuid": "<same as project.json>",
+  "slug": "<slug>",
+  "title": "Judul Proyek…",
+  "excerpt": "Satu kalimat…",
+  "body": "## Ringkasan\n\n…"        // Markdown string
+  // optional: "features": [{ "icon": "solar:…", "heading": "…", "description": "…" }]
+  //           "seo": { "metaTitle": "…", "metaDescription": "…" }
+}
+```
+
+**Allowed keys:** `uuid`, `slug`, `title`, `excerpt`, `body`, `features`, `seo.metaTitle`,
+`seo.metaDescription` — anything else is refused by the wrap tools. (EN rows OMIT `features`
+for owner polish; only fill the ID `features` when the owner asks for translated feature cards.)
+
+4. Re-runs are idempotent per locale (same uuid → in-place update of the `.id.*` files; EN
+   untouched; imports write only the `id` locale — never clobbering `en` or admin polish).
+5. Step 4's `wrap:projects` **auto-attaches** the sibling; same for `wrap:publish` in CI.
 
 ### Step 4 — Wrap into the importable zip
 

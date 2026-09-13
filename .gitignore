@@ -49,10 +49,13 @@ tools/repo-to-project/content/*/draft/
 
 # article-polish: ignore everything under content/ except the import source + review artifact
 # (flat per-slug layout, same shape as repo-to-project: content/<slug>/{draft/, article.md, article.json})
+# article.id.* = optional Indonesian overlay sibling (sprint-24) — must be tracked for bilingual publishes
 tools/article-polish/content/**
 !tools/article-polish/content/**/
 !tools/article-polish/content/*/article.json
 !tools/article-polish/content/*/article.md
+!tools/article-polish/content/*/article.id.json
+!tools/article-polish/content/*/article.id.md
 
 # article-polish samples — keep the folder, ignore contents
 tools/article-polish/samples/*

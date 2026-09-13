@@ -16,12 +16,24 @@ tools/article-polish/
 ├── content/<slug>/
 │   ├── draft/input.md          # your raw draft (untouched)
 │   ├── article.md              # AI-polished Markdown (review)
-│   └── article.json             # v2 archive row — import source
+│   ├── article.json            # v2 archive row — import source
+│   ├── article.id.md           # optional Indonesian review copy (sprint-24)
+│   └── article.id.json         # optional ID overlay sibling (sprint-24)
 └── collection/<date>-<slug>.zip   # importable zip (full mode only)
 ```
 
-`content/` and `collection/` are **gitignored** — this tool is for local use only.
-Only `SKILLS.md`, `README.md`, and `samples/.gitkeep` are tracked.
+`collection/` is **gitignored** (local-use zips). Under `content/`, the import-source rows
+(`article.json`, `article.id.json`) and review copies (`article.md`, `article.id.md`) are
+**git-tracked** — they are the publish pipeline's source of truth; `draft/` stays private.
+
+## Optional: Indonesian translation
+
+Ask for a translation when invoking (or per `SKILLS.md` step 3b) and the tool also writes
+`article.id.md` + `article.id.json` — an overlay carrying the same `uuid`+`slug` as the EN
+row plus localized fields only (`title`, `excerpt`, `body`, `seo.metaTitle/metaDescription`).
+`wrap:articles` / `wrap:publish` attach it automatically; imports write it as the `id`
+locale without ever touching the `en` locale or admin-only polish. Translation is optional
+per article — untranslated articles simply keep serving EN.
 
 ## Style reference
 

@@ -21,10 +21,18 @@ tools/repo-to-project/
 ├── content/<slug>/draft/          # raw draft snapshot (gitignored; only when a draft was given)
 ├── content/<slug>/project.json    # v2 archive row (importable)
 ├── content/<slug>/project.md      # human-readable sheet
+├── content/<slug>/project.id.md   # optional Indonesian review copy (sprint-24)
+├── content/<slug>/project.id.json # optional ID overlay sibling (sprint-24)
 └── collection/<date>-<slug>.zip   # importable zip (dated, collision-safe)
 ```
 
 Then previews the import (dry-run). You apply it with `npm run import -- <zip>` (drop `--dry-run`).
+
+**Optional Indonesian translation** (`SKILLS.md` step 3b): asking for a translation also writes
+`project.id.md` + `project.id.json` — an overlay with the same `uuid`+`slug` as the EN row,
+localized fields only (`title`, `excerpt`, `body`, optional `features`/`seo`). Wrap tools attach
+it automatically; imports write only the `id` locale — `techTags`, `links`, `architecture` are
+shared and never translated.
 
 ## What it fills vs leaves blank
 

@@ -20,10 +20,11 @@ export const Projects: CollectionConfig = {
   },
   fields: [
     uuidField,
-    { name: 'title', type: 'text', required: true },
+    // Sprint-24: localized fields — EN canonical, optional ID overlay (slug/relations stay shared).
+    { name: 'title', type: 'text', required: true, localized: true },
     { name: 'slug', type: 'text', required: true, unique: true },
     { name: 'year', type: 'number', required: true },
-    { name: 'excerpt', type: 'textarea' },
+    { name: 'excerpt', type: 'textarea', localized: true },
     { name: 'descriptor', type: 'text', admin: { description: 'Badge text, e.g. "Personal · OSS"' } },
     {
       name: 'techTags',
@@ -43,7 +44,7 @@ export const Projects: CollectionConfig = {
         { name: 'icon', type: 'text' },
       ],
     },
-    { name: 'body', type: 'richText' },
+    { name: 'body', type: 'richText', localized: true },
     { name: 'status', type: 'select', options: ['draft', 'published'], defaultValue: 'published' },
     { name: 'order', type: 'number', defaultValue: 0 },
     {
@@ -57,14 +58,15 @@ export const Projects: CollectionConfig = {
       type: 'group',
       admin: { description: 'SEO metadata' },
       fields: [
-        { name: 'metaTitle', type: 'text' },
-        { name: 'metaDescription', type: 'textarea' },
+        { name: 'metaTitle', type: 'text', localized: true },
+        { name: 'metaDescription', type: 'textarea', localized: true },
         { name: 'ogImage', type: 'text' },
       ],
     },
     {
       name: 'features',
       type: 'array',
+      localized: true, // whole array per-locale — each locale owns its full item list
       fields: [
         { name: 'icon', type: 'text' },
         { name: 'heading', type: 'text' },

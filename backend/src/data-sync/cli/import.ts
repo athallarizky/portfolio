@@ -18,7 +18,10 @@ async function run() {
   const replaceCollections = roIdx !== -1
     ? (args[roIdx + 1] ?? '').split(',').map((s) => s.trim()).filter(Boolean)
     : undefined
-  const zipPath = args.find((a) => !a.startsWith('--') && a !== args[roIdx + 1])
+  // The value following --replace-only is also a positional — exclude it only when present
+  // (when roIdx is -1, args[roIdx + 1] would alias args[0] — the zip path itself).
+  const roValue = roIdx !== -1 ? args[roIdx + 1] : undefined
+  const zipPath = args.find((a) => !a.startsWith('--') && a !== roValue)
 
   if (!zipPath) {
     console.error('Usage: npm run import -- <archive.zip> [-- --dry-run] [-- --replace] [-- --replace-only articles,projects]')
@@ -40,6 +43,10 @@ async function run() {
   console.log('  updated:', JSON.stringify(report.updated))
   const deletedSum = Object.values(report.deleted).reduce((a, b) => a + b, 0)
   if (deletedSum) console.log('  deleted:', JSON.stringify(report.deleted))
+  const overlaySum = Object.values(report.localeOverlays ?? {}).reduce((a, b) => a + b, 0)
+  if (overlaySum) {
+    console.log(`  locale overlays (per-locale writes, other locales untouched): ${JSON.stringify(report.localeOverlays)}`)
+  }
   if (report.skippedReferenced.length) {
     console.log(`  skipped (referenced): ${report.skippedReferenced.length}`)
     for (const s of report.skippedReferenced) console.log(`    - [${s.collection}] ${s.key}: ${s.reason}`)

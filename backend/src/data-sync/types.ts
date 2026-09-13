@@ -18,14 +18,15 @@ export type ContentCollection = (typeof CONTENT_COLLECTIONS)[number]
 export const SYNC_GLOBALS = ['site-config', 'home', 'nav'] as const
 export type SyncGlobal = (typeof SYNC_GLOBALS)[number]
 
-/** Current archive format (sprint-15): uuid identity + dual relations. */
-export const SCHEMA_VERSION = 2 as const
-/** All schema versions the importer accepts. v1 = sprint-14 natural-key-only; v2 = uuid + dual. */
-export const SUPPORTED_SCHEMA_VERSIONS = [1, 2] as const
+/** Current archive format (sprint-24): v2 + locale overlays (`locales.<code>` on rows). */
+export const SCHEMA_VERSION = 3 as const
+/** All schema versions the importer accepts. v1 = sprint-14 natural-key-only; v2 = sprint-15
+ *  uuid + dual relations; v3 = sprint-24 locale overlays. v1/v2 archives import unchanged. */
+export const SUPPORTED_SCHEMA_VERSIONS = [1, 2, 3] as const
 
 export interface ArchiveManifest {
-  /** v1 (natural-key-only) and v2 (uuid identity) archives are both importable. */
-  schemaVersion: 1 | 2
+  /** v1 (natural-key-only), v2 (uuid identity) and v3 (+ locale overlays) archives all import. */
+  schemaVersion: 1 | 2 | 3
   tool: 'portfolio-data-sync'
   exportedAt: string
   sourceEnv: string
@@ -70,6 +71,9 @@ export interface ImportReport {
   deleted: Record<string, number>
   /** Sprint-17 replace-all: records kept (not deleted) because still referenced by a surviving row. */
   skippedReferenced: ReplacedSkipped[]
+  /** Sprint-24: locale-overlay writes (per collection) — one per row×overlay-locale with values.
+   *  Counts would-writes in dry-run mode. */
+  localeOverlays: Record<string, number>
   errors: ImportErrorEntry[]
   /** Path of the pre-import DB backup, when a real import ran. */
   backupPath?: string

@@ -15,9 +15,12 @@ export function buildManifest(opts: {
   payloadVersion: string
   counts: Record<string, number>
   exportedAt: string
+  /** Sprint-24 emit rule: writers stamp 2 for EN-only archives (deployed-v2-importer
+   *  compatible) and 3 when any row carries a locale overlay. Defaults to the current version. */
+  schemaVersion?: ArchiveManifest['schemaVersion']
 }): ArchiveManifest {
   return {
-    schemaVersion: SCHEMA_VERSION,
+    schemaVersion: opts.schemaVersion ?? SCHEMA_VERSION,
     tool: 'portfolio-data-sync',
     exportedAt: opts.exportedAt,
     sourceEnv: opts.sourceEnv,

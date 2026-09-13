@@ -7,7 +7,7 @@ import fs from 'fs'
 import path from 'path'
 
 import { formatStamp } from '../filenames'
-import { buildSingleCollectionArchive, SingleArchiveError } from '../single'
+import { buildSingleCollectionArchive, attachOverlaySibling, SingleArchiveError } from '../single'
 
 /** Append -2, -3, … if `out` already exists, so a re-run never overwrites a prior zip. */
 function uniquePath(out: string): string {
@@ -39,6 +39,20 @@ async function run() {
     process.exit(1)
   }
 
+  // Sprint-24: a single-row input auto-attaches an optional `<name>.id.json` sibling.
+  let hasOverlay = false
+  if (!Array.isArray(raw)) {
+    try {
+      hasOverlay = attachOverlaySibling(input, 'projects', rows[0] as Record<string, any>)
+    } catch (e) {
+      if (e instanceof SingleArchiveError) {
+        console.error(`❌ ${e.message}`)
+        process.exit(1)
+      }
+      throw e
+    }
+  }
+
   const slug = String(rows[0].slug ?? '')
   const out = outArg ?? `portfolio-projects-${formatStamp()}-${slug}.zip`
   const finalOut = uniquePath(out)
@@ -60,6 +74,7 @@ async function run() {
     `✅ Wrapped ${rows.length} project(s) → ${finalOut} (${built.buffer.length.toLocaleString()} bytes)`,
   )
   if (built.filledUuids) console.log(`   (${built.filledUuids} row(s) got a fresh uuid)`)
+  if (hasOverlay) console.log('   (id translation attached from sibling .id.json)')
   process.exit(0)
 }
 

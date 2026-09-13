@@ -19,6 +19,7 @@ type Report = {
   unchanged: Record<string, number>
   deleted: Record<string, number>
   skippedReferenced: SkippedRef[]
+  localeOverlays?: Record<string, number>
   errors: ImportError[]
   backupPath?: string
   dryRun: boolean
@@ -116,6 +117,13 @@ export const DataSyncClient = () => {
       )}
       {sum(report.deleted) > 0 && (
         <Badges label={report.dryRun ? 'Would delete' : 'Deleted'} items={nz(report.deleted)} color="#b35900" />
+      )}
+      {sum(report.localeOverlays ?? {}) > 0 && (
+        <Badges
+          label={report.dryRun ? 'Would localize' : 'Locale overlays'}
+          items={nz(report.localeOverlays)}
+          color="#8250df"
+        />
       )}
       {report.skippedReferenced.length > 0 && (
         <div className="ds-skipped">

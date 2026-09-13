@@ -48,6 +48,16 @@ export default buildConfig({
   },
   collections: [Users, DocumentCategories, Documents, Tags, Authors, Articles, Technologies, Projects, SocialProfiles, ContactMessages, Media],
   globals: [SiteConfig, Home, Nav],
+  // Sprint-24: content-level bilingual (EN canonical + optional ID). UI stays English —
+  // only Articles/Projects carry localized fields; slug stays single (one identity per item).
+  localization: {
+    locales: [
+      { label: 'English', code: 'en' },
+      { label: 'Bahasa Indonesia', code: 'id' },
+    ],
+    defaultLocale: 'en',
+    fallback: true,
+  },
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || 'dev-secret-change-me',
   sharp,

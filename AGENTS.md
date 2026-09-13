@@ -4,6 +4,11 @@
 > **Read this first**, then the latest sprint record in [`docs/sprint-N/`](docs/)
 > (currently sprint-25 → [`docs/sprint-25/final-report.md`](docs/sprint-25/final-report.md)).
 > **Owner:** Atha Thizky — Full-Stack Engineer (backend-leaning · TS/Go/Python · AI tooling).
+>
+> **Handbook workflow (sprint-26 docs move):** `docs/` is a **relative symlink** to the private
+> `engineering-handbook` repo (`../engineering-handbook/projects/portfolio`) and is gitignored
+> here (Zero Leakage). Links to `docs/…` resolve locally. Sprint docs are committed to the
+> **handbook repo** (`docs(portfolio): …`), never to this repo — do not re-track `docs/`.
 
 ---
 

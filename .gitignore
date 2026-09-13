@@ -66,3 +66,8 @@ temp
 *.log
 *.tsbuildinfo
 *.bak
+prod-backups/
+
+# Planning & learning docs — private, synced to engineering-handbook
+/docs
+/docs/

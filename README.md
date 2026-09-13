@@ -55,7 +55,7 @@ portfolio/
 │   ├── src/globals/      # SiteConfig, Home, Nav
 │   ├── src/seed.ts       # npm run seed — content seeding
 │   └── src/data-sync/    # export/import/snapshot engine
-├── docs/              # sprint plans, tasks, reports, RCAs
+├── docs/              # sprint records — symlink to the private engineering-handbook (not tracked here)
 ├── scripts/           # deploy + VPS setup helpers
 ├── tools/             # repo-to-project generator
 └── temp/blinko/       # design reference only — never ship
@@ -128,7 +128,9 @@ Trigger it manually: GitHub → Actions → "Deploy to VPS" → Run workflow.
 
 - [`AGENTS.md`](AGENTS.md) — the agent briefing: stack, conventions, sprint history
 - [`DESIGN.md`](DESIGN.md) — Notion design spec for the home page
-- [`docs/`](docs/) — sprint-by-sprint: plans, task breakdowns, phase reports, RCAs
+- `docs/` — sprint-by-sprint records (plans, tasks, phase reports, RCAs). Lives in the private
+  **engineering-handbook** (`projects/portfolio/`); locally `docs/` is a symlink there and is
+  gitignored here — sprint docs are committed to the handbook, never to this repo.
 
 ## 🧭 License
 

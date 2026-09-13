@@ -5,7 +5,7 @@ import type { Document, DocumentCategory, PaginatedResponse, SiteConfig } from '
 
 const [documentCategories, documents, siteConfig] = await Promise.all([
   safeFetch<PaginatedResponse<DocumentCategory>>('/document-categories?sort=order'),
-  safeFetch<PaginatedResponse<Document>>('/documents?depth=1'),
+  safeFetch<PaginatedResponse<Document>>('/documents?depth=1&limit=100'),
   safeFetch<SiteConfig>('/globals/site-config'),
 ]);
 

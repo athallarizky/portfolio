@@ -14,7 +14,7 @@ interface Props {
 
 const { locale = 'en' } = Astro.props;
 
-const basePath = '/articles?sort=-publishedAt&depth=1';
+const basePath = '/articles?sort=-publishedAt&depth=1&limit=100';
 const data = await safeFetch<PaginatedResponse<Article>>(
   locale === 'id' ? withIdNoFallback(basePath) : basePath,
 );

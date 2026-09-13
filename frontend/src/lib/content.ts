@@ -21,7 +21,7 @@ export async function loadArticleDetail(locale: Locale, slug: string | undefined
 > {
   if (!slug) return { status: 'not-found' };
 
-  const listPath = '/articles?where[status][equals]=published&sort=-publishedAt&depth=2';
+  const listPath = '/articles?where[status][equals]=published&sort=-publishedAt&depth=2&limit=100';
   const all = await safeFetch<PaginatedResponse<Article>>(
     locale === 'id' ? withIdNoFallback(listPath) : listPath,
   );
@@ -62,7 +62,7 @@ export async function loadProjectDetail(locale: Locale, slug: string | undefined
 > {
   if (!slug) return { status: 'not-found' };
 
-  const listPath = '/projects?sort=order&depth=1';
+  const listPath = '/projects?sort=order&depth=1&limit=100';
   const allData = await safeFetch<PaginatedResponse<Project>>(
     locale === 'id' ? withIdNoFallback(listPath) : listPath,
   );

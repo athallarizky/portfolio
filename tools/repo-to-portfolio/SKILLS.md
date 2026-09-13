@@ -19,6 +19,10 @@ Check the user's intent from the prompt:
 
 All backend CLI steps run from `backend/`. File paths are relative to repo root (`portfolio/`).
 
+> **Local DB freshness:** dry-runs resolve relations against the local dev DB. If one fails on a
+> tag/technology that you know exists in prod, the local DB is stale — sync it via the snapshot
+> procedure in [`tools/publish-content/SKILLS.md`](tools/publish-content/SKILLS.md) Step 5, then re-run.
+
 ---
 
 ## 2. Indonesian Translation Rules ("Casual BI")

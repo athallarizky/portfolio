@@ -69,7 +69,24 @@ curl -s -o /dev/null -w '%{http_code}\n' 'https://athallarizky.com/id/blogs/<new
 # removed-from-git rows are GONE (replace-only contract) — check a deleted slug returns null/404/301
 ```
 
-### Step 5 — Fallback (only if Actions is down or the workflow itself is broken)
+### Step 5 — Sync the local dev DB (always, after a successful publish)
+
+Publishing moves prod ahead of the local dev DB — the next local dry-run or UI test then
+runs against stale content (missing the new rows, false relation errors). Keep local 1:1:
+
+```bash
+# 1) snapshot prod and pull it
+ssh root@<VPS> 'cd /root/portfolio/backend && npm run snapshot'
+scp root@<VPS>:/root/portfolio/backend/$(ssh root@<VPS> 'ls -t /root/portfolio/backend/portfolio-snapshot-*.zip | head -1 | xargs basename') backend/
+# 2) stop the local backend, restore, restart (adjust ports to the local setup)
+lsof -ti :3000 | xargs kill 2>/dev/null || true   # or the port your local backend uses
+cd backend && npm run snapshot:restore -- "$(ls -t portfolio-snapshot-*.zip | head -1)" -- --yes
+```
+
+Skip only when the owner says there is no local env to keep in sync.
+(VPS host/user per `deploy.yml` secrets — the owner grants SSH access.)
+
+### Step 6 — Fallback (only if Actions is down or the workflow itself is broken)
 
 Build locally + import on the VPS over SSH (owner-granted access; host/user per `deploy.yml` secrets):
 ```bash
@@ -80,10 +97,11 @@ ssh root@<VPS> 'cd /root/portfolio/backend && pm2 stop portfolio-backend && \
   pm2 start portfolio-backend'
 ```
 
-### Step 6 — Handoff
+### Step 7 — Handoff
 
 Report: workflow run URL + conclusion · created/updated/locale-overlay counts from the log ·
-prod verification results (slug list, spot-check URL + status) · any drift deletions.
+prod verification results (slug list, spot-check URL + status) · any drift deletions ·
+local-sync result.
 
 ---
 

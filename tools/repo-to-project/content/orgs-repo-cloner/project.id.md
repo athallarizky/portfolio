@@ -2,18 +2,24 @@
 
 > Personal · 2026 — *Indonesian translation (review copy)*
 
-CLI kecil berbasis flag yang mengenumerasi dan bulk-clone seluruh repository dalam satu organisasi GitHub — list untuk mengukur ukuran, clone untuk mirror seluruh org ke disk, dengan repo terarsip tersaring dan agent-driven sejak desain.
+CLI TypeScript ringan untuk listing dan bulk-clone seluruh repository di sebuah organisasi GitHub — gunakan mode list untuk menakar skala org, dan clone untuk mirror seluruh repo ke disk secara otomatis dengan filter repo arsip.
 
 **Tech:** typescript, node-js *(shared — not translated)*
 **Source:** https://github.com/athallarizky/gh-tools *(shared)*
 
 ## Overview
 
-GitHub Orgs Repo Cloner mengerjakan satu hal dengan baik: menarik seluruh repository sebuah organisasi GitHub ke disk. Dua subcommand, tanpa ceremoni. `list --org <name>` memaginasi `gh api orgs/<org>/repos` dan mencetak setiap clone URL — smoke test murah untuk "seberapa besar org ini?" sebelum kamu berkomitmen melakukan bulk clone. `clone --org <name>` menjalankan listing yang sama, membuang repo terarsip secara default, dan men-streaming `git clone` ke `<dest>/<repo>/`, satu repo demi satu, jadi kamu melihat progress asli git saat berjalan.
+GitHub Orgs Repo Cloner dirancang untuk satu fungsi spesifik: menarik seluruh repository dari sebuah organisasi GitHub ke local disk dengan cepat dan tanpa konfigurasi njelimet.
 
-Desainnya sengaja tipis. Listing men-shell-out ke `gh` CLI (tanpa urusan token sendiri); cloning men-shell-out ke `git` biasa, jadi SSH key dan credential helper yang sudah kamu punya langsung jalan — termasuk untuk repo private, selama `gh auth login` dan auth git sudah disetup. Tidak ada concurrency pool, tidak ada flag shallow-clone, tidak ada manifest sidecar: hanya pagination, dedup berdasarkan `full_name`, penyaringan archived, dan direktori tujuan. Re-run aman — `git clone` melewati yang sudah ada di disk.
+Hanya ada dua subcommand inti:
+1. `list --org <name>`: Menangani pagination ke `gh api orgs/<org>/repos` dan mencetak daftar clone URL — langkah awal yang murah untuk memetakan "seberapa besar org ini?" sebelum kamu memutuskan clone massal.
+2. `clone --org <name>`: Mengambil daftar yang sama, otomatis menyaring repo yang berstatus archived, lalu menjalankan streaming `git clone` ke `<dest>/<repo>/` satu per satu. Dengan begitu, kamu bisa melihat progres native git secara langsung di terminal.
 
-Yang membuatnya lebih dari sekadar script lima baris adalah kontrak agent-nya. Setiap flag deterministik dan bebas-prompt, dan `SKILLS.md` per package ditulis *untuk LLM* — ia mendata frasa user persis yang harus memicu tiap subcommand ("clone all of <org>'s repos", "mirror an entire GitHub organization") dan mengontraskannya dengan paket saudaranya, jadi agent tahu kapan *tidak* perlu memakainya. Itu membuatnya primitive yang bersih untuk workflow yang memang ditujukan baginya: backup dan mirroring org, offboarding atau migrasi antar instance GitHub, dan analisis lokal air-gapped — jatuhkan seluruh repo ke laptop agar agent bisa grep, membaca, atau menalar kode sebuah org tanpa bolak-balik ke API.
+Arsitekturnya dibuat sengaja ramping. Proses listing men-shell-out ke `gh` CLI bawaan (bebas ribet urusan personal access token); proses cloning men-shell-out ke binary `git` sistem, sehingga SSH key dan credential helper yang sudah kamu pasang langsung jalan otomatis — termasuk untuk repo private.
+
+Tidak ada concurrency pool yang rumit atau manifest sidecar yang berlebihan: hanya pagination rapi, deduplikasi berbasis `full_name`, filter archived, dan output directory. Aman dijalankan berulang kali (idempotent), karena `git clone` otomatis melewati repo yang sudah ada di disk.
+
+Nilai lebihnya ada pada kontrak integrasi dengan AI agent. Semua flag bersifat deterministik tanpa prompt interaktif, dan `SKILLS.md` di dalamnya ditulis khusus agar dipahami LLM — lengkap dengan kata kunci pemicu kapan agent harus menggunakannya dan kapan tidak. Ini menjadikannya utility primitive yang solid untuk backup org, proses offboarding/migrasi antar instance GitHub, atau analisis kode offline (air-gapped) — mengunduh semua codebase ke laptop agar terminal agent bisa leluasa me-ripgrep, membaca, dan menganalisis kode tanpa tercekik kuota rate-limit API.
 
 ---
 

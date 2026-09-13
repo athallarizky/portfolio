@@ -2,28 +2,28 @@
 
 > Personal · 2026 — *Indonesian translation (review copy)*
 
-Workflow RAG di atas channel Slack yang diekspor, yang mengangkat thread lama serupa dengan laporan baru — jadi isu berulang bisa dilacak ke root cause-nya alih-alih diselesaikan dari nol.
+Workflow RAG di atas export channel Slack untuk memunculkan riwayat diskusi masa lalu yang relevan dengan issue baru — sehingga bug berulang bisa langsung dilacak ke solusi dan root cause-nya tanpa perlu investigasi dari nol.
 
 **Tech:** fastapi, docker, react, rag, openai, tailwindcss, typescript *(shared — not translated)*
 **Source:** https://github.com/athallarizky/slack-rag *(shared)*
 
 ## Overview
 
-Di kantor kami ada channel #dev-bugs tempat tim operasional mengajukan laporannya. Channel yang tidak pernah sepi — setiap hari selalu ada yang baru masuk.
+Di kantor kami ada channel Slack `#dev-bugs` tempat tim operasional melempar tiket laporan kendala. Channel ini hampir nggak pernah sepi — tiap hari selalu ada isu baru yang masuk.
 
-Satu tantangan yang berulang: sebagian bug ternyata repetisi. Issuennya pernah diselesaikan — sering oleh orang lain — jadi kecuali kamu ada di sana saat itu, mudah sekali melewatkan bahwa masalah yang sama sudah punya solusi yang diketahui. Atau kamu merasa issuenya terlihat familiar, tapi menemukan thread lama yang relevan — root cause-nya, resolusinya — adalah pencarian tersendiri.
+Tantangan klasiknya: banyak bug yang sebenarnya pernah terjadi sebelumnya. Masalah itu sudah pernah dipecahkan — sering kali oleh engineer lain yang berbeda tim — sehingga kalau kamu nggak terlibat langsung saat itu, gampang banget luput kalau solusinya sudah ada. Terkadang kamu merasa issuenya familiar, tapi mencari thread lama yang relevan — membaca detail percakapan, mencari root cause, dan melihat apa fix-nya — memakan waktu tersendiri.
 
-Jadi saya membangun workflow RAG sederhana di sekelilingnya:
+Untuk mengatasi friksi ini, saya membangun workflow RAG sederhana:
 
-- ekspor data percakapan channel dari Slack (JSON)
-- normalisasi dan bersihkan datanya
-- jadikan knowledge base untuk RAG
+- Ekspor data percakapan channel dari Slack (format JSON)
+- Normalisasi, parsing thread, dan bersihkan datanya
+- Ingestion ke vector database sebagai knowledge base untuk RAG
 
-Sekarang jauh lebih mudah melompat langsung ke thread lama yang paling mirip dengan laporan baru. Agent bahkan bisa menganalisis dan meringkas percakapan masa lalu saat itu juga, jadi melacak sebuah issue tidak lagi berarti mulai dari nol.
+Sekarang jauh lebih mudah melompat langsung ke thread-thread lama yang paling mirip dengan kendala yang baru dilaporkan. Agent bahkan bisa langsung menganalisis dan merangkum isi percakapan masa lalu saat itu juga, sehingga tracking masalah nggak perlu lagi dimulai dari nol.
 
-Use case-nya juga tidak terbatas pada bug. Apa pun yang hidup di channel yang diekspor bisa menjadi knowledge base — channel support, diskusi engineering, apa pun yang dibutuhkan tim.
+Potensi pemanfaatannya juga nggak terbatas pada laporan bug saja. Diskusi apa pun di Slack yang diekspor bisa dijadikan knowledge base — channel customer support, diskusi arsitektur engineering, atau dokumentasi incident response tim.
 
-Di sisi teknis, setup providernya sengaja fleksibel: colok API key langsung, atau pakai custom command yang memanggil CLI agent di belakang layar. Factory Droid, Claude Code, atau provider lain sama-sama jalan.
+Secara teknis, setup provider AI-nya dibuat sengaja fleksibel: bisa pakai API key langsung (OpenAI, dll.), atau lewat custom command yang memanggil CLI agent di background (seperti Claude Code, Factory Droid, atau CLI tooling internal lainnya).
 
 ---
 

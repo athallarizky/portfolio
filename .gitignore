@@ -26,6 +26,15 @@ build/
 .claude
 .commandcode
 .zcode
+.cursor
+.codex
+.copilot
+.windsurf
+.augment
+.continue
+.aider
+.gemini
+.opencode
 
 # Downloadable documents (personal files)
 frontend/assets/documents/*

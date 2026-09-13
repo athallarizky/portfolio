@@ -4,7 +4,6 @@
 // (locale=id&fallback-locale=none → untranslated titles come back null).
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import BlogFilter from '../blog/BlogFilter.svelte';
-import LangSwitcher from '../LangSwitcher.astro';
 import { safeFetch } from '../../lib/api';
 import { isTranslated, withIdNoFallback, type Locale } from '../../lib/i18n';
 import type { Article, PaginatedResponse } from '../../lib/api-types';
@@ -34,15 +33,12 @@ const articles = locale === 'id' ? docs.filter(isTranslated) : docs;
     { hreflang: 'x-default', href: '/blogs' },
   ]}
 >
-  <div class="flex items-center justify-between gap-2 mb-4">
-    <p class="text-desc text-sm">
-      Notes on backend systems, AI tooling, and how I run software projects with AI agents.
-    </p>
-    <LangSwitcher current={locale} enHref="/blogs" idHref="/id/blogs" />
-  </div>
+  <p class="text-desc text-sm mb-4">
+    Notes on backend systems, AI tooling, and how I run software projects with AI agents.
+  </p>
 
   {articles.length > 0 ? (
-    <BlogFilter client:load articles={articles} base={locale === 'id' ? '/id' : ''} />
+    <BlogFilter client:load articles={articles} base={locale === 'id' ? '/id' : ''} lang={locale} />
   ) : (
     <div class="empty-state">
       <p>No Indonesian translations yet.</p>

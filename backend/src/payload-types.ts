@@ -922,6 +922,9 @@ export interface Home {
   };
   stats?:
     | {
+        /**
+         * Manual number, or a live token: auto:projects (published projects count), auto:languages (distinct technologies used across projects)
+         */
         value: string;
         suffix?: string | null;
         label: string;

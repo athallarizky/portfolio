@@ -760,6 +760,7 @@ a { color: inherit; text-decoration: none; }
 
 .detail-header { margin-bottom: 20px; }
 .detail-title {
+  display: block; /* blog detail renders it on a <span> — block so the subtitle never rides beside a wrapped title */
   font-size: clamp(24px, 5vw, 32px);
   font-weight: 900;
   line-height: 1.2;
@@ -767,6 +768,7 @@ a { color: inherit; text-decoration: none; }
   color: var(--foreground);
 }
 .detail-subtitle {
+  display: block; /* own line under the title — date · read time never clings to a wrapped title */
   font-size: 16px;
   color: var(--desc);
   margin-bottom: 12px;

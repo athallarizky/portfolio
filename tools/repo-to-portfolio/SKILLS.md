@@ -10,7 +10,17 @@
 
 ---
 
-## 1. Flow Determination
+## 1. Content Philosophy & Flow Determination
+
+### Core Distinction: Articles vs. Projects
+* **Articles (General & Conceptual):**
+  * **Tone & Focus:** Bersifat umum/general, berfokus pada konsep, ide, latar belakang masalah (*why*), cerita di balik pembuatan (*behind the build*), dan *lessons learned* yang jelas serta bernilai.
+  * **Level Teknis:** Komposisi teknis ringan hingga sedang (tidak terlalu berat/overwhelming, hindari bedah kode baris demi baris yang membosankan). Gunakan snippet atau diagram hanya sebagai penguat konsep.
+  * **Gaya Penulisan:** Ringkas, mengalir (*engaging*), dan tidak bertele-tele atau membosankan.
+* **Projects (Technical-First):**
+  * **Tone & Focus:** Berfokus pada sisi teknis mendalam (*technical breakdown*), arsitektur sistem, gambaran *technical flow*, parameter, dan mekanisme cara kerja repo.
+  * **Level Teknis:** Padat teknis, terstruktur (arsitektur, flowchart/diagram, detail stack & komponen).
+  * **Gaya Penulisan:** Tajam, to-the-point, berbobot untuk portofolio engineer.
 
 Check the user's intent from the prompt:
 1. **Requesting a Project:** Execute **Section 3: Project Generation** (`tools/repo-to-project/`).

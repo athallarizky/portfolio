@@ -2,30 +2,30 @@
 
 > 2026-08-20 · 3 menit baca
 
-Mendelegasikan proyek utuh ke AI agent memang berhasil — sampai kamu kehilangan jejak apa yang sebenarnya mereka lakukan. Sprint Driven Development adalah workflow docs-first yang menjaga setiap session tetap terencana, terlacak, dan portabel antar tool dan model.
+Mendelegasikan proyek utuh ke AI agent memang menggiurkan — sampai kamu kehilangan kendali atas apa yang sebenarnya mereka bangun. Sprint Driven Development adalah workflow docs-first yang menjaga tiap sesi tetap terencana, terukur, dan portabel lintas tool maupun model.
 
 **Tags:** AI, Workflow
 **Author:** Athalla Rizky
 
 ---
 
-## Kenapa delegasi ad-hoc berantakan
+## Kenapa delegasi asal prompt gampang berantakan
 
-Belakangan ini saya mendelegasikan seluruh task ke AI — termasuk satu proyek full-stack yang dibangun end-to-end, hanya untuk melihat apa yang terjadi.
+Belakangan ini saya sering mendelegasikan task besar ke AI — termasuk membangun satu project full-stack dari hulu ke hilir, murni buat melihat seberapa jauh kemampuannya.
 
-Awalnya saya lakukan freestyle. Hasilnya:
+Awalnya saya lakukan freestyle tanpa pola yang jelas. Hasilnya bisa ditebak:
 
-- banyak issue, banyak debugging
-- prompt yang sama diulang terus-menerus sebelum akhirnya berhasil
-- context window yang cepat penuh — dan begitu penuh, respons mulai berhalusinasi
+- Banyak issue baru bermunculan, waktu habis buat debugging
+- Harus mengulang prompt yang sama berkali-kali sebelum agent paham maksudnya
+- Context window cepat penuh — dan begitu penuh, output mulai ngawur dan berhalusinasi
 
-Saya coba plugin open-source, skills, dan tool yang memang dibuat untuk ini. Jalan, tapi overkill: token lebih banyak, overhead context lebih besar, untuk masalah yang sebagian besar tidak saya alami.
+Saya sempat coba berbagai plugin open-source, skills, dan tool orkestrasi yang ada di pasaran. Bisa jalan sih, tapi terasa overkill: boros token dan makan banyak context overhead untuk masalah yang sebenarnya nggak serumit itu.
 
-Jadi saya menetapkan workflow pribadi untuk membangun proyek baru dari nol. Saya tidak tahu apakah ada nama resminya, jadi sebut saja **Sprint Driven Development**.
+Akhirnya saya merumuskan workflow pribadi yang lebih terstruktur untuk membangun project baru dari nol. Nggak tahu apakah ada istilah resminya, jadi sebut saja **Sprint Driven Development**.
 
-## Satu aturan: setiap proyek punya folder docs/sprint
+## Satu aturan baku: setiap project wajib punya folder docs/sprint
 
-Implementasinya sederhana. Di setiap proyek, siapkan direktori `docs/sprint-<x>/`:
+Implementasinya sangat simpel. Di setiap project, siapkan struktur direktori `docs/sprint-<x>/`:
 
 ```
 docs/
@@ -39,30 +39,30 @@ docs/
 AGENTS.md              (optional, repo root)
 ```
 
-Lalu dua aturan menggerakkan semuanya:
+Ada dua aturan utama yang menggerakkan seluruh prosesnya:
 
-1. Setiap sprint menyasar satu tujuan spesifik. Sprint 1: slice UI. Sprint 2: backend. Sprint 3: integrasi. Begitu seterusnya.
-2. Setiap sprint, agent mengikuti kontrak yang sama: minimal menghasilkan plan, tasks, report per fase, dan final report.
+1. Tiap sprint fokus ke satu milestone spesifik. Sprint 1: slicing UI. Sprint 2: arsitektur backend. Sprint 3: integrasi dan wiring data. Begitu seterusnya.
+2. Di tiap sprint, agent wajib tunduk pada satu kontrak kerja: minimal menghasilkan plan, tasks, report per fase, dan final report.
 
-## Fungsi tiap file
+## Fungsi tiap file dalam sprint
 
-- **plan.md** — mulai dalam plan mode; agent merencanakan sebelum membangun apa pun. Di sinilah sebagian besar human loop terjadi: kamu berdiskusi dengan agent sampai arahnya benar-benar tepat.
-- **tasks.md** — setelah plan di-review, pecah pekerjaan menjadi task sekecil mungkin, dikelompokkan per fase.
-- **reports/** — agent menghasilkan satu report per fase: apa yang dibangun, temuan, cara menjalankannya. Dari sini kamu memutuskan untuk menguji tiap fase secara manual atau lanjut.
-- **rca/** — saat ada yang rusak, minta agent memperbaikinya *dan* menuliskan root cause-nya. Lain kali masalah yang sama muncul, tinggal tunjuk ke sini.
-- **resources/** — materi referensi untuk sprint berikutnya. Sprint 2 menulis `api-contract.md`; agent sprint 3 tinggal membacanya.
-- **AGENTS.md** — instruksi yang diwariskan dari sprint sebelumnya. Backend selesai di sprint 2? Agent sprint-2 menjelaskan alur integrasi — endpoint chaining, edge case — sebagai instruksi untuk sprint 3.
-- **final-report.md** — ringkasan sprint, jadi kamu dapat gambaran utuh. Sekaligus context ringkas untuk sprint berikutnya, atau untuk debugging di session yang sama.
+- **plan.md** — mulai dari plan mode; agent wajib merencanakan strategi sebelum menyentuh kode apa pun. Di sinilah human-in-the-loop paling krusial: kita challenge dan diskusikan rencananya sampai arah teknisnya benar-benar matang.
+- **tasks.md** — setelah plan disetujui, pecah pengerjaan jadi task-task kecil dan terisolasi per fase.
+- **reports/** — agent membuat laporan ringkas per fase: apa yang sudah dibangun, temuan penting, dan cara menjalankannya. Dari sini kita bisa tentukan apakah mau verifikasi manual dulu atau langsung lanjut.
+- **rca/** — kalau ada bug atau arsitektur yang jebol, minta agent memperbaikinya *sekaligus* mendokumentasikan root cause analysis-nya. Kalau masalah serupa muncul lagi di masa depan, tinggal rujuk file ini.
+- **resources/** — dokumen referensi untuk sprint berikutnya. Contoh: sprint 2 mendokumentasikan `api-contract.md`, lalu agent di sprint 3 tinggal membacanya.
+- **AGENTS.md** — handoff note antar sprint. Backend selesai di sprint 2? Agent sprint 2 merangkum alur integrasi, urutan endpoint, dan edge cases sebagai panduan untuk agent di sprint 3.
+- **final-report.md** — rangkuman menyeluruh dari sprint yang baru lewat. File ini berfungsi ganda sebagai konteks ringkas untuk sprint berikutnya atau saat debugging di session yang sama.
 
-## Apa yang sebenarnya kamu dapat
+## Value nyata yang didapat
 
-Semuanya terlacak: plan, checkpoint task, report per fase, RCA, resources, final report — bahkan instruksi untuk agent berikutnya.
+Semuanya tercatat rapi: roadmap, checkpoint task, laporan per fase, RCA, resources, hingga handoff note buat agent selanjutnya.
 
-Efeknya bukan sekadar kerapian. Ganti session jadi trivial, begitu juga menyerahkan satu task — atau satu sprint penuh — ke agent atau model yang berbeda. Saya sudah menguji ini lintas tool (CommandCode, Claude Code, OpenCode), berganti model dan session di tengah proyek. Semuanya melanjutkan dari titik terakhir, tanpa menjelaskan ulang dari nol.
+Dampaknya bukan cuma soal kerapian file. Pindah session jadi effortless. Begitu juga kalau mau lempar task — atau bahkan satu sprint utuh — ke agent atau model lain. Saya sudah menguji workflow ini lintas platform (CommandCode, Claude Code, OpenCode) serta gonta-ganti model di tengah pengerjaan. Semuanya langsung jalan melanjutkan titik terakhir tanpa perlu briefing ulang dari nol.
 
-Satu tips sebelum mulai: tulis plan dan tasks dengan reasoning model (Opus, GLM 5.2, DeepSeek V4 Pro). Setelah dua file itu solid, implementasinya aman diserahkan ke model yang lebih murah.
+Satu tips praktis: susun plan dan tasks menggunakan reasoning model kelas atas (seperti Opus, GLM 5.2, atau DeepSeek V4 Pro). Begitu kedua file panduan itu solid, tahap implementasi kodenya sangat aman didelegasikan ke model yang lebih murah dan cepat.
 
-Ini template-nya: [docs/sprint template](https://lnkd.in/g2C_cRQH).
+Template-nya bisa kamu ambil di sini: [docs/sprint template](https://lnkd.in/g2C_cRQH).
 
 ---
 

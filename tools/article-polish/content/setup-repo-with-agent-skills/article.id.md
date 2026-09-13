@@ -2,40 +2,40 @@
 
 > 2026-08-20 · 3 menit baca
 
-Ubah pengetahuan setup repo menjadi skill yang bisa dieksekusi oleh AI agent — supaya masuk ke repo yang asing berhenti jadi maraton tanya-jawab dengan orang-orang yang kebetulan tahu.
+Ubah pengetahuan setup repo jadi executable skill untuk AI agent — biar proses onboarding ke codebase baru nggak lagi jadi sesi maraton tanya-jawab dengan segelintir orang yang kebetulan tahu.
 
 **Tags:** AI, Workflow
 **Author:** Athalla Rizky
 
 ---
 
-## Masalahnya: repo yang asing
+## Masalah klasik: masuk ke repo asing
 
-Dengan AI di toolkit-nya, kantor saya terus mendorong semua orang untuk tidak lagi terpaku pada satu peran — engineer backend mengambil task frontend, dan sebaliknya.
+Sejak AI masuk ke workflow harian, kantor saya mulai mendorong engineer untuk nggak terpaku pada satu role saja — backend engineer ikut pegang frontend, begitu juga sebaliknya.
 
-Tapi satu hambatan awal muncul terus-menerus: bagaimana cara setup repo yang belum pernah kamu sentuh? Apalagi repo legacy, dengan dependensi yang rumit, di mana cara menjalankannya hanya hidup di kepala segelintir orang.
+Tapi ada satu kendala klasik yang selalu berulang: gimana caranya setup repo yang belum pernah kamu sentuh sama sekali? Apalagi kalau repo legacy dengan dependensi tricky, di mana cara menjalankannya cuma tersimpan di kepala segelintir orang.
 
-Bagian itu biasanya memakan waktu, karena artinya harus bertanya dulu ke mana-mana:
+Bagian onboarding ini biasanya paling boros waktu, karena ujung-ujungnya harus keliling nanya:
 
-- repo ini pakai Node versi berapa?
-- butuh service dependensi apa saja?
-- kalau error A muncul, saya harus bagaimana?
+- "Ini pakai Node versi berapa ya?"
+- "Service dependensinya butuh apa aja?"
+- "Kalau pas jalan muncul error A, solusinya gimana?"
 
-## Jadikan skill, bukan sekadar doc
+## Jadikan skill, bukan sekadar dokumentasi pasif
 
-Jadi idenya: kenapa tidak tulis satu skill per repo? Bukan dokumentasi setup biasa, tapi instruksi yang memang ditulis untuk dieksekusi oleh AI agent. User cukup bilang ke agent:
+Dari situ muncul ide: kenapa nggak sekalian bikin skill khusus per repo? Bukan dokumentasi setup biasa yang cuma dibaca manusia, melainkan instruksi terstruktur yang dirancang untuk dieksekusi langsung oleh AI agent. User tinggal instruksikan:
 
-> "Setup repo <X> di port <X>"
+> "Tolong setup repo <X> di port <X>"
 
 Alurnya kira-kira begini:
 
-1. Ambil pengetahuan dari engineer yang paham repo tersebut
-2. Tulis setup-nya langkah demi langkah
-3. Tambahkan instruksi kondisional untuk kasus-kasus yang umum
-4. Pisahkan troubleshooting ke file tersendiri
-5. Minta agent membantu memproduksi versi skill-nya
+1. Ekstrak pengetahuan dari engineer yang paling paham repo tersebut
+2. Susun langkah setup-nya secara berurutan
+3. Tambahkan instruksi kondisional untuk skenario umum
+4. Pisahkan panduan troubleshooting ke file tersendiri
+5. Minta agent membantu memformat instruksi tersebut menjadi skill standar
 
-## Formatnya
+## Format strukturnya
 
 ```
 <repo-name>/
@@ -45,24 +45,24 @@ Alurnya kira-kira begini:
 └── AGENTS.md
 ```
 
-> **AGENTS.md** — entrypoint yang dibaca setiap agent.
-> **SKILL.md** — setup repo langkah demi langkah, termasuk instruksi IF-ELSE untuk kondisi tertentu.
-> **docs/troubleshooting.md** — error yang sering muncul, penyebabnya, dan cara menyelesaikannya.
+> **AGENTS.md** — entrypoint utama yang dibaca pertama kali oleh agent.
+> **SKILL.md** — langkah setup bertahap, lengkap dengan percabangan IF-ELSE untuk kondisi tertentu.
+> **docs/troubleshooting.md** — daftar error umum, akar masalah, dan solusinya.
 
-## Apakah berhasil?
+## Apakah beneran jalan?
 
-Dalam praktiknya, agent memakai skill ini untuk men-setup salah satu repo kami dari nol sampai jalan di lokal. Yang mengejutkan: model yang lebih ringan pun bisa mengikuti instruksinya, asalkan skill-nya cukup jelas.
+Dalam praktiknya, agent berhasil memanfaatkan skill ini buat men-setup repo dari nol sampai running di local machine. Yang menarik: model yang lebih ringan pun bisa mengeksekusi instruksi dengan lancar, asalkan panduan di skill-nya cukup presisi.
 
-Kamu juga bisa menginstruksikan agent memakai tool "user-select question", sehingga ia menawarkan pilihan aksi ke manusia alih-alih menebak. Contohnya saat instalasi repo:
+Kita juga bisa mengarahkan agent untuk pakai tool seperti "user-select question", sehingga ia memberikan opsi pilihan ke manusia ketimbang asal tebak. Contohnya saat instalasi:
 
 1. localhost saja (`localhost:3000`)
 2. sekalian setup local proxy domain (`example.domain.local`)
 
-Itu membuat instalasi fleksibel sesuai kebutuhan user. Apakah ini best practice? Mungkin belum. Sebagai eksperimen kecil, hasilnya menjanjikan.
+Ini bikin proses instalasi tetap fleksibel sesuai kebutuhan developer. Apakah ini sudah jadi industry best practice? Mungkin belum. Tapi sebagai eksperimen, hasilnya terbukti efektif.
 
-Yang paling berharga: konteks setup yang dulu hanya hidup di kepala beberapa engineer kini menjadi instruksi yang bisa dipakai ulang. Engineer lain cukup minta agent menjalankan setup, me-review langkahnya, menyetujui command yang perlu dijalankan — lalu kembali ke tugas utamanya.
+Win terbesarnya: konteks setup yang tadinya cuma ada di kepala orang per orang sekarang jadi instruksi yang reusable. Engineer lain tinggal minta agent buat jalankan setup, review langkahnya, approve command yang butuh izin — lalu bisa langsung fokus ke task utamanya.
 
-Kalau engineer memang harus multi-role, semoga ini bikin melangkah ke repo di luar area harian jadi sedikit lebih mulus, dengan jauh lebih sedikit friksi.
+Di era di mana engineer dituntut makin fleksibel lintas role, pendekatan ini bikin proses adaptasi ke codebase baru jadi jauh lebih mulus tanpa buang-buang waktu.
 
 ---
 

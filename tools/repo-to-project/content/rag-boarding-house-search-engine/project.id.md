@@ -2,28 +2,28 @@
 
 > Personal · 2026 — *Indonesian translation (review copy)*
 
-Sistem AI + RAG end-to-end untuk mencari kos: mengklasifikasi query POI vs area, scraping listing berdasarkan kode pos, dan rekomendasi lewat semantic search plus LLM.
+Sistem AI + RAG end-to-end untuk pencarian kos di Indonesia: klasifikasi query POI vs area, scraping data listing berbasis kode pos, serta rekomendasi kontekstual via semantic search dan LLM.
 
 **Tech:** go, fastapi, docker, typescript, rag, chroma, openai *(shared — not translated)*
 **Source:** https://github.com/athallarizky/rent-house-ai *(shared)*
 
 ## Overview
 
-Baru-baru ini saya membangun sistem AI + RAG end-to-end untuk mencari kos. Alurnya ada empat langkah:
+Saya baru saja membangun sistem AI + RAG end-to-end untuk mempermudah pencarian kos. Alur utamanya terbagi ke dalam empat tahap:
 
-1. **Klasifikasi query: Point of Interest atau Area spesifik.** Ditangani Fuse.js, library fuzzy-search. Aplikasi butuh query yang valid sebelum scraping apa pun, jadi harus bisa membedakan keduanya: "Kos near Mall One Belpark" adalah POI — scrape langsung di sekitar titik itu; "Kos di Cilandak" adalah area — petakan ke kode pos. Query yang tidak masuk keduanya dilewati dari awal.
+1. **Klasifikasi Query: Point of Interest (POI) vs Area Spesifik.** Tahap ini ditangani oleh Fuse.js untuk fuzzy matching. Sistem harus bisa membedakan kedua jenis input ini sebelum melakukan scraping: "Kos dekat Citos" adalah POI (scraping langsung radius koordinat sekitar titik tersebut); sedangkan "Kos di Cilandak" adalah Area (perlu dipetakan dulu ke daftar kode pos terkait). Input yang tidak valid langsung dieliminasi sejak awal.
 
-2. **Scrape listing untuk area tersebut** (Google Maps). Triknya sederhana: yang kamu butuhkan sebenarnya cuma kode pos. Area seperti Cilandak punya beberapa kode pos, dan untuk tiap kode pos kamu generate varian ejaannya — "Kos di [kode pos]", "Kosan di [kode pos]", "Kost di [kode pos]". Makin banyak query, makin banyak data — dan makin besar komputasi. POI bekerja dengan cara yang sama: API pihak ketiga menerjemahkan nama tempat menjadi koordinat, dan scraper mencari di sekitarnya.
+2. **Scraping Listing Berdasarkan Area (Google Maps).** Kuncinya simpel: target utamanya adalah kode pos. Satu kecamatan seperti Cilandak punya beberapa kode pos, dan untuk tiap kode pos digenerate variasi ejaan lokalnya — "Kos di [kode pos]", "Kosan di [kode pos]", "Kost di [kode pos]". Makin banyak kombinasi query, datanya makin lengkap — meski butuh komputasi lebih besar. Untuk POI polanya serupa: API pihak ketiga menerjemahkan nama tempat jadi koordinat GPS, lalu scraper mengekstrak listing di sekitarnya.
 
-3. **Normalisasi, lalu masuk vector DB (Chroma).** Data hasil scrape dibersihkan dan dideduplikasi, dipecah menjadi chunk, di-embed menjadi vector oleh embedding model, lalu disimpan. Ini bagian RAG-nya: retrieval berdasarkan makna, sehingga kamu bisa mencari dengan bahasa manusia alami alih-alih keyword persis.
+3. **Normalisasi Data & Ingestion ke Vector DB (Chroma).** Data mentah hasil scraping dibersihkan, dideduplikasi, di-chunking, lalu diubah menjadi vector embeddings oleh embedding model sebelum disimpan ke Chroma. Di sinilah letak inti RAG-nya: pencarian berbasis makna (*semantic search*), sehingga user bisa bertanya dengan bahasa sehari-hari yang luwes tanpa harus mencocokkan kata kunci secara kaku.
 
-4. **Membawa LLM untuk rekomendasi.** Hasil RAG saja sebenarnya cukup, tapi responsnya terasa statis — LLM membuatnya dinamis. Aplikasi mendukung mode chat "AI" dan "Normal", multi-provider dan multi-model lewat API key.
+4. **Integrasi LLM untuk Rekomendasi Dinamis.** Hasil retrieval dari vector DB sebenarnya sudah informatif, tapi responsnya terasa kaku dan mentah — di sinilah peran LLM untuk merangkum dan memberikan rekomendasi yang enak dibaca. Aplikasi ini menyediakan mode "AI" dan "Normal", serta mendukung multi-provider dan multi-model lewat konfigurasi API key.
 
-## Yang saya pelajari
+## Lesson Learned
 
-- Embedding model punya ragamnya. Sebagian dilatih hanya dengan English — lebih akurat kalau kamu juga mencari dalam English — sementara yang lain multibahasa.
-- Makin baik modelnya, makin baik hasilnya, dan makin berat komputasinya. Proyek ini mencoba dua: bge-m3 dan e5-small-embedding.
-- Scraper ditulis dalam Go, yang goroutine-nya memungkinkannya menjalankan beberapa task sekaligus — tiga varian query ("kos", "kosan", "kost") untuk satu kode pos dieksekusi paralel, bukan berurutan.
+- Karakteristik tiap embedding model sangat bervariasi. Model yang dilatih murni data bahasa Inggris memang tajam untuk query Inggris, tapi untuk pencarian bahasa Indonesia kasual, multilingual embedding model jauh lebih relevan.
+- Trade-off akurasi vs komputasi sangat terasa. Semakin besar kapasitas modelnya, hasil retrieval memang makin presisi tapi latency dan resource-nya melonjak. Di project ini saya sempat menguji `bge-m3` dan `e5-small-embedding`.
+- Engine scraper ditulis menggunakan Go. Keunggulan goroutine-nya sangat terasa saat mengeksekusi tiga varian ejaan query ("kos", "kosan", "kost") untuk satu kode pos secara paralel alih-alih sekuensial, memangkas waktu scraping secara drastis.
 
 ---
 

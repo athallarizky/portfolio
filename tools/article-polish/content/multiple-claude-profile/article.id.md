@@ -1,21 +1,21 @@
-# Setup Banyak Claude Profile
+# Setup Multiple Profile di Claude Code
 
 > 2026-08-20 · 1 menit baca
 
-Kalau kamu ngoding dengan Claude Code sambil mengelola lebih dari satu profile atau provider, pisahkan config tiap profile — masing-masing dapat environment sendiri, dan beberapa instance jalan bersamaan tanpa saling tabrakan.
+Kalau kamu pakai Claude Code dan harus gonta-ganti akun atau provider, pisahkan config tiap profile — masing-masing punya environment terisolasi, dan beberapa instance bisa jalan barengan tanpa saling tabrakan.
 
 **Tags:** AI
 **Author:** Athalla Rizky
 
 ---
 
-## Kenapa config dipisah
+## Kenapa config perlu dipisah
 
-Kalau kamu memakai Claude Code dengan lebih dari satu profile atau provider, jauh lebih nyaman kalau config tiap profile dipisah. Setiap profile dapat environment sendiri, dan kamu bisa menjalankan beberapa instance sekaligus tanpa saling mengganggu.
+Kalau kamu memakai Claude Code dengan lebih dari satu profile atau provider, memisahkan direktori config itu jauh lebih rapi dan aman. Tiap profile punya environment-nya sendiri, dan kamu bisa menjalankan beberapa instance terminal sekaligus tanpa takut setting-nya saling timpa.
 
-## Setup-nya
+## Cara setup-nya
 
-Cuma satu shell function kecil — taruh di `.zshrc` atau `.bashrc`:
+Cukup buat satu shell function sederhana — masukkan ke file `.zshrc` atau `.bashrc`:
 
 ```bash
 # Setup separated configuration for claude code
@@ -35,13 +35,13 @@ zai-claude() {
 }
 ```
 
-Setelah itu, buat tiap direktori config di bawah `$HOME` dan sesuaikan `settings.json`-nya untuk provider yang dipakai.
+Setelah itu, buat folder config masing-masing di bawah `$HOME` dan sesuaikan file `settings.json`-nya sesuai provider atau kebutuhan auth yang dipakai.
 
-## Apa yang kamu dapat
+## Keuntungan yang didapat
 
-Semuanya rapi: ganti context jadi trivial, dan menjalankan beberapa session berdampingan dengan config berbeda langsung jalan. Cocok baik untuk akun personal, provider lain, maupun setup agent khusus.
+Semuanya jadi serba rapi: switch context jadi gampang banget, dan menjalankan beberapa session sekaligus dengan config berbeda langsung beres tanpa bentrok. Sangat praktis buat kamu yang memisahkan akun personal, akun kantor, provider alternatif, maupun setup dedicated agent.
 
-Untuk mulai session, tinggal jalankan: `claude`, `zai-claude`, `agentrouter-claude`.
+Untuk mulai session, tinggal panggil aliasnya langsung dari terminal: `claude`, `zai-claude`, `agentrouter-claude`.
 
 ---
 

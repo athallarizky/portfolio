@@ -2,7 +2,7 @@
 
 > 2026-08-19 · 3 menit baca
 
-Vibe coding membuat semuanya terlihat berfungsi — sampai kamu sadar tidak paham apa yang baru kamu ship. Ini workflow belajar yang menjaga AI sebagai guru, bukan penulisnya.
+Vibe coding membuat semuanya seolah berfungsi — sampai kamu sadar kamu nggak paham apa yang baru saja kamu ship. Ini workflow belajar yang menempatkan AI sebagai mentor, bukan joki koding.
 
 **Tags:** AI, Learning, Workflow
 **Author:** Athalla Rizky
@@ -11,54 +11,54 @@ Vibe coding membuat semuanya terlihat berfungsi — sampai kamu sadar tidak paha
 
 ## Jebakan vibe coding
 
-Sejak AI jadi arus utama, vibe coding jadi kebiasaan default. Kamu prompt, dia membangun, dan hasilnya terlihat berfungsi. Masalahnya: sering kali kamu tidak benar-benar tahu apa yang barusan agent lakukan untukmu.
+Sejak AI makin mainstream, vibe coding jadi kebiasaan default banyak orang. Tinggal ketik prompt, biarkan AI yang ngoding, dan hasilnya kelihatan jalan. Masalahnya: sering kali kamu nggak benar-benar paham apa yang barusan agent kerjakan di balik layar.
 
-Belajar dengan AI cenderung mengalami nasib yang sama. Saat ada yang menjelaskan, semuanya masuk akal — kamu mengangguk-angguk. Tapi begitu harus membangun sendiri dari nol, kamu blank. Paham waktu diajari; mentok saat berlatih.
+Belajar pakai AI juga rawan terjebak pola yang sama. Pas ada yang ngejelasin, semuanya terasa masuk akal — kamu angguk-angguk paham. Tapi giliran disuruh bangun sendiri dari nol, kepala langsung blank. Paham pas diajarin, tapi mentok pas disuruh praktik.
 
-Keduanya berakar pada hal yang sama: kamu jadi konsumen jawaban, bukan pembangun.
+Dua-duanya berakar dari masalah yang sama: kamu cuma jadi konsumen jawaban, bukan pembangunnya.
 
-## Mulai dari case study, bukan docs
+## Mulai dari case study, bukan baca docs
 
-Kunci workflow ini sederhana: mulai dari case study dulu, bukan materinya.
+Kunci workflow ini sederhana: mulai dari studi kasus nyata, bukan baca materinya duluan.
 
-Sedikit hal yang lebih membosankan daripada membaca dokumentasi halaman demi halaman tanpa arah. Tapi begitu ada satu proyek nyata yang ingin kamu selesaikan, setiap konsep langsung punya konteks: kenapa dibutuhkan, dipakai di mana, dan apa yang rusak kalau kamu salah.
+Hampir nggak ada yang lebih membosankan daripada baca dokumentasi berlembar-lembar tanpa arah yang jelas. Tapi begitu ada satu project nyata yang ingin kamu selesaikan, setiap konsep langsung punya konteks: kenapa ini dipakai, kapan dibutuhin, dan apa dampaknya kalau kamu salah implementasi.
 
-Prompt-nya kira-kira begini:
+Contoh prompt-nya sesimpel ini:
 
 > I want to learn AI agent orchestration using LangChain, with case study: AI code reviewer multi-agent (security, performance, code style).
 
-Satu prompt, dan arah sudah ter set: teknologi apa, proyek apa.
+Cukup satu prompt, dan arah belajarnya langsung terarah: teknologinya apa, project-nya apa.
 
-## Empat langkah, satu fase satu waktu
+## Empat langkah, satu fase dalam satu waktu
 
-Setelah arah jelas, minta agent menjalankan empat langkah:
+Begitu arahnya jelas, minta agent menjalankan empat langkah ini:
 
-1. **Research** — teknologi, library, konsep, best practice, temuan. Agent memeriksa kondisi terkini: versi berapa, pendekatan mana yang cocok dengan tujuan, apa yang deprecated atau memang tricky.
-2. **Design architecture** — struktur proyek, diagram alur data, roadmap. Kamu review dan sepakati bersama sebelum apa pun dibangun.
-3. **Phase breakdown** — pecah pekerjaan menjadi fase sekecil mungkin. Tiap fase cukup kecil untuk diselesaikan dalam satu kali duduk.
-4. **Iterate** — jalankan satu fase dulu, pastikan berfungsi, baru lanjut ke berikutnya.
+1. **Research** — riset teknologi, library, best practice, dan temuan teknis. Agent bakal ngecek kondisi terkini: versi berapa yang stabil, approach mana yang paling cocok, dan apa saja yang sudah deprecated atau tricky.
+2. **Design architecture** — struktur project, diagram alur data, dan roadmap pengerjaan. Kamu review dan sepakati bareng sebelum ada kode yang ditulis.
+3. **Phase breakdown** — pecah pengerjaan jadi fase-fase sekecil mungkin. Tiap fase harus cukup ringkas buat diselesaikan dalam sekali duduk.
+4. **Iterate** — eksekusi satu fase dulu, tes dan pastikan jalan, baru lanjut ke fase berikutnya.
 
-Output-nya adalah tutorial langkah demi langkah: semua yang perlu kamu lakukan, lengkap dengan kode dan penjelasan. Tugasmu tinggal mengikutinya.
+Output-nya adalah tutorial langkah demi langkah: lengkap dengan kode dan penjelasannya. Tugasmu tinggal mengikutinya.
 
-## Aturan utama: agent TIDAK boleh menulis kode
+## Aturan emas: agent DILARANG menulis kode langsung
 
-Sekarang bagian yang paling penting: agent **dilarang** menulis kode. Kamu, manusia, **wajib** mengetiknya sendiri.
+Ini bagian paling krusial: agent **dilarang keras** ngetik kode ke file project kamu. Kamu, manusianya, **wajib** mengetiknya manual.
 
-Kenapa? Karena mengetik kode manual memunculkan pertanyaan dan error di hampir setiap baris — dan justru di situlah proses belajar terjadi:
+Kenapa? Karena proses ngetik kode sendiri itu memicu banyak pertanyaan dan error di hampir setiap baris — dan di situlah proses belajar sesungguhnya terjadi:
 
-- "Kenapa harus begini?"
-- "Baris ini ngapain?"
-- "Kenapa ini error?"
+- "Kenapa kodenya harus begini?"
+- "Baris ini fungsinya buat apa?"
+- "Kok bagian ini throwing error?"
 
-Pertanyaan-pertanyaan itu mengubah session menjadi percakapan sungguhan. Agent menjelaskan, kamu membantah, dan kadang kamu yang benar — ada cara yang lebih baik. Interaksi dua arah — bukan sekadar menerima hasil.
+Pertanyaan-pertanyaan itu bikin sesi belajarmu jadi diskusi dua arah yang hidup. Agent menjelaskan, kamu bisa menyanggah, dan kadang kamu malah nemu cara yang lebih efisien. Bukan sekadar pasrah nerima output mentah.
 
-## Hafal dan paham, bukan sekadar ship
+## Hafal dan paham, bukan sekadar asal ship
 
-Semuanya bermuara ke dua hal: **hafal** dan **paham**. Bukan "selesai membangun", tapi benar-benar tahu kenapa dan bagaimana tiap bagian bekerja.
+Tujuan akhirnya selalu dua hal: **hafal** dan **paham**. Bukan sekadar "yang penting project-nya jadi", tapi kamu beneran ngerti kenapa dan bagaimana tiap baris kode bekerja.
 
-Dengan begitu kamu tidak kehilangan esensi ngoding. Kamu tetap menulis, membaca, dan memahami kode baris demi baris — alih-alih semuanya di-generate untukmu. Bonusnya, muscle memory menulis kode-mu tetap terjaga.
+Dengan cara ini, esensi ngoding nggak hilang. Kamu tetap menulis, membaca, dan memahami logika baris demi baris — bukan serba disuapi AI. Plus, muscle memory jemari buat ngoding tetap terjaga.
 
-Workflow ini sekarang dikemas sebagai playbook yang bisa kamu arahkan ke agent mana pun: [AI-Guided Learning Playbook](https://github.com/athallarizky/agent-playbooks). Tunjuk agent-mu ke sana, sebutkan teknologi dan proyek yang ingin dipelajari, sisanya berjalan sendiri.
+Workflow ini sekarang sudah saya kemas jadi playbook publik yang bisa kamu pakai di agent mana pun: [AI-Guided Learning Playbook](https://github.com/athallarizky/agent-playbooks). Tinggal arahkan agent-mu ke sana, tentukan teknologi dan project yang mau kamu ulik, sisanya tinggal ikuti ritmenya.
 
 ---
 

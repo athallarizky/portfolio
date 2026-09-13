@@ -1,0 +1,24 @@
+{
+  "uuid": "899b78c2-45d4-434f-9d52-4f7d2797db57",
+  "title": "Wishlist PWA",
+  "slug": "wishlist-pwa",
+  "year": 2026,
+  "excerpt": "A cross-platform e-commerce wishlist PWA with Web Share Target API, offline IndexedDB storage, and a Cloudflare Worker metadata enrichment scraper.",
+  "descriptor": "Mobile / PWA · Tool",
+  "techTags": [
+    "pwa",
+    "cloudflare",
+    "javascript",
+    "tailwindcss"
+  ],
+  "links": [
+    {
+      "label": "Source",
+      "icon": "mdi:github",
+      "url": "https://github.com/athallarizky/wishlist-pwa"
+    }
+  ],
+  "body": "## Technical Overview\n\n`wishlist-pwa` is a client-first Progressive Web App (and Capacitor-wrapped Android APK) designed to unify product bookmarks across disparate e-commerce platforms (Shopee, Tokopedia) without requiring accounts or central databases. By pairing the **Web Share Target API** with an edge **Cloudflare Worker**, users can hit \"Share\" directly inside native shopping apps to immediately capture, enrich, and persist product cards locally.\n\n## Technical Architecture & Ingestion Flow\n\n```\n[ Native Shopping App ] (Shopee / Tokopedia)\n           │ User clicks \"Share to Wishlist\"\n           ▼\n[ Web Share Target API / Android Intent Filter ]\n           │ Captures raw shared text + URL parameter\n           ▼\n[ Cloudflare Worker Edge Proxy ] (GET /metadata?url=...)\n           │ Bypasses CORS & fetches DOM\n           │ Extracts OpenGraph tags: title, image, price, canonical url\n           ▼\n[ PWA Client (Vanilla JS) ]\n    ├── Regex Parser (sanitizes referral trackers and merchant affiliate tokens)\n    ├── IndexedDB Engine (persists item collection offline with zero server storage)\n    └── Service Worker (caches app shell for instant offline loads)\n```\n\n1. **Native Share Interception (Web Share Target API):** Configured via `manifest.webmanifest` and Capacitor Android intent filters. When an e-commerce link is shared from an Android app, the OS pipes the share bundle directly into the PWA's capture handler without manual copy-pasting.\n2. **Pure Regex Stream Parser:** E-commerce apps bundle messy promotional text, affiliate tracking IDs, and shortened redirects into share payloads. A dedicated pure parser cleans tracking parameters, extracts canonical item URLs, and prepares clean scrape targets.\n3. **CORS Edge Proxy (Cloudflare Worker):** Browser security models block direct DOM scraping from other domains. A serverless Cloudflare Worker acts as a lightweight edge proxy: it fetches the target product page, parses OpenGraph metadata (`og:title`, `og:image`, `og:price:amount`), and returns structured JSON in ~120ms.\n4. **Client-Side IndexedDB Storage:** Zero central database architecture. Items, categorizations, and price checkpoints are stored exclusively on the device using native IndexedDB (`idb` wrapper). User data never leaves their local device.\n5. **Offline PWA Shell:** A custom Service Worker pre-caches all HTML, JS, CSS, and icon assets, allowing full offline browsing and management of saved wishlists.",
+  "architecture": "wishlist-pwa/\n├── public/                 # PWA core assets\n│   ├── manifest.webmanifest# Web Share Target API definitions & icons\n│   └── sw.js               # Service worker caching strategy\n├── src/\n│   ├── main.js             # Capture lifecycle & view router\n│   ├── parser.js           # Unit-tested e-commerce share text extractor\n│   ├── db.js               # IndexedDB storage wrapper\n│   └── view.js             # Reactive DOM list & card renderer\n├── worker/                 # Cloudflare Worker metadata scraper\n│   ├── index.js            # HTML fetcher & OpenGraph tag parser (bypasses CORS)\n│   └── wrangler.toml       # Edge deployment configuration\n├── android/                # Capacitor Android wrapper project (release APK)\n├── test/                   # Node --test parser test suite\n└── README.md",
+  "status": "published"
+}

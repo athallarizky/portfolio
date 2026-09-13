@@ -1,0 +1,22 @@
+{
+  "uuid": "afd9225a-23f5-45c8-ad92-82a47b243f14",
+  "title": "Project Story",
+  "slug": "project-story",
+  "year": 2026,
+  "excerpt": "A multi-agent collaboration pipeline in TypeScript that clones any GitHub repository, extracts architecture patterns and writing styles, and drafts polished technical blog articles.",
+  "descriptor": "AI / Workflow · OSS",
+  "techTags": [
+    "typescript",
+    "openai"
+  ],
+  "links": [
+    {
+      "label": "Source",
+      "icon": "mdi:github",
+      "url": "https://github.com/athallarizky/project-story"
+    }
+  ],
+  "body": "## Technical Overview\n\n`project-story` is an automated technical writing pipeline that turns any public GitHub repository into a publication-ready blog article. Rather than relying on a single monolithic prompt, the system orchestrates a **directed multi-agent graph in TypeScript** where specialized agents independently handle codebase research, author persona modeling, and narrative synthesis.\n\n## Multi-Agent Graph Architecture\n\n```\nCLI: npx tsx src/index.ts <git-url> --style personal\n                       │\n                       ▼\n            [ Supervisor Orchestrator ]\n           ┌───────────┴───────────┐\n           ▼                       ▼\n  [ Agent 1: Researcher ]  [ Agent 2: Style Analyzer ]\n  - Shallow git clone      - Ingests SKILL.md & post samples\n  - Parses package manifests- Extracts vocabulary & tone rules\n  - Maps architectural tree\n           │                       │\n           └───────────┬───────────┘\n                       ▼ (Merged Graph State)\n             [ Agent 3: Writer ]\n             - Drafts narrative based on factual dossier\n             - Enforces tone boundaries & code snippets\n                       │\n                       ▼\n            [ Output: article.md ]\n```\n\n1. **Shared Graph State Machine:** Built on a unified state contract in `src/state.ts` that tracks repository metadata, the factual research dossier, style guidelines, intermediate drafts, and supervisor approval flags.\n2. **Agent 1 — Codebase Researcher:**\n   - Clones target repositories with `--depth=1` to minimize bandwidth and disk overhead.\n   - Systematically inspects dependency manifests (`package.json`, `go.mod`, `Cargo.toml`, `pyproject.toml`), directory structures, and entry points.\n   - Generates a strictly factual technical report detailing project motivation, stack choices, key algorithms, and edge cases.\n3. **Agent 2 — Style Analyzer:**\n   - Operates in complete isolation from the codebase.\n   - Reads user-defined markdown style guides (`SKILL.md`) and raw past writing samples from `writing-style/`.\n   - Produces a structured persona contract: sentence variance rules, preferred technical depth, and blacklisted AI cliches.\n4. **Agent 3 — Narrative Writer:**\n   - Synthesizes the factual dossier with the persona contract.\n   - Formats headers, conceptual diagrams, and code snippets without inventing fictional APIs or hallucinatory claims.\n5. **Isolated Tool Layer:** Provides atomic, deterministic tools for git operations, sandboxed file system reads, and style parsing under `src/tools/`.",
+  "architecture": "project-story/\n├── src/\n│   ├── agents/             # Multi-agent role implementations\n│   │   ├── supervisor.ts   # State transition coordinator & routing\n│   │   ├── researcher.ts   # Git cloner & codebase inspector\n│   │   ├── style-analyzer.ts # Writing style extractor\n│   │   └── writer.ts       # Narrative synthesis agent\n│   ├── tools/              # Sandboxed agent tool catalog\n│   │   ├── git.ts          # Repository cloning & commit history tools\n│   │   ├── filesystem.ts   # Manifest reader & tree walker\n│   │   └── style.ts        # Sample document loader\n│   ├── state.ts            # Shared state schema & graph reducers\n│   ├── graph.ts            # StateGraph definition & node wiring\n│   ├── llm.ts              # Model provider initialization (Zhipu / OpenAI)\n│   └── index.ts            # CLI command runner\n├── writing-style/          # Personal SKILL.md guides & reference articles\n├── package.json            # Manifest\n└── README.md",
+  "status": "published"
+}

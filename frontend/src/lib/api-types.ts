@@ -9,6 +9,12 @@ export interface PaginatedResponse<T> {
   hasNextPage: boolean;
 }
 
+/** Client-side augmentation: does this content have an Indonesian translation?
+ *  (Resolved server-side from a locale=id&fallback-locale=none probe — sprint-26.) */
+export interface TranslatedFlag {
+  translated?: boolean;
+}
+
 // === Collections ===
 export interface DocumentCategory {
   id: number;

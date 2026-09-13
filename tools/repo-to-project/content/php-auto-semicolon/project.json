@@ -1,0 +1,23 @@
+{
+  "uuid": "c199f1d1-451d-4b31-9313-1ba1aaae1d78",
+  "title": "PHP Smart Semicolon",
+  "slug": "php-auto-semicolon",
+  "year": 2026,
+  "excerpt": "Automatic semicolon insertion for PHP on save in VS Code and Cursor — driven by a zero-dependency, single-pass TypeScript lexer running in under 2ms.",
+  "descriptor": "Developer Tool · OSS",
+  "techTags": [
+    "php",
+    "typescript",
+    "tools"
+  ],
+  "links": [
+    {
+      "label": "Source",
+      "icon": "mdi:github",
+      "url": "https://github.com/athallarizky/php-auto-semicolon"
+    }
+  ],
+  "body": "## Technical Overview\n\n`php-auto-semicolon` is a lightweight editor extension for VS Code and Cursor that brings **Automatic Semicolon Insertion (ASI)** to PHP on file save. Standard formatters (Laravel Pint, PHP-CS-Fixer, `@prettier/plugin-php`) crash when encountering syntax errors, rendering them incapable of fixing missing semicolons. This extension acts as a pre-formatting surgical repair tool, scanning and patching unterminated statements before external formatters trigger.\n\n## Core Architecture & Lexer Engine\n\n```\nOn Save Event\n      │\n      ▼\n[ Document Snapshot ] ──▶ [ Single-Pass Lexer ] ──▶ [ Insertion Planner ] ──▶ [ VS Code WorkspaceEdit ]\n                                 │                             │\n                         - Bracket depth stack         - Skip fluent chains\n                         - String & comment masks      - Trailing comment split\n                         - Heredoc/Nowdoc detector     - Closure vs argument check\n```\n\n1. **Zero-Dependency Single-Pass Lexer:** Written in pure TypeScript, the lexer processes ~3,000 lines of PHP code in under 2ms. It avoids heavy AST parsers, operating instead on a character-by-character scan with a state machine to track grammar boundaries.\n2. **Fail-Closed Safety Contract:** If the lexer encounters ambiguous syntax, multi-line string boundaries, or unclosed structural blocks, it strictly aborts without modifying the buffer. A false negative simply requires one manual keystroke; a false positive breaks code execution.\n3. **Context State Tracking:**\n   - **Nesting Stack:** Maintains an active stack of open delimiters (`(`, `[`, `{`). Statements inside function arguments, array literals, or conditional headers never receive premature semicolons.\n   - **Literal Masks:** Ignores text inside single quotes, double quotes with variable interpolation (`\"hello {$name}\"`), line comments (`//`, `#`), block comments (`/* ... */`), and complex heredoc/nowdoc blocks (`<<<EOD`).\n   - **HTML/PHP Boundary Awareness:** Safely tracks transitions between inline HTML and PHP tags (`<?php ... ?>`).\n4. **Fluent Chain Resolution:** Method chains (`User::query()->where(...)->first()`) evaluate across multiple lines. The lexer tracks leading/trailing `->` tokens and only flags the terminating expression for semicolon insertion.\n5. **Closure Discrimination:** Distinguishes variable-assigned closures (`$callback = function () { ... };`) requiring a terminating semicolon from anonymous closures passed directly as parameters (`array_map(function () { ... }, $items)`).\n6. **Comment Preservation:** Calculates precise column offsets so that semicolons are injected directly after the statement expression and before any trailing comments on that line (`$timeout = 5000; // milliseconds`).",
+  "architecture": "php-auto-semicolon/\n├── src/\n│   ├── extension.ts        # VS Code onWillSaveDocument hook & command registry\n│   ├── lexer/\n│   │   ├── scanner.ts      # Character scanner & token state machine\n│   │   ├── state.ts        # Nesting stack, string, comment, & heredoc tracker\n│   │   └── rules.ts        # ASI decision tree (fluent chains, closures, return)\n│   └── formatter.ts        # Range calculator & WorkspaceEdit builder\n├── test/\n│   └── suite/              # Vitest test suite (chaining, closures, mixed HTML)\n├── esbuild.config.mjs      # Bundler config producing zero-dep dist/\n├── package.json            # Extension manifest & configuration contributions\n└── README.md",
+  "status": "published"
+}

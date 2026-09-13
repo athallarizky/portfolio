@@ -1,0 +1,29 @@
+{
+  "uuid": "64c59ccc-e357-40a6-b164-12b4dd597e42",
+  "title": "Watch Vault",
+  "slug": "watch-vault",
+  "year": 2026,
+  "excerpt": "A movie and TV discovery platform built on TanStack Start, React 19, and TailwindCSS v4 — featuring an autonomous TMDB tool-calling AI concierge.",
+  "descriptor": "Web App · Production",
+  "techTags": [
+    "pi-sdk",
+    "react",
+    "typescript",
+    "tailwindcss"
+  ],
+  "links": [
+    {
+      "label": "Demo",
+      "icon": "solar:link-bold",
+      "url": "https://watch-vault.athallarizky.com"
+    },
+    {
+      "label": "Source",
+      "icon": "mdi:github",
+      "url": "https://github.com/athallarizky/watch-vault"
+    }
+  ],
+  "body": "## Technical Overview\n\n`watch-vault` is a high-performance cinema discovery application and streaming catalog built on **TanStack Start (Nitro server runtime)**, **React 19**, and **TailwindCSS v4**. It integrates the TMDB REST API for real-time metadata, cast graphs, and rich media, alongside an autonomous **AI Concierge** that uses multi-step tool calls to query live movie data rather than relying on static model memory.\n\n## Technical Architecture & Agent Flow\n\n```\nUser Query (\"Recommend a 90s sci-fi like Blade Runner\")\n                    │\n                    ▼\n[ TanStack Start SSR Server Route ]\n                    │\n          ┌─────────▼────────────────────────┐\n          │  Pi Agent Runtime (pi-ai)        │\n          │  - Conversation history buffer   │\n          │  - Rate-limit & content filter   │\n          └─────────┬────────────────────────┘\n                    │ (Determines Tool Call: discover_movies / similar_titles)\n                    ▼\n         [ TMDB REST Client ] (Cached API queries)\n                    │\n                    ▼ (JSON response fed back as tool_result)\n          ┌──────────────────────────────────┐\n          │  Token Streaming Engine (SSE)    │\n          └─────────┬────────────────────────┘\n                    │ Token deltas\n                    ▼\n[ Client UI (React 19 + TanStack Query) ] ──▶ Links straight to /movies/:id\n```\n\n1. **Full-Stack SSR Foundation:** Built on **TanStack Start** with Vite 8. Leverages server functions for TMDB proxying and AI execution, keeping API secrets strictly server-side.\n2. **State & URL Synchronization:** Discovery filters, sort order, and search queries are synchronized with URL search params. The UI uses **TanStack Query** for infinite scrolling, automatically prefetching the next page of results before the user hits the bottom threshold.\n3. **Tool-Using AI Concierge Agent:** Built using `@earendil-works/pi-coding-agent` and `@earendil-works/pi-ai`:\n   - Rather than answering from training weights, the model acts as an agent equipped with strict TMDB tools (`search_tmdb`, `discover_titles`, `get_details`, `get_similar`).\n   - The agent inspects the prompt, executes relevant TMDB API queries in the background, ingests verified JSON results, and streams grounded recommendations with clickable route links back to the browser.\n   - Eliminates release year, director, and cast hallucinations entirely.\n4. **Client-Side Persistence:** Local watchlists, custom collections, and user star ratings are stored in local storage with immediate optimistic UI updates.\n5. **Edge Rate Limiting & Safety:** Incorporates sliding-window IP rate limiting and prompt safety guards on the concierge endpoint to prevent API quota exhaustion.",
+  "architecture": "watch-vault/\n├── src/\n│   ├── routes/             # TanStack Start file-based routing (movies, tv, people, discover)\n│   ├── features/\n│   │   ├── concierge/      # AI agent drawer, chat interface & streaming client\n│   │   ├── search/         # URL-synced search input & filter drawers\n│   │   ├── watchlist/      # Local watchlist store & action buttons\n│   │   └── rating/         # User star rating modal & storage\n│   ├── server/\n│   │   ├── concierge-agent.ts  # Pi agent initialization & prompt loop\n│   │   ├── concierge-tools.ts  # TMDB tool catalog definitions\n│   │   ├── tmdb.ts             # Typed TMDB API client & caching\n│   │   └── rate-limit.ts       # Sliding-window rate limiter\n│   └── components/ui/      # Radix UI primitives & Tailwind v4 styling\n├── vite.config.js          # TanStack Start & Nitro bundler configuration\n└── package.json",
+  "status": "published"
+}

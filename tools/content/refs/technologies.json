@@ -1,43 +1,63 @@
 [
   {
-    "uuid": "032224cf-acb1-45e6-8652-92f1f428384f",
-    "name": "Chroma",
-    "slug": "chroma"
+    "uuid": "ae5330a9-3e31-4a94-af13-d0f6d06479e2",
+    "name": "Bun",
+    "slug": "bun",
+    "icon": "simple-icons:bun"
   },
   {
-    "uuid": "3cb73346-3253-4424-b6fe-2d06f16995b1",
-    "name": "Go",
-    "slug": "go",
-    "icon": "simple-icons:go"
+    "uuid": "9b63f0bf-cad8-4b95-9fec-6c774a551bfa",
+    "name": "PWA",
+    "slug": "pwa",
+    "icon": "simple-icons:pwa"
   },
   {
-    "uuid": "a6ee835f-0777-4a10-913c-a117d86da721",
-    "name": "TailwindCSS",
-    "slug": "tailwindcss",
-    "icon": "simple-icons:tailwindcss"
+    "uuid": "334e5752-be80-4c1d-a142-28d8b005f736",
+    "name": "Cloudflare",
+    "slug": "cloudflare",
+    "icon": "simple-icons:cloudflare"
   },
   {
-    "uuid": "e6a42e64-6bdd-4ae3-a957-961f17ea2be0",
-    "name": "OpenAI",
-    "slug": "openai",
-    "icon": "simple-icons:openai"
+    "uuid": "f92b2ba8-07e9-4f47-9e03-3ee6c8186334",
+    "name": "PHP",
+    "slug": "php",
+    "icon": "simple-icons:php"
   },
   {
-    "uuid": "a2e8354c-8687-4c0d-a43d-e4c31af791e9",
-    "name": "RAG",
-    "slug": "rag"
+    "uuid": "9f90a226-9847-438d-aaf3-127efaaa817f",
+    "name": "Redis",
+    "slug": "redis",
+    "icon": "simple-icons:redis"
   },
   {
-    "uuid": "cdd2f02a-058f-40e9-8e2a-23c6b13ce1c9",
-    "name": "React",
-    "slug": "react",
-    "icon": "simple-icons:react"
+    "uuid": "a892bbc4-c276-42ff-af39-ae033f61b50b",
+    "name": "PostgreSQL",
+    "slug": "postgresql",
+    "icon": "simple-icons:postgresql"
   },
   {
-    "uuid": "f22d57a9-b615-4184-8fca-83820e1be1af",
-    "name": "Docker",
-    "slug": "docker",
-    "icon": "simple-icons:docker"
+    "uuid": "a53e5ab1-f71a-4cc4-a736-ed6359b94968",
+    "name": "Vue.js",
+    "slug": "vue",
+    "icon": "simple-icons:vuedotjs"
+  },
+  {
+    "uuid": "42ad4140-aaae-4a0d-8434-161b56cf9c8a",
+    "name": "Anthropic SDK",
+    "slug": "anthropic-sdk",
+    "icon": "simple-icons:anthropic"
+  },
+  {
+    "uuid": "270de834-9936-434d-8a28-763347e5a836",
+    "name": "Pi SDK",
+    "slug": "pi-sdk",
+    "icon": "solar:cpu-bolt-bold"
+  },
+  {
+    "uuid": "14603479-2e04-475c-a971-a00b223a0e96",
+    "name": "Laravel",
+    "slug": "laravel",
+    "icon": "simple-icons:laravel"
   },
   {
     "uuid": "e1ff072e-185d-4d44-8cef-94ff95a3e1ed",
@@ -46,22 +66,44 @@
     "icon": "simple-icons:fastapi"
   },
   {
-    "uuid": "fad9d47e-c012-40b1-8baa-badacc35ac09",
-    "name": "Github",
-    "slug": "github",
-    "icon": "simple-icons:github"
+    "uuid": "f22d57a9-b615-4184-8fca-83820e1be1af",
+    "name": "Docker",
+    "slug": "docker",
+    "icon": "simple-icons:docker"
   },
   {
-    "uuid": "6cbec781-4d0b-43d3-968f-28262f86f937",
-    "name": "Productivity",
-    "slug": "productivity",
-    "icon": "simple-icons:lightning"
+    "uuid": "cdd2f02a-058f-40e9-8e2a-23c6b13ce1c9",
+    "name": "React",
+    "slug": "react",
+    "icon": "simple-icons:react"
   },
   {
-    "uuid": "0cebd205-2aaa-42bd-936b-a4ff369539f7",
-    "name": "Tools",
-    "slug": "tools",
-    "icon": "simple-icons:setuptools"
+    "uuid": "a2e8354c-8687-4c0d-a43d-e4c31af791e9",
+    "name": "RAG",
+    "slug": "rag"
+  },
+  {
+    "uuid": "e6a42e64-6bdd-4ae3-a957-961f17ea2be0",
+    "name": "OpenAI",
+    "slug": "openai",
+    "icon": "simple-icons:openai"
+  },
+  {
+    "uuid": "a6ee835f-0777-4a10-913c-a117d86da721",
+    "name": "TailwindCSS",
+    "slug": "tailwindcss",
+    "icon": "simple-icons:tailwindcss"
+  },
+  {
+    "uuid": "3cb73346-3253-4424-b6fe-2d06f16995b1",
+    "name": "Go",
+    "slug": "go",
+    "icon": "simple-icons:go"
+  },
+  {
+    "uuid": "032224cf-acb1-45e6-8652-92f1f428384f",
+    "name": "Chroma",
+    "slug": "chroma"
   },
   {
     "uuid": "3c00d719-c27a-4e29-9e65-4b6489d496bd",
@@ -74,5 +116,23 @@
     "name": "TypeScript",
     "slug": "typescript",
     "icon": "simple-icons:typescript"
+  },
+  {
+    "uuid": "0cebd205-2aaa-42bd-936b-a4ff369539f7",
+    "name": "Tools",
+    "slug": "tools",
+    "icon": "simple-icons:setuptools"
+  },
+  {
+    "uuid": "6cbec781-4d0b-43d3-968f-28262f86f937",
+    "name": "Productivity",
+    "slug": "productivity",
+    "icon": "simple-icons:lightning"
+  },
+  {
+    "uuid": "fad9d47e-c012-40b1-8baa-badacc35ac09",
+    "name": "Github",
+    "slug": "github",
+    "icon": "simple-icons:github"
   }
 ]

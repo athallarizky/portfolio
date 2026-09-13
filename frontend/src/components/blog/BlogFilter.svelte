@@ -6,6 +6,8 @@
   export let articles: Article[];
   /** Link base for detail URLs — '' for the EN zone, '/id' for the Indonesian zone. */
   export let base = '';
+  /** Content language of this zone — drives the Language toggle in the sidebar. */
+  export let lang: 'en' | 'id' = 'en';
 
   let activeCat = 'All';
   let searchQuery = '';
@@ -17,6 +19,16 @@
     });
   });
   const categories = ['All', ...Object.keys(tagCounts).sort()];
+
+  /** Zone switch: replaces the history entry (rapid toggling must not bury the back stack). */
+  const langTarget = lang === 'en' ? '/id/blogs' : '/blogs';
+  const langLabel = lang === 'en' ? 'Baca dalam Bahasa Indonesia' : 'Read in English';
+
+  function switchLang(e: MouseEvent) {
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    location.replace(langTarget);
+  }
 
   function select(cat: string) {
     activeCat = cat;
@@ -83,6 +95,22 @@
 
   <aside class="blog-filter">
     <div class="filter-head">
+      <Icon icon="solar:translation-linear" width={16} height={16} />
+      <span>Language</span>
+    </div>
+    <div class="blog-lang-toggle">
+      <a href={langTarget} class="lang-toggle" title={langLabel} aria-label={langLabel} on:click={switchLang}>
+        <span class="lang-toggle-track">
+          <span class="lang-toggle-opt" aria-hidden="true">🇬🇧</span>
+          <span class="lang-toggle-opt" aria-hidden="true">🇮🇩</span>
+          <span class="lang-toggle-knob" class:is-id={lang === 'id'} aria-hidden="true">
+            {lang === 'en' ? '🇬🇧' : '🇮🇩'}
+          </span>
+        </span>
+      </a>
+    </div>
+
+    <div class="filter-head" style="margin-top:20px">
       <Icon icon="solar:filter-linear" width={16} height={16} />
       <span>Categories</span>
     </div>

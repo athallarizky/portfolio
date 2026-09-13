@@ -1,0 +1,26 @@
+{
+  "uuid": "c46e2475-58a1-4490-ba0b-498081e77c8b",
+  "title": "Docsy",
+  "slug": "docsy",
+  "year": 2026,
+  "excerpt": "A full-stack file management system with Laravel 11, Vue 3 SPA, PostgreSQL 16 recursive CTEs, and Redis 7 queues — containerized behind an Nginx reverse proxy.",
+  "descriptor": "Full-Stack · OSS",
+  "techTags": [
+    "laravel",
+    "vue",
+    "postgresql",
+    "redis",
+    "docker",
+    "tailwindcss"
+  ],
+  "links": [
+    {
+      "label": "Source",
+      "icon": "mdi:github",
+      "url": "https://github.com/athallarizky/docsy"
+    }
+  ],
+  "body": "## Technical Overview\n\n`docsy` is an enterprise-grade file management system built as a containerized monorepo. It pairs a **Laravel 11 REST API** backend with a **Vue 3 Composition API SPA**, backed by **PostgreSQL 16** for recursive tree operations and full-text search, and **Redis 7** for cache-aside performance and background job processing. The entire stack runs on a single exposed port via an Nginx reverse proxy.\n\n## Technical Architecture & Request Flow\n\n```\n                    ┌────────────────────────────────────────────┐\n                    │  Nginx Reverse Proxy (:8000)               │\n                    │  ├─ /api/*  ──▶ PHP-FPM (Laravel 11 API)   │\n                    │  └─ /*      ──▶ Static SPA (Vue 3 Build)   │\n                    └──────┬──────────────────────┬──────────────┘\n                           │                      │\n                  ┌────────▼────────┐    ┌────────▼────────┐\n                  │  PostgreSQL 16  │    │     Redis 7     │\n                  │  - Recursive CTE│    │  - Cache-aside  │\n                  │  - GIN tsvector │    │  - Queue worker │\n                  └─────────────────┘    └─────────────────┘\n```\n\n1. **Unified Ingress (Nginx):** A single Alpine Nginx container serves production-built Vue 3 static assets directly while reverse-proxying all `/api` requests to PHP 8.3 FPM. This eliminates browser CORS issues entirely in development and production.\n2. **Hierarchical Folder Trees (PostgreSQL Recursive CTEs):** Folders support infinite nesting without recursive database calls. A single SQL recursive common table expression (`WITH RECURSIVE`) computes full ancestor breadcrumb paths in one query. Moving a folder runs a circular-move detection check in SQL, rejecting attempts to drop a folder into its own subtree with an HTTP 422.\n3. **Full-Text Search Engine:** File search uses PostgreSQL native `tsvector` generated columns coupled with a **GIN (Generalized Inverted Index)**. It provides stemming, multi-word matching (`&`), and ranking without relying on external search daemons like Elasticsearch.\n4. **Async Jobs & Cache-Aside (Redis 7):** Dashboard analytics (file counts, storage usage, folder breakdown) use cache-aside caching with TTL and event-driven invalidation on upload/delete. Heavy operations — thumbnail generation via Sharp/GD and audit logging — run asynchronously via Redis queue workers.\n5. **Secure Streamed Storage:** Uploads (capped at 25MB with strict MIME validation) are stored on an isolated private disk mapped by UUIDs. File downloads stream binary chunks directly to the HTTP socket, maintaining a flat memory footprint regardless of file size.",
+  "architecture": "docsy/\n├── backend/                 # Laravel 11 REST API\n│   ├── app/\n│   │   ├── Http/Controllers # Auth, Folders, Files, Search, Dashboard\n│   │   ├── Models/          # Folder, File, User, ActivityLog\n│   │   └── Jobs/            # Async thumbnail & audit log workers\n│   ├── database/migrations/ # PostgreSQL CTE tables & GIN indexes\n│   └── routes/api.php       # Sanctum token-guarded API endpoints\n├── frontend/                # Vue 3 Composition API + TailwindCSS\n│   ├── src/\n│   │   ├── views/           # Explorer, Trash, Dashboard\n│   │   ├── components/      # Breadcrumbs, DragDropUpload, PreviewModal\n│   │   └── api/             # Typed Axios client & interceptors\n├── docker/                  # Nginx configs & PHP-FPM Dockerfiles\n├── docker-compose.yml       # 1-command orchestration (web, api, postgres, redis)\n└── README.md",
+  "status": "published"
+}

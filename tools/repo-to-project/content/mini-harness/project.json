@@ -5,7 +5,12 @@
   "year": 2026,
   "excerpt": "A minimal, zero-framework AI coding agent harness in ~180 lines of TypeScript — featuring an interactive REPL, streaming SSE, parallel tool execution, and self-correcting error handling.",
   "descriptor": "Personal · OSS",
-  "techTags": ["typescript", "tools"],
+  "techTags": [
+    "anthropic-sdk",
+    "bun",
+    "typescript",
+    "tools"
+  ],
   "links": [
     { "label": "Source", "icon": "mdi:github", "url": "https://github.com/athallarizky/mini-harness" }
   ],

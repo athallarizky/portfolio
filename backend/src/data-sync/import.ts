@@ -23,7 +23,7 @@ import {
 import { NATURAL_KEYS, RELATIONS, RELATION_TARGETS, RICH_TEXT_BODY, LOCALIZED_FIELDS, DEFAULT_LOCALE, OVERLAY_LOCALES } from './keys'
 import { validateManifest } from './manifest'
 import { readZip, readJson, readEntry } from './archive'
-import { getEditorConfig, mdToLexical, type EditorConfig } from './converters'
+import { getEditorConfig, mdBodyToLexical, type EditorConfig } from './converters'
 import { type LocaleOverlays } from './locales'
 import {
   makeIdResolver,
@@ -368,7 +368,7 @@ async function applyOverlays(
       continue
     }
     if (bodyField && typeof data[bodyField] === 'string') {
-      data[bodyField] = mdToLexical(data[bodyField], await getEditor())
+      data[bodyField] = mdBodyToLexical(data[bodyField], await getEditor())
     }
     await payload.update({ collection, id: docId, locale, data } as any)
     report.localeOverlays[collection] = (report.localeOverlays[collection] ?? 0) + 1
@@ -396,7 +396,7 @@ async function upsertDoc(
   // MD → Lexical for rich-text bodies.
   const bodyField = RICH_TEXT_BODY[collection]
   if (bodyField && typeof data[bodyField] === 'string') {
-    data[bodyField] = mdToLexical(data[bodyField], await getEditor())
+    data[bodyField] = mdBodyToLexical(data[bodyField], await getEditor())
   }
 
   // Upload collection: `filename` is auto-managed by Payload, not a data field.

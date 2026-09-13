@@ -24,6 +24,11 @@ interface Props {
   description?: string;
   image?: string;
   mesh?: boolean;
+  /** Content language of this page (`<html lang>`) — 'id' on the /id/ zone (sprint-25). */
+  lang?: string;
+  /** hreflang alternates (relative hrefs, absolutized here). Empty on pages without a
+   *  counterpart (e.g. an untranslated article's EN page). */
+  alternates?: { hreflang: string; href: string }[];
 }
 
 const {
@@ -33,16 +38,22 @@ const {
   description = 'Full-stack engineer — backend systems, AI tooling, developer experience.',
   image = '/og.png',
   mesh = true,
+  lang = 'en',
+  alternates = [],
 } = Astro.props;
 
 // sprint-13: stable absolute URLs (Astro.site is set in astro.config.mjs).
 const origin = Astro.site ?? Astro.url.origin;
 const canonical = new URL(Astro.url.pathname, origin).href;
 const ogImage = new URL(image, origin).href;
+const alternateLinks = alternates.map((a) => ({
+  hreflang: a.hreflang,
+  href: new URL(a.href, origin).href,
+}));
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={lang}>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -66,6 +77,11 @@ const ogImage = new URL(image, origin).href;
 
   <!-- Canonical -->
   <link rel="canonical" href={canonical} />
+
+  <!-- hreflang alternates (sprint-25: en ↔ id + x-default on the content routes) -->
+  {alternateLinks.map((a) => (
+    <link rel="alternate" hreflang={a.hreflang} href={a.href} />
+  ))}
 
   <title>{title} — Portfolio</title>
 

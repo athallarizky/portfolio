@@ -1,0 +1,16 @@
+---
+// Static EN|ID pill switcher (sprint-25) — links only, no JS island.
+// UI chrome stays English: the labels are locale codes, not translated words.
+interface Props {
+  current: 'en' | 'id'
+  enHref: string
+  idHref: string
+}
+
+const { current, enHref, idHref } = Astro.props;
+---
+
+<div class="lang-switch" role="group" aria-label="Content language">
+  <a href={enHref} class="lang-option" class:is-active={current === 'en'} aria-current={current === 'en' ? 'page' : undefined}>EN</a>
+  <a href={idHref} class="lang-option" class:is-active={current === 'id'} aria-current={current === 'id' ? 'page' : undefined}>ID</a>
+</div>

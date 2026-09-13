@@ -1,131 +1,19 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import { renderLexical } from '../../lib/render-lexical';
-import { safeFetch, mediaUrl, API_ORIGIN } from '../../lib/api';
-import type { Project, PaginatedResponse } from '../../lib/api-types';
-import Screenshots from '../../components/project/Screenshots.svelte';
+import ProjectDetailPage from '../../components/pages/ProjectDetailPage.astro';
+import { loadProjectDetail } from '../../lib/content';
 
 export const prerender = false;
 
-const { slug } = Astro.params;
-
-const allData = await safeFetch<PaginatedResponse<Project>>('/projects?sort=order&depth=1');
-const project = (allData.docs || []).find((p: Project) => p.slug === slug);
-
-if (!project) {
+const data = await loadProjectDetail('en', Astro.params.slug);
+if (data.status === 'not-found') {
   return Astro.redirect('/404');
 }
-
-const nextProject = (allData.docs || [])
-  .filter((p: Project) => p.order > project.order)
-  .sort((a: Project, b: Project) => a.order - b.order)[0] || null;
-
-const bannerUrl = project.bannerImage?.sizes?.hero?.url ? `${API_ORIGIN}${project.bannerImage.sizes.hero.url}` : mediaUrl(project.bannerImage);
-
-const otherProjects = (allData.docs || [])
-  .filter((p: Project) => p.slug !== slug && p.status === 'published')
-  .slice(0, 5);
 ---
 
-<BaseLayout title={project.title} pageTitle={project.title} activeNav="/projects" mesh={false} description={project.excerpt || `${project.descriptor || project.title}${project.year ? ` (${project.year})` : ''} — a project by Athalla Rizky.`}>
-  <div class="article-layout mt-4">
-    <div class="article-main">
-      <div class="detail-header">
-        {bannerUrl ? (
-          <div style="height: 180px; border-radius: 16px; background: var(--card); overflow:hidden;">
-            <img src={bannerUrl} alt={project.title} style="width:100%; height:100%; object-fit:cover;" loading="lazy" />
-          </div>
-        ) : (
-          <div style={`height: 180px; border-radius: 16px; background: ${project.bannerColor}; display:flex; align-items:center; justify-content:center;`}>
-            <iconify-icon icon={project.bannerIcon || 'solar:rocket-bold'} width="72" height="72" style="color:#fff; opacity:.7"></iconify-icon>
-          </div>
-        )}
-        <div class="detail-title" style="margin-top:1rem">{project.title}</div>
-        <div class="detail-subtitle">{project.descriptor} · {project.year}</div>
-        <div class="flex gap-2 mt-2">
-          {project.links.map((l) => (
-            <a class="btn btn-outline" href={l.url || '#'} target="_blank" rel="noopener">
-              <iconify-icon icon={l.icon || 'solar:link-circle-bold'} width="16" height="16"></iconify-icon>
-              {l.label}
-            </a>
-          ))}
-        </div>
-      </div>
-
-      <div class="prose mt-4" set:html={renderLexical(project.body)}></div>
-
-      {project.techTags.length > 0 && (
-        <section class="project-section">
-          <h3>Tech stack</h3>
-          <div class="flex flex-wrap gap-1">
-            {project.techTags.map((t) => (
-              <span class="tag is-secondary tech-chip">
-                {t.icon && <iconify-icon icon={t.icon} width="14" height="14"></iconify-icon>}
-                {t.name}
-              </span>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {project.features.length > 0 && (
-        <section class="project-section">
-          <h3>Features</h3>
-          <ul class="feature-list grid-2">
-            {project.features.map((f) => (
-              <li>
-                <iconify-icon icon={f.icon || 'solar:check-circle-linear'} width="20" height="20"></iconify-icon>
-                <div>
-                  <strong>{f.heading}</strong>
-                  <p class="text-desc text-sm">{f.description}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {project.screenshots.length > 0 && (
-        <section class="project-section">
-          <h3>Screenshots</h3>
-          <Screenshots client:visible items={project.screenshots} />
-        </section>
-      )}
-
-      {project.architecture && (
-        <section class="project-section">
-          <h3>Architecture</h3>
-          <pre class="card" style="padding:1rem; overflow-x:auto; font-family:ui-monospace,monospace; font-size:.8125rem;">
-            <code>{project.architecture}</code>
-          </pre>
-        </section>
-      )}
-
-      {nextProject && (
-        <div class="mt-4" style="text-align:right;">
-          <a class="btn btn-ghost" href={`/projects/${nextProject.slug}`}>
-            Next project: {nextProject.title}
-            <iconify-icon icon="solar:alt-arrow-right-linear" width="16" height="16"></iconify-icon>
-          </a>
-        </div>
-      )}
-    </div>
-
-    <aside class="other-projects-sidebar">
-      <h3 class="filter-head">
-        <iconify-icon icon="solar:folder-open-outline" width="16" height="16"></iconify-icon>
-        Other projects
-      </h3>
-      {otherProjects.map((p) => (
-        <a class="related-item" href={`/projects/${p.slug}`}>
-          <span class="card-title" style="font-size:.875rem;">{p.title}</span>
-          <span class="text-desc text-xs">{p.descriptor}{p.year ? ` · ${p.year}` : ''}</span>
-        </a>
-      ))}
-      <a class="all-articles-link" href="/projects">
-        All projects
-        <iconify-icon icon="solar:alt-arrow-right-linear" width="14" height="14"></iconify-icon>
-      </a>
-    </aside>
-  </div>
-</BaseLayout>
+<ProjectDetailPage
+  locale="en"
+  project={data.doc}
+  translated={data.translated}
+  nextProject={data.nextProject ?? null}
+  otherProjects={data.otherProjects ?? []}
+/>

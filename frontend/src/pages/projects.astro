@@ -1,17 +1,5 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import ProjectGrid from '../components/projects/ProjectGrid.svelte';
-import { safeFetch } from '../lib/api';
-import type { Project, PaginatedResponse } from '../lib/api-types';
-
-const data = await safeFetch<PaginatedResponse<Project>>('/projects?sort=order&depth=1&limit=100');
-const projects = data.docs || [];
+import ProjectsPage from '../components/pages/ProjectsPage.astro';
 ---
 
-<BaseLayout title="Projects" pageTitle="Projects" activeNav="/projects">
-  <p class="text-desc text-sm mb-4">
-    A selection of things I've built — side projects, tooling, and the occasional over-engineered experiment.
-  </p>
-
-  <ProjectGrid client:load {projects} pageSize={9} />
-</BaseLayout>
+<ProjectsPage locale="en" />

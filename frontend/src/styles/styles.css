@@ -637,6 +637,31 @@ a { color: inherit; text-decoration: none; }
   .blog-filter { position: static; order: -1; }
 }
 
+/* Language switcher (sprint-25) — static EN|ID pill on list headers + detail titles.
+   Matches the chip vocabulary; no motion beyond the existing transition tokens. */
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  padding: 2px;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.lang-option {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  color: var(--desc);
+  text-decoration: none;
+  transition: background .15s ease, color .15s ease;
+}
+.lang-option:hover { color: var(--foreground); background: var(--hover); }
+.lang-option.is-active { background: var(--primary); color: var(--primary-foreground); }
+
+
 /* ---------- Article detail: related-articles sidebar ---------- */
 .article-layout { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 32px; align-items: start; }
 .article-layout .article-main { max-width: 760px; min-width: 0; }

@@ -4,6 +4,8 @@
   import SearchInput from '../ui/SearchInput.svelte';
 
   export let articles: Article[];
+  /** Link base for detail URLs — '' for the EN zone, '/id' for the Indonesian zone. */
+  export let base = '';
 
   let activeCat = 'All';
   let searchQuery = '';
@@ -58,13 +60,13 @@
             </span>
           {/if}
         </div>
-        <a href={`/blogs/${article.slug}`} style="text-decoration:none; color:inherit;">
+        <a href={`${base}/blogs/${article.slug}`} style="text-decoration:none; color:inherit;">
           <h2 class="blog-card-title">{article.title}</h2>
         </a>
         <p class="blog-card-excerpt">{article.excerpt}</p>
         <div class="card-footer">
           <span class="text-xs text-desc">Published {formatDate(article.publishedAt)}</span>
-          <a class="btn btn-ghost" href={`/blogs/${article.slug}`}>
+          <a class="btn btn-ghost" href={`${base}/blogs/${article.slug}`}>
             Read article
             <Icon icon="solar:alt-arrow-right-linear" width={16} height={16} />
           </a>

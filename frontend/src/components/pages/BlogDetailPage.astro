@@ -1,0 +1,107 @@
+---
+// Shared blog article detail (sprint-25) — renders /blogs/[slug] (EN) and /id/blogs/[slug].
+// Pure presentation: the route owns fetch + redirects (see lib/content.ts + the route files).
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { renderLexical } from '../../lib/render-lexical';
+import { API_ORIGIN, mediaUrl } from '../../lib/api';
+import { localePath, type Locale } from '../../lib/i18n';
+import LangSwitcher from '../LangSwitcher.astro';
+import type { Article } from '../../lib/api-types';
+
+interface Props {
+  locale?: Locale;
+  article: Article;
+  translated: boolean;
+  relatedArticles: Article[];
+}
+
+const { locale = 'en', article, translated, relatedArticles } = Astro.props;
+const slug = article.slug;
+
+const bannerColor = article.bannerColor || 'linear-gradient(135deg,#9936e6,#5b21b6)';
+const bannerIcon = article.bannerIcon || 'solar:rocket-bold';
+const bannerUrl = article.featuredImage?.sizes?.hero?.url ? `${API_ORIGIN}${article.featuredImage.sizes.hero.url}` : mediaUrl(article.featuredImage);
+const authorAvatarUrl = article.author.avatar?.thumbnailURL ? `${API_ORIGIN}${article.author.avatar.thumbnailURL}` : mediaUrl(article.author.avatar);
+const detailBase = locale === 'id' ? '/id/blogs' : '/blogs';
+---
+
+<BaseLayout
+  title={article.title}
+  pageTitle={article.title}
+  activeNav="/blogs"
+  mesh={false}
+  lang={locale}
+  description={article.excerpt || `${article.title} — an article by Athalla Rizky.`}
+  alternates={translated
+    ? [
+        { hreflang: 'en', href: `/blogs/${slug}` },
+        { hreflang: 'id', href: `/id/blogs/${slug}` },
+        { hreflang: 'x-default', href: `/blogs/${slug}` },
+      ]
+    : []}
+>
+  <div class="article-layout mt-4">
+    <div class="article-main">
+      <div class="detail-header">
+        <div style={`height: 180px; border-radius: 16px; background: ${bannerUrl ? 'var(--card)' : bannerColor}; display:flex; align-items:center; justify-content:center; overflow:hidden;`}>
+          {bannerUrl ? (
+            <img src={bannerUrl} alt={article.title} style="width:100%; height:100%; object-fit:cover;" loading="lazy" />
+          ) : (
+            <iconify-icon icon={bannerIcon} width="72" height="72" style="color:#fff; opacity:.7;"></iconify-icon>
+          )}
+        </div>
+        <div class="detail-meta flex items-start justify-between gap-2" style="margin-top:1rem">
+          <div>
+            <span class="detail-title">{article.title}</span>
+            <span class="detail-subtitle">
+              {new Date(article.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+              {article.readMinutes ? ` · ${article.readMinutes} min read` : ''}
+            </span>
+          </div>
+          {translated && (
+            <LangSwitcher current={locale} enHref={`/blogs/${slug}`} idHref={`/id/blogs/${slug}`} />
+          )}
+        </div>
+        <div class="flex flex-wrap gap-1 mt-2">
+          {article.tags.map((t) => (
+            <span class="tag is-secondary tech-chip">{t.name}</span>
+          ))}
+        </div>
+      </div>
+
+      <div class="prose mt-4" set:html={renderLexical(article.body)}></div>
+
+      <div class="author-card">
+        <div class="author-avatar">
+          {authorAvatarUrl ? (
+            <img src={authorAvatarUrl} alt={article.author.name} style="width:100%; height:100%; object-fit:cover; border-radius:50%;" loading="lazy" />
+          ) : (
+            article.author.initials
+          )}
+        </div>
+        <div class="author-info">
+          <div class="author-name">{article.author.name}</div>
+          {article.author.role && <div class="author-role">{article.author.role}</div>}
+          {article.author.bio && <div class="author-bio">{article.author.bio}</div>}
+        </div>
+      </div>
+    </div>
+
+    <aside class="related-articles">
+      <h3 class="filter-head">
+        <iconify-icon icon="solar:document-text-outline" width="16" height="16"></iconify-icon>
+        Related articles
+      </h3>
+      {relatedArticles.map((related) => (
+        <a class="related-item" href={`${detailBase}/${related.slug}`}>
+          <span class="card-title" style="font-size:.875rem;">{related.title}</span>
+          <span class="text-desc text-xs">{new Date(related.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+        </a>
+      ))}
+      <a class="all-articles-link" href={localePath(locale, '/blogs')}>
+        All articles
+        <iconify-icon icon="solar:alt-arrow-right-linear" width="14" height="14"></iconify-icon>
+      </a>
+    </aside>
+  </div>
+</BaseLayout>

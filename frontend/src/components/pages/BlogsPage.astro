@@ -1,0 +1,54 @@
+---
+// Shared blogs list page (sprint-25) — renders the EN zone (/blogs) and the Indonesian
+// zone (/id/blogs). UI chrome stays English; the ID zone lists ONLY translated articles
+// (locale=id&fallback-locale=none → untranslated titles come back null).
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BlogFilter from '../blog/BlogFilter.svelte';
+import LangSwitcher from '../LangSwitcher.astro';
+import { safeFetch } from '../../lib/api';
+import { isTranslated, withIdNoFallback, type Locale } from '../../lib/i18n';
+import type { Article, PaginatedResponse } from '../../lib/api-types';
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'en' } = Astro.props;
+
+const basePath = '/articles?sort=-publishedAt&depth=1';
+const data = await safeFetch<PaginatedResponse<Article>>(
+  locale === 'id' ? withIdNoFallback(basePath) : basePath,
+);
+const docs = (data.docs || []) as Article[];
+const articles = locale === 'id' ? docs.filter(isTranslated) : docs;
+---
+
+<BaseLayout
+  title="Blogs"
+  pageTitle="Blogs"
+  activeNav="/blogs"
+  lang={locale}
+  alternates={[
+    { hreflang: 'en', href: '/blogs' },
+    { hreflang: 'id', href: '/id/blogs' },
+    { hreflang: 'x-default', href: '/blogs' },
+  ]}
+>
+  <div class="flex items-center justify-between gap-2 mb-4">
+    <p class="text-desc text-sm">
+      Notes on backend systems, AI tooling, and how I run software projects with AI agents.
+    </p>
+    <LangSwitcher current={locale} enHref="/blogs" idHref="/id/blogs" />
+  </div>
+
+  {articles.length > 0 ? (
+    <BlogFilter client:load articles={articles} base={locale === 'id' ? '/id' : ''} />
+  ) : (
+    <div class="empty-state">
+      <p>No Indonesian translations yet.</p>
+      <p class="text-desc text-sm">
+        The English versions live at <a class="all-articles-link" href="/blogs" style="display:inline-flex;">/blogs</a>.
+      </p>
+    </div>
+  )}
+</BaseLayout>

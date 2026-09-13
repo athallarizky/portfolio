@@ -1,0 +1,52 @@
+---
+// Shared projects list page (sprint-25) — /projects (EN) and /id/projects (translated-only).
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProjectGrid from '../projects/ProjectGrid.svelte';
+import LangSwitcher from '../LangSwitcher.astro';
+import { safeFetch } from '../../lib/api';
+import { isTranslated, withIdNoFallback, type Locale } from '../../lib/i18n';
+import type { Project, PaginatedResponse } from '../../lib/api-types';
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'en' } = Astro.props;
+
+const basePath = '/projects?sort=order&depth=1&limit=100';
+const data = await safeFetch<PaginatedResponse<Project>>(
+  locale === 'id' ? withIdNoFallback(basePath) : basePath,
+);
+const docs = (data.docs || []) as Project[];
+const projects = locale === 'id' ? docs.filter(isTranslated) : docs;
+---
+
+<BaseLayout
+  title="Projects"
+  pageTitle="Projects"
+  activeNav="/projects"
+  lang={locale}
+  alternates={[
+    { hreflang: 'en', href: '/projects' },
+    { hreflang: 'id', href: '/id/projects' },
+    { hreflang: 'x-default', href: '/projects' },
+  ]}
+>
+  <div class="flex items-center justify-between gap-2 mb-4">
+    <p class="text-desc text-sm">
+      A selection of things I've built — side projects, tooling, and the occasional over-engineered experiment.
+    </p>
+    <LangSwitcher current={locale} enHref="/projects" idHref="/id/projects" />
+  </div>
+
+  {projects.length > 0 ? (
+    <ProjectGrid client:load projects={projects} pageSize={9} base={locale === 'id' ? '/id' : ''} />
+  ) : (
+    <div class="empty-state">
+      <p>No Indonesian translations yet.</p>
+      <p class="text-desc text-sm">
+        The English versions live at <a class="all-articles-link" href="/projects" style="display:inline-flex;">/projects</a>.
+      </p>
+    </div>
+  )}
+</BaseLayout>

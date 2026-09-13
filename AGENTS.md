@@ -2,7 +2,7 @@
 
 > **For:** any LLM agent working on this repo in a fresh session.
 > **Read this first**, then the latest sprint record in [`docs/sprint-N/`](docs/)
-> (currently sprint-23 → [`docs/sprint-23/final-report.md`](docs/sprint-23/final-report.md)).
+> (currently sprint-25 → [`docs/sprint-25/final-report.md`](docs/sprint-25/final-report.md)).
 > **Owner:** Atha Thizky — Full-Stack Engineer (backend-leaning · TS/Go/Python · AI tooling).
 
 ---
@@ -123,6 +123,7 @@ Two token layers in `frontend/src/styles/styles.css`:
 | `/` (`index.astro`) | Home — Notion-redesigned (sprint-10): hero, stats band, Selected work, Latest writing, About/Currently, Skills/Find-me, CTA |
 | `/projects`, `/projects/[slug]` | Projects list + detail |
 | `/blogs`, `/blogs/[slug]` | Blogs list (+ category filter) + article detail |
+| `/id/blogs`, `/id/projects` (+ `[slug]`) | **Indonesian zone (sprint-25)**: translated content only; untranslated detail → 301 to EN; `EN\|ID` switcher on list header + detail title |
 | `/documents` | Documents, grouped by category |
 | `/social` | Social profile cards |
 | `/contact` | Contact form (`api/contact.ts`) |
@@ -218,6 +219,25 @@ logs in with the service account, and POSTs to `/api/data-import` with `replaceO
 
 Detail: [`docs/sprint-23/final-report.md`](docs/sprint-23/final-report.md).
 
+### Bilingual content (sprint-24 — EN canonical + optional ID)
+Articles/projects are **localized** (`en` default + `id`, `fallback: true`) on `title`, `excerpt`,
+`body`, `seo.metaTitle/metaDescription` (+ project `features`). Slug/relations/metadata stay shared.
+The **UI stays English** — the `/id/` reading zone is sprint-25 (frontend), not built yet.
+
+- **Authoring**: translations live in git as **sibling overlays** — `article.id.json` next to
+  `article.json` (same `uuid`+`slug`, localized fields only, body as Markdown). Generated via
+  `tools/article-polish` / `tools/repo-to-project` step 3b ("translate").
+- **Archive v3**: a bilingual row carries `locales: { id: { … } }`; EN stays flat at the top
+  (v2-identical). EN-only exports/publishes still stamp **v2** so the deployed importer keeps working.
+- **Import semantics**: EN row upserts with `locale:'en'`; each overlay writes with its own locale.
+  **Never clobbers** the other locale (proven) — EN-only publishes can't destroy translations.
+  Replace-only drift deletion is uuid-based and locale-orthogonal.
+- **REST**: `?locale=id` (fallback), `?locale=id&fallback-locale=none` (null ⇒ untranslated —
+  the sprint-25 detection primitive). `locale=all` is Local-API only.
+- **Single source of truth** for localized field paths: `LOCALIZED_FIELDS` in
+  `backend/src/data-sync/keys.ts` — keep in lockstep with the collection configs.
+- **Prod migration** (owner runbook): see [`docs/sprint-24/final-report.md`](docs/sprint-24/final-report.md) §8.
+
 ### Theme
 Toggle via the sidebar button; persisted in `localStorage['portfolio-theme']`;
 `.dark` on `<html>` switches all tokens (both `--*` and `--n-*`).
@@ -247,8 +267,10 @@ Toggle via the sidebar button; persisted in `localStorage['portfolio-theme']`;
 | 21 | **Article-polish tool** — `tools/article-polish/` (SKILLS.md 6-step workflow: Markdown draft → AI polish → Lexical JSON → wrap → dry-run import); article upload fix (`depth=1` → `depth=2`); InsertArticleFromJson admin UI + `wrap:articles` CLI. ([final-report](docs/sprint-21/final-report.md)) |
 | 22 | **First real content publish** — the first article (*How to Learn New Things in the AI Era*, casual BI, first `samples/` style anchor) + the `ai-guided-learning` playbook as a project entry, cross-linked, in one combined content zip (tags + technologies + article + project); link-node renderer 500 fixed (`render-lexical.ts` recurses, `link` case added — [RCA](docs/sprint-22/rca/2026-08-19-lexical-link-node-500.md)). Prod apply = owner via admin (**no direct VPS access** — agent prepares + verifies locally). ([final-report](docs/sprint-22/final-report.md)) |
 | 23 | **Content publish pipeline (GitHub = source of truth)** — scoped replace-all (`replaceOnly` on import CLI + `/api/data-import`; drift-deletion per target collection only, refs never deleted); `wrap:publish` builds the full-set zip from git-tracked content JSONs + refs manifest (`npm run refs:export`); workflows `publish-article`/`publish-project` run entirely on the GH runner → service-account login → REST import (zero VPS execution). Content JSONs/MDs now tracked in git. **Contract: articles/projects are authored via git — prod-admin drafts die on next publish; cosmetic fields survive (omitted on upsert).** ([final-report](docs/sprint-23/final-report.md)) |
+| 24 | **Bilingual content layer (EN + optional ID, UI stays English)** — Payload `localization` on Articles/Projects (localized: title/excerpt/body/seo.*, + project features; slug/relations shared); data-sync **archive v3** (`locales.id` overlays, EN flat; v1/v2 import unchanged; EN-only emits still v2) with **non-clobber per-locale imports** (proven: EN-only publish can't destroy translations); `*.id.json` sibling authoring contract + auto-attach in wrap:publish/wrap CLIs; content tools gained step 3b translate stages; first bilingual article live in git; hand-written prod migration + owner runbook. Frontend untouched — `/id/` zone is sprint-25. ([final-report](docs/sprint-24/final-report.md)) |
+| 25 | **The Indonesian zone (frontend + SEO + full translations)** — shared locale-parameterized page components (`components/pages/`) behind 8 thin route wrappers; `/id/blogs` + `/id/projects` lists show translated-only (`?locale=id&fallback-locale=none` detection), untranslated detail → **301 to EN**; static `EN\|ID` switcher on list header + detail title (hidden when no counterpart); BaseLayout `lang` + hreflang alternates; sitemap `xhtml:link` alternates via `serialize`; detail loaders in `lib/content.ts` (routes own redirects — `Astro.redirect` is a no-op in components); **all content translated (4/4 articles, 5/5 projects)** and verified bilingual through wrap→import→routes. EN pages byte-identical. ([final-report](docs/sprint-25/final-report.md)) |
 
-Latest detail: [`docs/sprint-23/final-report.md`](docs/sprint-23/final-report.md).
+Latest detail: [`docs/sprint-25/final-report.md`](docs/sprint-25/final-report.md).
 
 ---
 

@@ -1,16 +1,5 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import BlogFilter from '../components/blog/BlogFilter.svelte';
-import { safeFetch } from '../lib/api';
-import type { Article, PaginatedResponse } from '../lib/api-types';
-
-const articles = await safeFetch<PaginatedResponse<Article>>('/articles?sort=-publishedAt&depth=1');
+import BlogsPage from '../components/pages/BlogsPage.astro';
 ---
 
-<BaseLayout title="Blogs" pageTitle="Blogs" activeNav="/blogs">
-  <p class="text-desc text-sm mb-4">
-    Notes on backend systems, AI tooling, and how I run software projects with AI agents.
-  </p>
-
-  <BlogFilter client:load articles={articles.docs || []} />
-</BaseLayout>
+<BlogsPage locale="en" />

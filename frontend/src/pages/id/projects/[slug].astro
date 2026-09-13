@@ -1,0 +1,23 @@
+---
+// Indonesian reading zone (sprint-25): translated projects only; untranslated → 301 to EN.
+import ProjectDetailPage from '../../../components/pages/ProjectDetailPage.astro';
+import { loadProjectDetail } from '../../../lib/content';
+
+export const prerender = false;
+
+const data = await loadProjectDetail('id', Astro.params.slug);
+if (data.status === 'not-found') {
+  return Astro.redirect('/404');
+}
+if (data.status === 'untranslated') {
+  return Astro.redirect(`/projects/${Astro.params.slug}`, 301);
+}
+---
+
+<ProjectDetailPage
+  locale="id"
+  project={data.doc}
+  translated={data.translated}
+  nextProject={data.nextProject ?? null}
+  otherProjects={data.otherProjects ?? []}
+/>

@@ -1,0 +1,22 @@
+---
+// Indonesian reading zone (sprint-25): translated articles only; untranslated → 301 to EN.
+import BlogDetailPage from '../../../components/pages/BlogDetailPage.astro';
+import { loadArticleDetail } from '../../../lib/content';
+
+export const prerender = false;
+
+const data = await loadArticleDetail('id', Astro.params.slug);
+if (data.status === 'not-found') {
+  return Astro.redirect('/404');
+}
+if (data.status === 'untranslated') {
+  return Astro.redirect(`/blogs/${Astro.params.slug}`, 301);
+}
+---
+
+<BlogDetailPage
+  locale="id"
+  article={data.doc}
+  translated={data.translated}
+  relatedArticles={data.relatedArticles ?? []}
+/>

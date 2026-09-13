@@ -524,17 +524,21 @@ a { color: inherit; text-decoration: none; }
   color: var(--foreground);
   opacity: .85;
 }
+/* Date + read-time: one quiet meta line UNDER the title (never beside it — a long
+   title wraps freely without dragging the meta along). Tags live on their own row above. */
 .blog-card-meta {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 10px;
   font-size: 12px;
   color: var(--desc);
+  margin-top: 4px;
 }
-.blog-card-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.blog-card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
 .blog-card-meta .meta-item { display: inline-flex; align-items: center; gap: 5px; }
 .blog-card-meta .read-est { flex-shrink: 0; white-space: nowrap; }
+.blog-card .card-footer { justify-content: flex-end; }
 
 /* ---------- Documents (compact downloadable-file rows) ---------- */
 .doc-card { display: flex; flex-direction: row; align-items: center; gap: 12px; padding: 12px 14px; min-width: 0; }

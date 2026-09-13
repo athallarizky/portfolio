@@ -47,25 +47,25 @@
 
     {#each filteredArticles as article}
       <article class="card is-hoverable">
-        <div class="blog-card-meta">
-          <div class="blog-card-tags">
-            {#each article.tags as tag}
-              <span class="tag is-secondary">{tag.name}</span>
-            {/each}
-          </div>
-          {#if article.readMinutes}
-            <span class="meta-item read-est">
-              <Icon icon="solar:clock-circle-linear" width={14} height={14} />
-              {article.readMinutes} min
-            </span>
-          {/if}
+        <div class="blog-card-tags">
+          {#each article.tags as tag}
+            <span class="tag is-secondary">{tag.name}</span>
+          {/each}
         </div>
         <a href={`${base}/blogs/${article.slug}`} style="text-decoration:none; color:inherit;">
           <h2 class="blog-card-title">{article.title}</h2>
         </a>
+        <div class="blog-card-meta">
+          <span class="text-xs text-desc">Published {formatDate(article.publishedAt)}</span>
+          {#if article.readMinutes}
+            <span class="meta-item read-est">
+              <Icon icon="solar:clock-circle-linear" width={14} height={14} />
+              {article.readMinutes} min read
+            </span>
+          {/if}
+        </div>
         <p class="blog-card-excerpt">{article.excerpt}</p>
         <div class="card-footer">
-          <span class="text-xs text-desc">Published {formatDate(article.publishedAt)}</span>
           <a class="btn btn-ghost" href={`${base}/blogs/${article.slug}`}>
             Read article
             <Icon icon="solar:alt-arrow-right-linear" width={16} height={16} />

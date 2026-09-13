@@ -1,0 +1,57 @@
+---
+// Work experience timeline (sprint-26) — single-column card list, no filters.
+// English-only: entries are proper-noun heavy, so no /id/ zone here (unlike blogs/projects).
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { safeFetch } from '../lib/api';
+import type { Experience, PaginatedResponse } from '../lib/api-types';
+
+const data = await safeFetch<PaginatedResponse<Experience>>('/experiences?sort=order&limit=50');
+const experiences = (data.docs || []) as Experience[];
+---
+
+<BaseLayout title="Experiences" pageTitle="Experiences" activeNav="/experiences">
+  <p class="text-desc text-sm mb-4">
+    Where I've worked — frontend engineering roles, freelance stints, and the internship where it started.
+  </p>
+
+  {experiences.length > 0 ? (
+    <div class="exp-list">
+      {experiences.map((exp) => (
+        <article class="card">
+          <div class="card-header">
+            <h2 class="card-title exp-role">{exp.role}</h2>
+            <span class="tag is-secondary exp-period">{exp.period}</span>
+          </div>
+          <div class="exp-meta">
+            {exp.url ? (
+              <a class="exp-company" href={exp.url} target="_blank" rel="noopener">{exp.company}</a>
+            ) : (
+              <span class="exp-company">{exp.company}</span>
+            )}
+            {exp.employmentType && <span>· {exp.employmentType}</span>}
+            {exp.location && <span>· {exp.location}</span>}
+          </div>
+          <p class="card-excerpt">{exp.description}</p>
+          {exp.highlights?.length > 0 && (
+            <ul class="exp-highlights">
+              {exp.highlights.map((h) => (
+                <li>{h.text}</li>
+              ))}
+            </ul>
+          )}
+          {exp.stack?.length > 0 && (
+            <div class="exp-stack">
+              {exp.stack.map((s) => (
+                <span class="tag is-secondary">{s.name}</span>
+              ))}
+            </div>
+          )}
+        </article>
+      ))}
+    </div>
+  ) : (
+    <div class="empty-state">
+      <p>No experiences yet.</p>
+    </div>
+  )}
+</BaseLayout>

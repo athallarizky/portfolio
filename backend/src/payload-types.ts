@@ -75,6 +75,7 @@ export interface Config {
     articles: Article;
     technologies: Technology;
     projects: Project;
+    experiences: Experience;
     'social-profiles': SocialProfile;
     'contact-messages': ContactMessage;
     media: Media;
@@ -93,6 +94,7 @@ export interface Config {
     articles: ArticlesSelect<false> | ArticlesSelect<true>;
     technologies: TechnologiesSelect<false> | TechnologiesSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
+    experiences: ExperiencesSelect<false> | ExperiencesSelect<true>;
     'social-profiles': SocialProfilesSelect<false> | SocialProfilesSelect<true>;
     'contact-messages': ContactMessagesSelect<false> | ContactMessagesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
@@ -445,6 +447,48 @@ export interface Project {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "experiences".
+ */
+export interface Experience {
+  id: number;
+  uuid?: string | null;
+  company: string;
+  role: string;
+  /**
+   * e.g. Full-time, Freelance, Internship
+   */
+  employmentType?: string | null;
+  location?: string | null;
+  /**
+   * Free-form display period, e.g. "Jun 2024 — Present". Sorting uses `order`.
+   */
+  period: string;
+  /**
+   * Optional company website
+   */
+  url?: string | null;
+  /**
+   * One to two sentences summarizing the role.
+   */
+  description: string;
+  highlights?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  stack?:
+    | {
+        name: string;
+        id?: string | null;
+      }[]
+    | null;
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "social-profiles".
  */
 export interface SocialProfile {
@@ -529,6 +573,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'projects';
         value: number | Project;
+      } | null)
+    | ({
+        relationTo: 'experiences';
+        value: number | Experience;
       } | null)
     | ({
         relationTo: 'social-profiles';
@@ -753,6 +801,35 @@ export interface ProjectsSelect<T extends boolean = true> {
       };
   screenshots?: T;
   architecture?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "experiences_select".
+ */
+export interface ExperiencesSelect<T extends boolean = true> {
+  uuid?: T;
+  company?: T;
+  role?: T;
+  employmentType?: T;
+  location?: T;
+  period?: T;
+  url?: T;
+  description?: T;
+  highlights?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  stack?:
+    | T
+    | {
+        name?: T;
+        id?: T;
+      };
+  order?: T;
   updatedAt?: T;
   createdAt?: T;
 }

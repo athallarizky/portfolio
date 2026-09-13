@@ -14,6 +14,7 @@ import { Authors } from './collections/Authors'
 import { Articles } from './collections/Articles'
 import { Technologies } from './collections/Technologies'
 import { Projects } from './collections/Projects'
+import { Experiences } from './collections/Experiences'
 import { SocialProfiles } from './collections/SocialProfiles'
 import { ContactMessages } from './collections/ContactMessages'
 import { Media } from './collections/Media'
@@ -46,7 +47,7 @@ export default buildConfig({
       },
     },
   },
-  collections: [Users, DocumentCategories, Documents, Tags, Authors, Articles, Technologies, Projects, SocialProfiles, ContactMessages, Media],
+  collections: [Users, DocumentCategories, Documents, Tags, Authors, Articles, Technologies, Projects, Experiences, SocialProfiles, ContactMessages, Media],
   globals: [SiteConfig, Home, Nav],
   // Sprint-24: content-level bilingual (EN canonical + optional ID). UI stays English —
   // only Articles/Projects carry localized fields; slug stays single (one identity per item).

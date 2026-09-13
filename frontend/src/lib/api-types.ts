@@ -9,11 +9,23 @@ export interface PaginatedResponse<T> {
   hasNextPage: boolean;
 }
 
-/** Client-side augmentation: does this content have an Indonesian translation?
- *  (Resolved server-side from a locale=id&fallback-locale=none probe — sprint-26.) */
-export interface TranslatedFlag {
-  translated?: boolean;
+// Work experience (sprint-26) — English-only collection, no localized fields.
+export interface Experience {
+  id: number;
+  company: string;
+  role: string;
+  employmentType: string | null;
+  location: string | null;
+  period: string;
+  url: string | null;
+  description: string;
+  highlights: { text: string }[];
+  stack: { name: string }[];
+  order: number;
+  updatedAt: string;
+  createdAt: string;
 }
+
 
 // === Collections ===
 export interface DocumentCategory {

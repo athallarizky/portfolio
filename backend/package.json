@@ -14,6 +14,7 @@
     "seed:articles": "cp payload.db payload.db.$(date +%Y%m%d-%H%M%S).bak 2>/dev/null; npx tsx src/seed/articles.ts",
     "seed:projects": "cp payload.db payload.db.$(date +%Y%m%d-%H%M%S).bak 2>/dev/null; npx tsx src/seed/projects.ts",
     "seed:documents": "cp payload.db payload.db.$(date +%Y%m%d-%H%M%S).bak 2>/dev/null; npx tsx src/seed/documents.ts",
+    "seed:experiences": "cp payload.db payload.db.$(date +%Y%m%d-%H%M%S).bak 2>/dev/null; npx tsx src/seed/experiences.ts",
     "seed:social": "cp payload.db payload.db.$(date +%Y%m%d-%H%M%S).bak 2>/dev/null; npx tsx src/seed/social.ts",
     "seed:all": "cp payload.db payload.db.$(date +%Y%m%d-%H%M%S).bak 2>/dev/null; npx tsx src/seed.ts",
     "seed:dry": "npx tsx src/seed/dry.ts",

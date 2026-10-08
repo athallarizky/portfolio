@@ -117,7 +117,7 @@ export interface Project {
   descriptor: string | null;
   bannerColor: string | null;
   bannerIcon: string | null;
-  bannerImage: Pick<Media, 'id' | 'alt' | 'filename' | 'width' | 'height' | 'url' | 'thumbnailURL'> | null;
+  bannerImage: (Pick<Media, 'id' | 'alt' | 'filename' | 'width' | 'height' | 'url' | 'thumbnailURL' | 'sizes'>) | null;
   techTags: Technology[];
   links: { label: string; url: string | null; icon: string | null }[];
   body: LexicalRoot;

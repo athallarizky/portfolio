@@ -2,11 +2,21 @@
   import type { Project } from '../../lib/api-types';
   import Icon from '../ui/Icon.svelte';
   import SearchInput from '../ui/SearchInput.svelte';
+  import { API_ORIGIN } from '../../lib/api';
 
   export let projects: Project[] = [];
   export let pageSize = 4;
   /** Link base for detail URLs — '' for the EN zone, '/id' for the Indonesian zone. */
   export let base = '';
+
+  /** Card banner: prefer the 768px `card` size (a 2.4 MB original would be wasteful),
+   *  fall back to the full URL; null → color+icon tile. */
+  function bannerSrc(p: Project): string | null {
+    const b = p.bannerImage;
+    if (!b) return null;
+    const abs = (u: string | null | undefined) => (u ? (u.startsWith('http') ? u : `${API_ORIGIN}${u}`) : null);
+    return abs(b.sizes?.card?.url) ?? abs(b.url);
+  }
 
   let query = '';
   let currentPage = 1;
@@ -34,9 +44,14 @@
   {#each paged as p}
     <article class="card is-hoverable project-card">
       <a href={`${base}/projects/${p.slug}`} style="display:block; text-decoration:none; color:inherit;">
-        <div style={`height: 140px; border-radius: 12px; background: ${p.bannerColor}; display:flex; align-items:center; justify-content:center; margin-bottom:12px;`}>
-          <Icon icon={p.bannerIcon || 'solar:rocket-bold'} width={48} height={48} />
-        </div>
+        {#if bannerSrc(p)}
+          <img src={bannerSrc(p)!} alt={p.bannerImage?.alt || p.title} loading="lazy"
+               style={`height: 140px; width: 100%; object-fit: cover; border-radius: 12px; margin-bottom:12px; display:block;`} />
+        {:else}
+          <div style={`height: 140px; border-radius: 12px; background: ${p.bannerColor}; display:flex; align-items:center; justify-content:center; margin-bottom:12px;`}>
+            <Icon icon={p.bannerIcon || 'solar:rocket-bold'} width={48} height={48} />
+          </div>
+        {/if}
         <div class="card-header">
           <span class="card-title">{p.title}</span>
         </div>

@@ -32,5 +32,10 @@
       "alt": "Watch Vault home — hero carousel (Facing El Chapo), Popular Movies, Popular TV, and Upcoming Movies sections in the dark theme with red accents",
       "caption": "Home — TMDB-powered catalog with the autonomous AI concierge one click away."
     }
-  ]
+  ],
+  "bannerImage": {
+    "file": "home.png",
+    "alt": "Watch Vault — dark movie catalog with the hero carousel and Popular Movies / Popular TV rows",
+    "caption": "Card banner — Watch Vault home."
+  }
 }

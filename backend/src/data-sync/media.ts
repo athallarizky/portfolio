@@ -51,53 +51,62 @@ export interface PackedScreenshot {
   ref: { uuid: string; key: string }
 }
 
-/** Pack one project row's "screenshots" field → media rows + zip file entries + relation refs.
- *  `taken` accumulates packed archive filenames across the whole publish (collision guard). */
+/** Pack one declared media spec ({ file, alt?, caption? }) into a media row + zip entry + ref.
+ *  Dedupe: the same archive filename (same project + file) is packed ONCE — a later spec
+ *  reusing it (e.g. bannerImage pointing at the same screenshot) gets the same ref, so both
+ *  fields share one media row. `packed` accumulates across the whole publish. */
+export function packMediaSpec(opts: {
+  slug: string
+  title?: string
+  contentDir: string
+  spec: unknown
+  packed: Map<string, PackedScreenshot>
+}): PackedScreenshot {
+  const { slug, title, contentDir, spec, packed } = opts
+  if (!spec || typeof spec !== 'object' || typeof (spec as ScreenshotSpec).file !== 'string' || !(spec as ScreenshotSpec).file) {
+    throw new WrapPublishError(`${slug}: media spec must be an object with a "file" string (relative to screenshots/)`)
+  }
+  const s = spec as ScreenshotSpec
+  if (!IMAGE_RE.test(s.file)) {
+    throw new WrapPublishError(`${slug}: media file "${s.file}" is not a supported image (png/jpg/webp/gif/svg)`)
+  }
+  const filename = `${slug}-${s.file}`
+  const existing = packed.get(filename)
+  if (existing) return existing
+  const abs = path.join(contentDir, 'screenshots', s.file)
+  if (!fs.existsSync(abs)) {
+    throw new WrapPublishError(`${slug}: media file not found: screenshots/${s.file}`)
+  }
+  const uuid = uuidV5(filename)
+  const alt = typeof s.alt === 'string' && s.alt.trim() ? s.alt : `${title ?? slug} — ${s.file}`
+  const entry: PackedScreenshot = {
+    mediaRow: {
+      uuid,
+      filename,
+      alt,
+      ...(typeof s.caption === 'string' && s.caption ? { caption: s.caption } : {}),
+    },
+    fileEntry: { path: `media/media/${filename}`, data: fs.readFileSync(abs) },
+    ref: { uuid, key: filename },
+  }
+  packed.set(filename, entry)
+  return entry
+}
+
+/** Pack one project row's "screenshots" field → media rows + zip file entries + relation refs. */
 export function packScreenshots(opts: {
   slug: string
   title?: string
   contentDir: string
   refs: unknown
-  taken: Set<string>
+  packed: Map<string, PackedScreenshot>
 }): PackedScreenshot[] {
-  const { slug, title, contentDir, refs, taken } = opts
+  const { slug, refs } = opts
   if (refs == null) return []
   if (!Array.isArray(refs)) {
     throw new WrapPublishError(
       `${slug}: "screenshots" must be an array of { file, alt?, caption? } (file is relative to screenshots/)`,
     )
   }
-  const shotsDir = path.join(contentDir, 'screenshots')
-  const packed: PackedScreenshot[] = []
-  for (const raw of refs) {
-    if (!raw || typeof raw !== 'object' || typeof (raw as ScreenshotSpec).file !== 'string' || !(raw as ScreenshotSpec).file) {
-      throw new WrapPublishError(`${slug}: every screenshots entry must be an object with a "file" string`)
-    }
-    const spec = raw as ScreenshotSpec
-    if (!IMAGE_RE.test(spec.file)) {
-      throw new WrapPublishError(`${slug}: screenshot "${spec.file}" is not a supported image (png/jpg/webp/gif/svg)`)
-    }
-    const abs = path.join(shotsDir, spec.file)
-    if (!fs.existsSync(abs)) {
-      throw new WrapPublishError(`${slug}: screenshot file not found: screenshots/${spec.file}`)
-    }
-    const filename = `${slug}-${spec.file}`
-    if (taken.has(filename)) {
-      throw new WrapPublishError(`${slug}: duplicate screenshot archive filename: ${filename}`)
-    }
-    taken.add(filename)
-    const uuid = uuidV5(filename)
-    const alt = typeof spec.alt === 'string' && spec.alt.trim() ? spec.alt : `${title ?? slug} — ${spec.file}`
-    packed.push({
-      mediaRow: {
-        uuid,
-        filename,
-        alt,
-        ...(typeof spec.caption === 'string' && spec.caption ? { caption: spec.caption } : {}),
-      },
-      fileEntry: { path: `media/media/${filename}`, data: fs.readFileSync(abs) },
-      ref: { uuid, key: filename },
-    })
-  }
-  return packed
+  return refs.map((spec) => packMediaSpec({ ...opts, spec }))
 }

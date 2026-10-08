@@ -261,6 +261,11 @@ Tell the owner, in plain language:
 in place instead of duplicating it, and local/prod converge without coordination. No
 `screenshots/` dir → omit the field entirely (output stays v2-identical to sprint-26).
 
+**Card banner (`bannerImage`):** same spec shape, single object — `"bannerImage": { "file":
+"home.png", "alt": "…" }`. Reusing a screenshot file shares its media row (deduped by archive
+filename). The projects grid prefers Payload's 768px `card` size and falls back to
+`bannerColor` + `bannerIcon` when no bannerImage is set.
+
 **Why OMIT (not null):** Payload's `update` leaves fields absent from `data` untouched → the owner's
 manual polish survives a re-generation. (On a brand-new project they simply default null.)
 

@@ -30,6 +30,7 @@ export const RELATIONS: Partial<Record<ContentCollection, RelationDef[]>> = {
     // Sprint-27: git-tracked screenshots (tools/repo-to-project/content/<slug>/screenshots/).
     // Refs are dual {uuid, key:filename}; media always imports before projects (IMPORT_ORDER).
     { field: 'screenshots', to: 'media', hasMany: true },
+    { field: 'bannerImage', to: 'media', hasMany: false },
   ],
 }
 

@@ -16,7 +16,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 
 import { createZip, type ZipEntry } from '../archive'
 import { formatStamp } from '../filenames'
-import { packScreenshots } from '../media'
+import { packMediaSpec, packScreenshots, type PackedScreenshot } from '../media'
 import { NATURAL_KEYS } from '../keys'
 import { buildManifest } from '../manifest'
 import { resolvePkgVersion } from '../version'
@@ -135,22 +135,36 @@ async function run() {
   // rewritten in place to refs the importer resolves against the packed media rows. Media
   // always imports before projects (IMPORT_ORDER), so refs resolve on both CLI and /api
   // data-import. Projects without screenshots are untouched (v2-identical output).
-  const mediaRows: Record<string, unknown>[] = []
-  const mediaEntries: ZipEntry[] = []
-  const takenFilenames = new Set<string>()
+  const packedMedia = new Map<string, PackedScreenshot>()
   rows.forEach((row, i) => {
-    if (!Array.isArray(row.screenshots) || row.screenshots.length === 0) return
-    const packed = packScreenshots({
+    const base = {
       slug: String(row.slug),
       title: typeof row.title === 'string' ? row.title : undefined,
       contentDir: path.dirname(sources[i]),
-      refs: row.screenshots,
-      taken: takenFilenames,
-    })
-    row.screenshots = packed.map((p) => p.ref)
-    mediaRows.push(...packed.map((p) => p.mediaRow))
-    mediaEntries.push(...packed.map((p) => p.fileEntry))
+      packed: packedMedia,
+    }
+    const packed: PackedScreenshot[] = []
+    if (Array.isArray(row.screenshots) && row.screenshots.length > 0) {
+      packed.push(...packScreenshots({ ...base, refs: row.screenshots }))
+    }
+    // Sprint-27: single-image fields work the same way — a {file, alt?, caption?} spec
+    // (bannerImage → the card thumbnail; extend here for other upload fields). Reusing a
+    // screenshot file shares its media row (dedupe by archive filename).
+    if (row.bannerImage && typeof row.bannerImage === 'object') {
+      packed.push(packMediaSpec({ ...base, spec: row.bannerImage }))
+    }
+    if (packed.length === 0) return
+    if (Array.isArray(row.screenshots)) {
+      row.screenshots = packed.slice(0, row.screenshots.length).map((p) => p.ref)
+    }
+    if (row.bannerImage && typeof row.bannerImage === 'object') {
+      row.bannerImage = packed[packed.length - 1].ref
+    }
   })
+  // Collect from the dedupe map — shared entries (banner reusing a screenshot file)
+  // appear exactly once in media.json and once in the zip.
+  const mediaRows: Record<string, unknown>[] = [...packedMedia.values()].map((p) => p.mediaRow)
+  const mediaEntries: ZipEntry[] = [...packedMedia.values()].map((p) => p.fileEntry)
 
   // Sprint-24: optional `<name>.id.json` siblings ride along as locales.id overlays
   // (validated: same uuid+slug, localized fields only). ID stays optional per row.

@@ -14,6 +14,32 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
+echo "=== nginx: allow content-zip uploads (idempotent, best-effort) ==="
+# Sprint-27: publish zips now carry git-tracked project screenshots (multi-MB PNGs),
+# POSTed to /api/data-import by the Publish workflows. nginx's default 1 MB
+# client_max_body_size rejects them with 413. Raise the limit once, verify with
+# nginx -t, reload; NEVER let this block the rest of the deploy.
+NGX_CONF='/etc/nginx/sites-available/portfolio'
+if [ ! -f "$NGX_CONF" ]; then
+  NGX_CONF=$(grep -rls 'server_name[^;]*athallarizky\.com' /etc/nginx/sites-available/ /etc/nginx/conf.d/ 2>/dev/null | head -1 || true)
+fi
+if [ -n "${NGX_CONF:-}" ] && [ -f "$NGX_CONF" ] && grep -q 'listen 443 ssl' "$NGX_CONF" && ! grep -q 'client_max_body_size' "$NGX_CONF"; then
+  cp "$NGX_CONF" "$NGX_CONF.pre-413fix"
+  sed -i '/listen 443 ssl/a\    client_max_body_size 100m;' "$NGX_CONF"
+  if nginx -t 2>/dev/null; then
+    if systemctl reload nginx 2>/dev/null || service nginx reload 2>/dev/null; then
+      echo "nginx: client_max_body_size 100m added to $NGX_CONF + reloaded"
+    else
+      echo "⚠️  nginx config updated but reload failed — will apply on next reload (deploy continues)"
+    fi
+  else
+    cp "$NGX_CONF.pre-413fix" "$NGX_CONF"
+    echo "⚠️  nginx -t failed after edit — reverted, reload skipped (deploy continues)"
+  fi
+else
+  echo "nginx: limit already set or config not found — skipping (deploy continues)"
+fi
+
 echo "=== Install backend runtime deps (no compile) ==="
 cd backend
 if [ ! -f .env ]; then

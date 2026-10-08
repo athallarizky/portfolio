@@ -241,9 +241,25 @@ Tell the owner, in plain language:
 | `architecture` | fill (ASCII tree) | `ls-files` — draft-only: omit unless the draft implies one |
 | `status` | fill `"published"` | default |
 | `bannerColor`, `bannerIcon` | **OMIT** | owner polishes in admin |
-| `features`, `screenshots` | **OMIT** | owner polishes in admin |
+| `screenshots` | fill from `screenshots/` (sprint-27) | git-tracked — see below |
+| `features` | **OMIT** | owner polishes in admin |
 | `seo` | **OMIT** | owner polishes in admin |
 | `order`, `showOnHome` | **OMIT** | owner polishes in admin |
+
+**Screenshots (sprint-27 — git is the source of truth):** put image files in
+`content/<slug>/screenshots/` and declare them in `project.json`:
+
+```json
+"screenshots": [
+  { "file": "home.png", "alt": "what the shot shows", "caption": "optional caption" }
+]
+```
+
+`file` is relative to `screenshots/` (png/jpg/webp/gif/svg). `wrap:publish` packs them as a
+`media` collection with **deterministic uuids** (uuidv5 of the archive filename
+`<slug>-<file>`) and rewrites the field to `{uuid, key}` refs — so re-publishes update media
+in place instead of duplicating it, and local/prod converge without coordination. No
+`screenshots/` dir → omit the field entirely (output stays v2-identical to sprint-26).
 
 **Why OMIT (not null):** Payload's `update` leaves fields absent from `data` untouched → the owner's
 manual polish survives a re-generation. (On a brand-new project they simply default null.)

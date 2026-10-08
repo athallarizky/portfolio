@@ -407,6 +407,7 @@ async function upsertDoc(
 
   // Find existing by uuid first (rename-safe), else by natural key (v1 / un-backfilled).
   let existingId: number | string | undefined
+  let existingRow: Record<string, any> | undefined
   if (uuid) {
     const byUuid = await payload.find({
       collection,
@@ -414,7 +415,10 @@ async function upsertDoc(
       limit: 1,
       depth: 0,
     } as any)
-    if (byUuid.totalDocs > 0) existingId = byUuid.docs[0].id
+    if (byUuid.totalDocs > 0) {
+      existingId = byUuid.docs[0].id
+      existingRow = byUuid.docs[0] as Record<string, any>
+    }
   }
   if (existingId === undefined) {
     const byKey = await payload.find({
@@ -423,7 +427,10 @@ async function upsertDoc(
       limit: 1,
       depth: 0,
     } as any)
-    if (byKey.totalDocs > 0) existingId = byKey.docs[0].id
+    if (byKey.totalDocs > 0) {
+      existingId = byKey.docs[0].id
+      existingRow = byKey.docs[0] as Record<string, any>
+    }
   }
   const exists = existingId !== undefined
 
@@ -445,7 +452,29 @@ async function upsertDoc(
         ? { data: bytes, mimetype: inferMimetype(row.filename), name: row.filename, size: bytes.length }
         : undefined
     if (exists) {
-      await payload.update({ collection, id: existingId, data, ...(file ? { file } : {}) } as any)
+      // Idempotent re-upload: if the DB row already carries this exact filename AND the
+      // on-disk bytes are identical, skip the file payload — passing `file` makes Payload
+      // suffix the filename (foo.png → foo-1.png) and orphan the old stored file.
+      // Renames and changed bytes still re-upload (content-addressed by filename+hash).
+      let skipFile = false
+      if (file && (existingRow as any)?.filename === row.filename) {
+        const storedPath = path.join(
+          (payload as any).collections?.[collection]?.config?.upload?.staticDir ?? collection,
+          row.filename,
+        )
+        try {
+          const existingBytes = fs.readFileSync(storedPath)
+          skipFile = existingBytes.equals(file.data)
+        } catch {
+          skipFile = false // unreadable/missing on disk → re-upload to be safe
+        }
+      }
+      await payload.update({
+        collection,
+        id: existingId,
+        data,
+        ...(file && !skipFile ? { file } : {}),
+      } as any)
       return { status: 'updated', id: existingId, key }
     }
     if (!file) throw new Error(`"${collection}" record "${key}" has no media file in the archive`)

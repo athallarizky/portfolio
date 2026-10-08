@@ -25,7 +25,12 @@ export const RELATIONS: Partial<Record<ContentCollection, RelationDef[]>> = {
     { field: 'relatedArticles', to: 'articles', hasMany: true, selfRef: true },
   ],
   documents: [{ field: 'category', to: 'document-categories', hasMany: false, required: true }],
-  projects: [{ field: 'techTags', to: 'technologies', hasMany: true }],
+  projects: [
+    { field: 'techTags', to: 'technologies', hasMany: true },
+    // Sprint-27: git-tracked screenshots (tools/repo-to-project/content/<slug>/screenshots/).
+    // Refs are dual {uuid, key:filename}; media always imports before projects (IMPORT_ORDER).
+    { field: 'screenshots', to: 'media', hasMany: true },
+  ],
 }
 
 /** Topological import order — parents before children (matches the seed phase order). */
@@ -48,6 +53,7 @@ export const RELATION_TARGETS: ContentCollection[] = [
   'authors',
   'technologies',
   'articles',
+  'media', // sprint-27: projects.screenshots
 ]
 
 /** Collections whose body field is Lexical rich text (↔ Markdown on export/import). */

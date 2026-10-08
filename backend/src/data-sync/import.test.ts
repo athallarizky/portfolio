@@ -134,10 +134,11 @@ test('primeResolver: skipped (no DB fetch) for collections already in the archiv
     },
   }
   // every relation target is present in the archive → nothing fetched
+  // (media joined the relation targets in sprint-27: projects.screenshots)
   await primeResolver(
     payload,
     resolver,
-    new Set(['document-categories', 'tags', 'authors', 'technologies', 'articles']),
+    new Set(['document-categories', 'tags', 'authors', 'technologies', 'articles', 'media']),
   )
   assert.deepEqual(fetched, [], 'must not fetch DB for collections already in the archive')
 })
@@ -214,6 +215,7 @@ const emptyReport = (): ImportReport => ({
   unchanged: {},
   deleted: {},
   skippedReferenced: [],
+  localeOverlays: {},
   errors: [],
   dryRun: false,
 })

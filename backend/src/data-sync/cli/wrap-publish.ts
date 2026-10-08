@@ -16,6 +16,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 
 import { createZip, type ZipEntry } from '../archive'
 import { formatStamp } from '../filenames'
+import { packScreenshots } from '../media'
 import { NATURAL_KEYS } from '../keys'
 import { buildManifest } from '../manifest'
 import { resolvePkgVersion } from '../version'
@@ -129,6 +130,28 @@ async function run() {
   const rows = readRows(sources, collection)
   validatePublishRows(collection, rows, sources)
 
+  // Sprint-27: git-tracked screenshots → media rows + zip file entries + dual {uuid,key} refs.
+  // project.json "screenshots": [{ file, alt?, caption? }] (file relative to screenshots/) is
+  // rewritten in place to refs the importer resolves against the packed media rows. Media
+  // always imports before projects (IMPORT_ORDER), so refs resolve on both CLI and /api
+  // data-import. Projects without screenshots are untouched (v2-identical output).
+  const mediaRows: Record<string, unknown>[] = []
+  const mediaEntries: ZipEntry[] = []
+  const takenFilenames = new Set<string>()
+  rows.forEach((row, i) => {
+    if (!Array.isArray(row.screenshots) || row.screenshots.length === 0) return
+    const packed = packScreenshots({
+      slug: String(row.slug),
+      title: typeof row.title === 'string' ? row.title : undefined,
+      contentDir: path.dirname(sources[i]),
+      refs: row.screenshots,
+      taken: takenFilenames,
+    })
+    row.screenshots = packed.map((p) => p.ref)
+    mediaRows.push(...packed.map((p) => p.mediaRow))
+    mediaEntries.push(...packed.map((p) => p.fileEntry))
+  })
+
   // Sprint-24: optional `<name>.id.json` siblings ride along as locales.id overlays
   // (validated: same uuid+slug, localized fields only). ID stays optional per row.
   const bilingualSources: string[] = []
@@ -151,6 +174,13 @@ async function run() {
     path: `collections/${c}.json`,
     data: JSON.stringify(rs, null, 2),
   }))
+  // Sprint-27: git-tracked screenshots ride along as a media collection + file entries.
+  // Omitted when no project has screenshots, so publishes stay byte-compatible with the
+  // currently-deployed importer behavior.
+  if (mediaRows.length > 0) {
+    entries.push({ path: 'collections/media.json', data: JSON.stringify(mediaRows, null, 2) })
+    entries.push(...mediaEntries)
+  }
   entries.unshift({
     path: 'manifest.json',
     data: JSON.stringify(
@@ -177,6 +207,9 @@ async function run() {
   console.log(`✅ publish zip → ${path.relative(process.cwd(), out)} (${buffer.length.toLocaleString()} bytes)`)
   console.log(`   ${collection}: ${rows.length} row(s) [${sources.map((s) => path.basename(path.dirname(s))).join(', ')}]`)
   console.log(`   refs: tags ${refs.tags.length}, technologies ${refs.technologies.length}`)
+  if (mediaRows.length > 0) {
+    console.log(`   media: ${mediaRows.length} screenshot(s) [${mediaRows.map((m) => (m as { filename: string }).filename).join(', ')}]`)
+  }
   if (bilingualSources.length) {
     console.log(`   id overlays: ${bilingualSources.length}/${rows.length} row(s) [${bilingualSources.join(', ')}]`)
   }

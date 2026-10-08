@@ -219,6 +219,9 @@ logs in with the service account, and POSTs to `/api/data-import` with `replaceO
   created only in the prod admin will be **deleted by the next publish**.
 - Cosmetic fields (images, seo, showOnHome…) are omitted from the JSONs → admin polish survives.
 - Refresh refs after admin tag/technology changes: `npm run refs:export` → commit.
+- **Screenshots are git-tracked (sprint-27):** `tools/repo-to-project/content/<slug>/screenshots/`
+  + `"screenshots": [{ file, alt?, caption? }]` in `project.json` — `wrap:publish` packs them
+  as media with deterministic uuids (no admin polish needed; re-publish updates in place).
 - Sync local 1:1: `npm run wrap:publish -- --articles` + `npm run import -- <zip> -- --replace-only articles` (same for projects).
 - Publish rows must carry a stable `uuid` (wrap:publish refuses otherwise).
 

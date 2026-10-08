@@ -96,6 +96,14 @@ jobs:
             --exclude 'node_modules' \
             frontend/ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/root/portfolio/frontend/
 
+      # ── 6b. Sync ops scripts to the VPS ───────────────────────────────────
+      # scripts/deploy.sh EXECUTES on the VPS (step 7) — it must be the git
+      # version. Before sprint-27 it was never rsynced, so the box kept a stale
+      # copy from the original manual setup (the nginx 413 fix silently missed).
+      - name: Sync ops scripts to VPS
+        run: |
+          rsync -az scripts/ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/root/portfolio/scripts/
+
       # ── 7. Install runtime deps + restart PM2 on the VPS (no compile) ─────
       - name: Restart services on VPS
         uses: appleboy/ssh-action@v1

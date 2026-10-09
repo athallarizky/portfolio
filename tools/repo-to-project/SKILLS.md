@@ -38,8 +38,10 @@ All paths are relative to the **repo root** (`portfolio/`). Run backend CLI step
   - **content-only** — write `project.json` + `project.md` only. No backend, no zip, no dry-run. Use this when the owner just wants the copy fast (iterate on excerpt/body, apply later).
   - **full** (default if unclear) — also wrap the importable zip (step 4) and dry-run import against the backend (step 5) to verify it lands cleanly.
 - **language & tone** — same policy as `article-polish`: **English, professional but casual** — clear,
-  direct, conversational. If the draft is in another language, **translate while polishing** unless the
-  owner says otherwise. Keep technical terms as-is.
+  direct, conversational. Berbeda dengan artikel yang bersifat konseptual dan general, portfolio
+  projects harus menonjolkan sisi teknis, alur/flow arsitektur mendalam, dan mekanika sistem.
+  If the draft is in another language, **translate while polishing** unless the owner says
+  otherwise. Keep technical terms as-is.
 
 ---
 

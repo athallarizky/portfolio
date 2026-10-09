@@ -34,9 +34,11 @@ The user should also specify:
 - **publishedAt** — ISO date. Default: today.
 - **tags** — comma-separated tag names. If not specified, detect from content.
 - **language & tone** — default: **English, professional but casual** — clear, direct,
-  conversational; no corporate stiffness, no slang overload. If the raw draft is in another
-  language, **translate while polishing** unless the owner says otherwise. Keep technical
-  terms as-is.
+  conversational; no corporate stiffness, no slang overload. Artikel bersifat general dan
+  konseptual dengan komposisi/level teknis yang tidak terlalu berat (fokus pada lesson learned,
+  workflow, dan problem-solving), sedangkan portfolio projects sebaliknya (fokus pada detail
+  arsitektur teknis). If the raw draft is in another language, **translate while polishing**
+  unless the owner says otherwise. Keep technical terms as-is.
 
 ---
 

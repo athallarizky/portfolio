@@ -1,5 +1,17 @@
 [
   {
+    "uuid": "d13701ff-e031-4687-b799-fda1ffcf289e",
+    "name": "Playwright",
+    "slug": "playwright",
+    "icon": "simple-icons:playwright"
+  },
+  {
+    "uuid": "7858be37-3806-4823-92fc-fdb7148049c2",
+    "name": "Grafana",
+    "slug": "grafana",
+    "icon": "simple-icons:grafana"
+  },
+  {
     "uuid": "9c50d28e-f61d-4edf-8b3a-932845142e6b",
     "name": "Python",
     "slug": "python",

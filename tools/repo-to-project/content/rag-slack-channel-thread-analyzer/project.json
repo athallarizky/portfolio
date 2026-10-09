@@ -11,5 +11,37 @@
   ],
   "body": "## Overview\n\nAt my company we have a #dev-bugs channel where the operations team files their reports. It's the channel that never goes quiet — every day, something new lands there.\n\nOne recurring challenge: some bugs turn out to be repeats. The issue was solved before — often by someone else — so unless you were there at the time, it's easy to miss that the same problem already has a known fix. Or you can tell the issue looks familiar, but finding the old, relevant thread — its root cause, its resolution — is a search of its own.\n\nSo I put a simple RAG workflow around it:\n\n- export the channel's conversation data from Slack (JSON)\n- normalize and clean the data\n- turn it into a knowledge base for RAG\n\nNow it's much easier to jump straight to the old threads most similar to a new report. The agent can even analyze and summarize past conversations on the spot, so tracing an issue no longer means starting from zero.\n\nThe use case isn't limited to bugs, either. Anything that lives in an exported channel can become a knowledge base — support channels, engineering discussions, whatever the team needs.\n\nOn the technical side, the provider setup is deliberately flexible: plug in an API key directly, or use a custom command that calls a CLI agent behind the scenes. Factory Droid, Claude Code, or any other provider all work.",
   "architecture": "slack-rag/\n├── api/            # FastAPI — ingest, embed, search, chat\n│   ├── chat/       # agent, retrieval, providers, history\n│   ├── pipeline/   # clean, normalize, index, search\n│   └── Dockerfile\n├── web/            # Astro + React + Tailwind UI\n├── skills/         # customizable AI agent skills (md + code)\n├── data/           # Slack exports + vector store\n├── docs/\n└── docker-compose.yml",
-  "status": "published"
+  "status": "published",
+  "bannerImage": {
+    "file": "banner.png",
+    "alt": "Slack Channel Thread Analyzer — RAG app interface",
+    "caption": "Card banner — RAG Slack Channel Thread Analyzer."
+  },
+  "screenshots": [
+    {
+      "file": "banner.png",
+      "alt": "Slack Channel Thread Analyzer — RAG app interface",
+      "caption": "Semantic search across Slack channel threads."
+    },
+    {
+      "file": "screenshot-1.png",
+      "alt": "Slack Channel Thread Analyzer — app view 1",
+      "caption": "App in action."
+    },
+    {
+      "file": "screenshot-2.png",
+      "alt": "Slack Channel Thread Analyzer — app view 2",
+      "caption": "App in action."
+    },
+    {
+      "file": "screenshot-3.png",
+      "alt": "Slack Channel Thread Analyzer — app view 3",
+      "caption": "App in action."
+    },
+    {
+      "file": "screenshot-4.png",
+      "alt": "Slack Channel Thread Analyzer — app view 4",
+      "caption": "App in action."
+    }
+  ]
 }

@@ -26,6 +26,11 @@
   },
   "screenshots": [
     {
+      "file": "banner.png",
+      "alt": "Project Story run — supervisor routing a multi-agent writing pipeline (researcher → style_analyzer → writer) and saving the finished ~1126-word blog post",
+      "caption": "A full Project Story run: supervisor-orchestrated agents researching, styling, and writing a blog post from a repo."
+    },
+    {
       "file": "1-style-authoring.png",
       "alt": "Authoring the humanizer writing style — the agent reads style.ts and plans the writing-style/humanizer/SKILL.md structure",
       "caption": "Step 1 — defining the humanizer writing style the pipeline will follow."

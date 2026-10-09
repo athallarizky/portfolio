@@ -28,14 +28,34 @@
   "status": "published",
   "screenshots": [
     {
-      "file": "home.png",
-      "alt": "Watch Vault home — hero carousel (Facing El Chapo), Popular Movies, Popular TV, and Upcoming Movies sections in the dark theme with red accents",
+      "file": "home-hero.png",
+      "alt": "Watch Vault home — Resident Evil featured in the hero carousel with a Popular Movies row of poster cards",
       "caption": "Home — TMDB-powered catalog with the autonomous AI concierge one click away."
+    },
+    {
+      "file": "discover-concierge.png",
+      "alt": "Discover page filtered to Popular with the Concierge panel answering a horror-genre request in Indonesian",
+      "caption": "Discover + Concierge — ask for recommendations in plain language, in any language."
+    },
+    {
+      "file": "movie-detail-concierge.png",
+      "alt": "Spider-Man: Brand New Day detail page — backdrop, cast row, watchlist action, and the Concierge suggesting similar films",
+      "caption": "Movie detail — full TMDB metadata with context-aware AI recommendations."
+    },
+    {
+      "file": "actor-profile.png",
+      "alt": "Tom Holland profile page — bio, credits count, and a Popular Titles grid with role and rating per film",
+      "caption": "People — deep-linked credits from cast headshots."
+    },
+    {
+      "file": "people-browse.png",
+      "alt": "People browse grid — headshot cards with name, department, and known-for credits across acting, directing, and production",
+      "caption": "Browse the industry — cast and crew with their known-for titles."
     }
   ],
   "bannerImage": {
-    "file": "home.png",
-    "alt": "Watch Vault — dark movie catalog with the hero carousel and Popular Movies / Popular TV rows",
+    "file": "home-hero.png",
+    "alt": "Watch Vault home — dark movie catalog with the Resident Evil hero carousel and Popular Movies row",
     "caption": "Card banner — Watch Vault home."
   }
 }

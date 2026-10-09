@@ -18,5 +18,32 @@
   ],
   "body": "## Technical Overview\n\n`project-story` is an automated technical writing pipeline that turns any public GitHub repository into a publication-ready blog article. Rather than relying on a single monolithic prompt, the system orchestrates a **directed multi-agent graph in TypeScript** where specialized agents independently handle codebase research, author persona modeling, and narrative synthesis.\n\n## Multi-Agent Graph Architecture\n\n```\nCLI: npx tsx src/index.ts <git-url> --style personal\n                       │\n                       ▼\n            [ Supervisor Orchestrator ]\n           ┌───────────┴───────────┐\n           ▼                       ▼\n  [ Agent 1: Researcher ]  [ Agent 2: Style Analyzer ]\n  - Shallow git clone      - Ingests SKILL.md & post samples\n  - Parses package manifests- Extracts vocabulary & tone rules\n  - Maps architectural tree\n           │                       │\n           └───────────┬───────────┘\n                       ▼ (Merged Graph State)\n             [ Agent 3: Writer ]\n             - Drafts narrative based on factual dossier\n             - Enforces tone boundaries & code snippets\n                       │\n                       ▼\n            [ Output: article.md ]\n```\n\n1. **Shared Graph State Machine:** Built on a unified state contract in `src/state.ts` that tracks repository metadata, the factual research dossier, style guidelines, intermediate drafts, and supervisor approval flags.\n2. **Agent 1 — Codebase Researcher:**\n   - Clones target repositories with `--depth=1` to minimize bandwidth and disk overhead.\n   - Systematically inspects dependency manifests (`package.json`, `go.mod`, `Cargo.toml`, `pyproject.toml`), directory structures, and entry points.\n   - Generates a strictly factual technical report detailing project motivation, stack choices, key algorithms, and edge cases.\n3. **Agent 2 — Style Analyzer:**\n   - Operates in complete isolation from the codebase.\n   - Reads user-defined markdown style guides (`SKILL.md`) and raw past writing samples from `writing-style/`.\n   - Produces a structured persona contract: sentence variance rules, preferred technical depth, and blacklisted AI cliches.\n4. **Agent 3 — Narrative Writer:**\n   - Synthesizes the factual dossier with the persona contract.\n   - Formats headers, conceptual diagrams, and code snippets without inventing fictional APIs or hallucinatory claims.\n5. **Isolated Tool Layer:** Provides atomic, deterministic tools for git operations, sandboxed file system reads, and style parsing under `src/tools/`.",
   "architecture": "project-story/\n├── src/\n│   ├── agents/             # Multi-agent role implementations\n│   │   ├── supervisor.ts   # State transition coordinator & routing\n│   │   ├── researcher.ts   # Git cloner & codebase inspector\n│   │   ├── style-analyzer.ts # Writing style extractor\n│   │   └── writer.ts       # Narrative synthesis agent\n│   ├── tools/              # Sandboxed agent tool catalog\n│   │   ├── git.ts          # Repository cloning & commit history tools\n│   │   ├── filesystem.ts   # Manifest reader & tree walker\n│   │   └── style.ts        # Sample document loader\n│   ├── state.ts            # Shared state schema & graph reducers\n│   ├── graph.ts            # StateGraph definition & node wiring\n│   ├── llm.ts              # Model provider initialization (Zhipu / OpenAI)\n│   └── index.ts            # CLI command runner\n├── writing-style/          # Personal SKILL.md guides & reference articles\n├── package.json            # Manifest\n└── README.md",
-  "status": "published"
+  "status": "published",
+  "bannerImage": {
+    "file": "banner.png",
+    "alt": "Project Story run — supervisor routing a multi-agent writing pipeline (researcher → style_analyzer → writer) and saving the finished ~1126-word blog post",
+    "caption": "A full Project Story run: supervisor-orchestrated agents researching, styling, and writing a blog post from a repo."
+  },
+  "screenshots": [
+    {
+      "file": "1-style-authoring.png",
+      "alt": "Authoring the humanizer writing style — the agent reads style.ts and plans the writing-style/humanizer/SKILL.md structure",
+      "caption": "Step 1 — defining the humanizer writing style the pipeline will follow."
+    },
+    {
+      "file": "2-skill-creation.png",
+      "alt": "The agent creating the humanizer SKILL.md — chain-of-thought reasoning about stripping AI writing patterns for a natural voice",
+      "caption": "Step 2 — the agent authors the style guide as a SKILL.md."
+    },
+    {
+      "file": "3-analyzer-reasoning.png",
+      "alt": "Extended thinking: the agent verifies the style analyzer still works from SKILL.md alone, without a samples/ directory",
+      "caption": "Step 3 — reasoning through graph.ts to confirm the analyzer degrades gracefully."
+    },
+    {
+      "file": "4-pipeline-run.png",
+      "alt": "Running Project Story against a repo with the humanizer style — supervisor routing researcher and style_analyzer agents in a streamed multi-agent pipeline",
+      "caption": "Step 4 — the full run: supervisor → researcher → style_analyzer → writer."
+    }
+  ]
 }

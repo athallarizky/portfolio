@@ -1,51 +1,21 @@
 [
   {
-    "uuid": "ae5330a9-3e31-4a94-af13-d0f6d06479e2",
-    "name": "Bun",
-    "slug": "bun",
-    "icon": "simple-icons:bun"
+    "uuid": "9c50d28e-f61d-4edf-8b3a-932845142e6b",
+    "name": "Python",
+    "slug": "python",
+    "icon": "simple-icons:python"
   },
   {
-    "uuid": "9b63f0bf-cad8-4b95-9fec-6c774a551bfa",
-    "name": "PWA",
-    "slug": "pwa",
-    "icon": "simple-icons:pwa"
+    "uuid": "3005bf2e-bf75-4a1b-bd89-b82e3703203c",
+    "name": "Android",
+    "slug": "android",
+    "icon": "simple-icons:android"
   },
   {
-    "uuid": "334e5752-be80-4c1d-a142-28d8b005f736",
-    "name": "Cloudflare",
-    "slug": "cloudflare",
-    "icon": "simple-icons:cloudflare"
-  },
-  {
-    "uuid": "f92b2ba8-07e9-4f47-9e03-3ee6c8186334",
-    "name": "PHP",
-    "slug": "php",
-    "icon": "simple-icons:php"
-  },
-  {
-    "uuid": "9f90a226-9847-438d-aaf3-127efaaa817f",
-    "name": "Redis",
-    "slug": "redis",
-    "icon": "simple-icons:redis"
-  },
-  {
-    "uuid": "a892bbc4-c276-42ff-af39-ae033f61b50b",
-    "name": "PostgreSQL",
-    "slug": "postgresql",
-    "icon": "simple-icons:postgresql"
-  },
-  {
-    "uuid": "a53e5ab1-f71a-4cc4-a736-ed6359b94968",
-    "name": "Vue.js",
-    "slug": "vue",
-    "icon": "simple-icons:vuedotjs"
-  },
-  {
-    "uuid": "42ad4140-aaae-4a0d-8434-161b56cf9c8a",
-    "name": "Anthropic SDK",
-    "slug": "anthropic-sdk",
-    "icon": "simple-icons:anthropic"
+    "uuid": "14603479-2e04-475c-a971-a00b223a0e96",
+    "name": "Laravel",
+    "slug": "laravel",
+    "icon": "simple-icons:laravel"
   },
   {
     "uuid": "270de834-9936-434d-8a28-763347e5a836",
@@ -54,10 +24,52 @@
     "icon": "solar:cpu-bolt-bold"
   },
   {
-    "uuid": "14603479-2e04-475c-a971-a00b223a0e96",
-    "name": "Laravel",
-    "slug": "laravel",
-    "icon": "simple-icons:laravel"
+    "uuid": "42ad4140-aaae-4a0d-8434-161b56cf9c8a",
+    "name": "Anthropic SDK",
+    "slug": "anthropic-sdk",
+    "icon": "simple-icons:anthropic"
+  },
+  {
+    "uuid": "a53e5ab1-f71a-4cc4-a736-ed6359b94968",
+    "name": "Vue.js",
+    "slug": "vue",
+    "icon": "simple-icons:vuedotjs"
+  },
+  {
+    "uuid": "a892bbc4-c276-42ff-af39-ae033f61b50b",
+    "name": "PostgreSQL",
+    "slug": "postgresql",
+    "icon": "simple-icons:postgresql"
+  },
+  {
+    "uuid": "9f90a226-9847-438d-aaf3-127efaaa817f",
+    "name": "Redis",
+    "slug": "redis",
+    "icon": "simple-icons:redis"
+  },
+  {
+    "uuid": "f92b2ba8-07e9-4f47-9e03-3ee6c8186334",
+    "name": "PHP",
+    "slug": "php",
+    "icon": "simple-icons:php"
+  },
+  {
+    "uuid": "334e5752-be80-4c1d-a142-28d8b005f736",
+    "name": "Cloudflare",
+    "slug": "cloudflare",
+    "icon": "simple-icons:cloudflare"
+  },
+  {
+    "uuid": "9b63f0bf-cad8-4b95-9fec-6c774a551bfa",
+    "name": "PWA",
+    "slug": "pwa",
+    "icon": "simple-icons:pwa"
+  },
+  {
+    "uuid": "ae5330a9-3e31-4a94-af13-d0f6d06479e2",
+    "name": "Bun",
+    "slug": "bun",
+    "icon": "simple-icons:bun"
   },
   {
     "uuid": "e1ff072e-185d-4d44-8cef-94ff95a3e1ed",

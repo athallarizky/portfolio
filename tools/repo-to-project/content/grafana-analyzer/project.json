@@ -21,5 +21,27 @@
   ],
   "body": "## Technical Overview\n\n`grafana-tools` (branded as **Grafana Analyzer**) is an automated log interrogation and diagnostic utility built for internal engineering workflows at Kitabisa. During operational incidents and bug triage, log telemetry stored in Grafana and Loki is often dense, distributed across Kubernetes namespaces, and heavily obscured by stack traces or raw JSON payloads. Non-engineers (product managers, operations personnel, and customer support leads) are blocked from understanding the blast radius of reported issues, leaving triage queues idle until a developer becomes available to run manual trace queries.\n\nWhile Grafana provides an official Model Context Protocol (MCP) server, it requires administrative API keys and complex network access rules. Grafana Analyzer solves this by combining headless browser session extraction with local Claude model pipelines, allowing users to query and diagnose logs in plain natural language.\n\n## Architecture & Pipeline Flow\n\n```\n[ User Query / Terminal / Claude Code ]\n  \"Check errors in payment service around 2 PM and explain for non-engineers\"\n                   │\n                   ▼\n      [ Intent Parser (intent.js) ]\n  (Claude Haiku extracts: env, namespace, search terms, epoch ms)\n                   │\n                   ▼\n   [ Browser Auth Session (auth.js) ] ────▶ [ Local Cache (~/.grafana-tools/session.json) ]\n  (Playwright grabs GitHub OAuth session)\n                   │\n                   ▼\n       [ Loki Client (query.js) ]\n  (POST /api/datasources/proxy/... with LogQL expr & range)\n                   │\n                   ▼\n     [ Stream Normalizer (parser.js) ]\n  (Strips ANSI, extracts timestamps, deduplicates & clamps to 500 lines)\n                   │\n                   ▼\n     [ Diagnostic Engine (analyze.js) ]\n  (Claude Sonnet analyzes root causes & streams plain-language verdict)\n                   │\n                   ▼\n[ Streamed Output to Terminal / Non-Engineer Summary ]\n```\n\n1. **Natural Language Intent Extraction:** Incoming conversational prompts pass through `src/intent.js` using `claude-haiku-4-5`. It parses unstructured requests into strict JSON containing target environment (`stg` or `prod`), target Kubernetes namespace (`steril`, `payment`, `auth`), search tokens, and epoch millisecond ranges calculated against Asia/Jakarta time (UTC+7).\n2. **Zero-Config OAuth Session Hijacking:** Rather than generating and managing long-lived Grafana service tokens, `src/auth.js` leverages Playwright to attach to the user's local Chromium or Brave profile. It captures the authenticated `grafana_session` cookie from GitHub OAuth and persists it to `~/.grafana-tools/session.json` with a 12-hour sliding expiry window.\n3. **Targeted LogQL Range Queries:** The query module (`src/query.js`) formats the parameters into Grafana Loki proxy requests (`/api/datasources/proxy/<uid>/loki/api/v1/query_range`), executing LogQL expressions such as `{namespace=\"payment\"} |= `timeout`` across specified epoch windows.\n4. **Log Normalization & Context Budgeting:** Raw Loki responses contain noisy metadata, escape codes, and nested JSON. `src/parser.js` flattens the log streams, sanitizes ANSI styling, and caps the payload to the most recent 500 log lines to ensure token efficiency and prevent LLM context exhaustion.\n5. **AI Root-Cause Diagnosis:** `src/analyze.js` invokes `claude-sonnet-4-6` with a targeted system prompt tailored for service reliability engineering. It streams an immediate diagnostic assessment explaining what failed (e.g. database connection pool saturation, payment gateway HTTP 502s) and suggests remediation steps.\n6. **Dual Execution Runtime:** Works both as an interactive terminal REPL (`index.js`) and as an agent capability documented in `AGENTS.md` for seamless integration into Claude Code workflows.",
   "architecture": "grafana-tools/\n├── index.js              # Entry point — starts REPL\n├── config.json           # Environment configurations (stg/prod base URLs & datasource UIDs)\n├── AGENTS.md             # Guide for LLM agents (Claude Code integration)\n├── setup-skills.md       # Onboarding & browser profile setup instructions\n└── src/\n    ├── config.js         # Loads configuration & session paths\n    ├── browser.js        # Chromium/Brave profile detection\n    ├── auth.js           # Playwright browser automation + session cookie caching\n    ├── query.js          # Loki API query builder with range/namespace filtering\n    ├── parser.js         # Log stream extraction, sanitization & ANSI stripper\n    ├── analyze.js        # Claude log analysis with streaming output\n    ├── intent.js         # Natural language intent parser (extracts env, ns, timerange)\n    ├── errors.js         # Custom typed domain errors\n    └── repl.js           # Interactive terminal REPL loop",
-  "status": "published"
+  "status": "published",
+  "bannerImage": {
+    "file": "banner.png",
+    "alt": "Grafana Analyzer — app interface",
+    "caption": "Card banner — Grafana Analyzer."
+  },
+  "screenshots": [
+    {
+      "file": "banner.png",
+      "alt": "Grafana Analyzer — app interface",
+      "caption": "Turning raw Grafana logs into human language."
+    },
+    {
+      "file": "screenshot-1.png",
+      "alt": "Grafana Analyzer — app view 1",
+      "caption": "App in action."
+    },
+    {
+      "file": "screenshot-2.png",
+      "alt": "Grafana Analyzer — app view 2",
+      "caption": "App in action."
+    }
+  ]
 }

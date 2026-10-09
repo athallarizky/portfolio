@@ -11,5 +11,32 @@
   ],
   "body": "## Overview\n\nGitHub Starred Collector turns the endless scroll of starred repos into something you can actually search. Run `collect --user <login>` and it pulls every starred repo — yours or anyone else's, since stars are public — validates each one against a zod schema, sorts and filters, then drops two files into `collections/<user>/`: a human-readable `starred.md` and a flat `data.csv` ready for an agent or RAG pipeline.\n\nWhat makes it more than a scraper is the categorization. A 22-rule regex engine routes every repo into a bucket — AI/Agents/LLM, Frontend/UI/Design, Security/Privacy, Awesome Lists, and so on — and that structure carries into the output. The markdown reads like a curated catalog: YAML frontmatter, a `Daftar Isi` table of contents with per-category counts, ASCII bar-chart language stats, and per-repo detail blocks with stars, license, maintenance recency, and ARCHIVED/TEMPLATE badges. Auth is dual-mode — a `GITHUB_TOKEN` uses raw `fetch` with rate-limit handling, otherwise it shells out to the `gh` CLI. No auth code of your own to maintain either way.\n\nThe real pitch is the workflow it unlocks. A `combine` command deduplicates across multiple users' collections (highest-star snapshot wins on conflict) and tracks which repos are starred by N users, so you can build a shared tool catalog across a team. The whole thing is flag-based and prompt-free by design — a per-tool `SKILLS.md` manifest teaches an external agent when and how to invoke it, so the loop becomes *collect → read → reason* rather than babysitting a script. Want a tool for X? Hand the agent your starred catalog and ask.\n",
   "architecture": "gh-tools/                          # npm workspaces monorepo\n├── packages/\n│   └── starred-collector/\n│       ├── src/\n│       │   ├── cli.ts           # entry — collect + combine subcommands (commander)\n│       │   ├── config.ts        # zod schemas for both subcommands\n│       │   ├── types.ts         # repoSchema → Repo (types = z.infer)\n│       │   ├── fetch.ts         # paginated fetcher (100/page, 2000 cap)\n│       │   ├── combine.ts       # merge/dedup engine + starredBy counts\n│       │   ├── categorize.ts    # 22-category regex ruleset\n│       │   ├── logger.ts        # createLogger(debug)\n│       │   ├── github/\n│       │   │   ├── client.ts    # dual-mode auth (token fetch vs `gh` CLI)\n│       │   │   └── queries.ts   # pure REST path builders\n│       │   └── output/\n│       │       ├── markdown.ts  # Obsidian knowledge-base writer\n│       │       ├── csv.ts       # RFC 4180 writer + parser (hand-rolled)\n│       │       └── json.ts      # json writer\n│       ├── tests/               # vitest — categorize, fetch, combine, output\n│       ├── SKILLS.md            # LLM-agent manifest (when/how to invoke)\n│       └── README.md\n├── collections/                 # (gitignored) output — <user>/{data.csv, starred.md}\n└── package.json                 # workspaces: [\"packages/*\"]",
-  "status": "published"
+  "status": "published",
+  "bannerImage": {
+    "file": "banner.png",
+    "alt": "GitHub Starred Collector — app interface",
+    "caption": "Card banner — GitHub Starred Collector."
+  },
+  "screenshots": [
+    {
+      "file": "banner.png",
+      "alt": "GitHub Starred Collector — app interface",
+      "caption": "Collected GitHub stars, organized."
+    },
+    {
+      "file": "screenshot-1.png",
+      "alt": "GitHub Starred Collector — app view 1",
+      "caption": "App in action."
+    },
+    {
+      "file": "screenshot-2.png",
+      "alt": "GitHub Starred Collector — app view 2",
+      "caption": "App in action."
+    },
+    {
+      "file": "screenshot-3.png",
+      "alt": "GitHub Starred Collector — app view 3",
+      "caption": "App in action."
+    }
+  ]
 }

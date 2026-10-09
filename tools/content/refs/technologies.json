@@ -1,5 +1,17 @@
 [
   {
+    "uuid": "e3240033-870a-465a-bed9-c831224fdd5a",
+    "name": "PayloadCMS",
+    "slug": "payloadcms",
+    "icon": "simple-icons:payload"
+  },
+  {
+    "uuid": "53164539-6c3e-424a-bc64-eaf78b991c16",
+    "name": "Next.js",
+    "slug": "nextjs",
+    "icon": "simple-icons:nextdotjs"
+  },
+  {
     "uuid": "d13701ff-e031-4687-b799-fda1ffcf289e",
     "name": "Playwright",
     "slug": "playwright",

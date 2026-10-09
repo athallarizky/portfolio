@@ -15,6 +15,11 @@
   ],
   "links": [
     {
+      "label": "Live Demo",
+      "icon": "solar:link-circle-bold",
+      "url": "https://docsy.athallarizky.com"
+    },
+    {
       "label": "Source",
       "icon": "mdi:github",
       "url": "https://github.com/athallarizky/docsy"

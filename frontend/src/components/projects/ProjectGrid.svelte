@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import type { Project } from '../../lib/api-types';
   import Icon from '../ui/Icon.svelte';
   import SearchInput from '../ui/SearchInput.svelte';
@@ -21,6 +22,23 @@
   let query = '';
   let currentPage = 1;
 
+  // Sprint-28: the page lives in the URL (?page=N) so detail → back returns to the
+  // same page. Initialized from the address bar; kept in sync via history.replaceState
+  // (no extra history entries — back from a detail page lands here with the param).
+  onMount(() => {
+    const raw = new URLSearchParams(window.location.search).get('page');
+    const n = raw ? parseInt(raw, 10) : NaN;
+    if (Number.isInteger(n) && n >= 1) currentPage = n;
+  });
+
+  function goToPage(n: number) {
+    currentPage = n;
+    const url = new URL(window.location.href);
+    if (n <= 1) url.searchParams.delete('page');
+    else url.searchParams.set('page', String(n));
+    history.replaceState(null, '', url);
+  }
+
   $: matching = projects.filter((p) => {
     const q = query.toLowerCase().trim();
     if (!q) return true;
@@ -35,7 +53,7 @@
   $: start = (currentPage - 1) * pageSize;
   $: paged = matching.slice(start, start + pageSize);
 
-  $: if (currentPage > totalPages) currentPage = totalPages;
+  $: if (currentPage > totalPages) goToPage(totalPages);
 </script>
 
 <SearchInput bind:value={query} placeholder="Search projects" maxWidth="100%" />
@@ -88,12 +106,12 @@
 
 {#if totalPages > 1}
   <nav class="pagination mt-4" aria-label="Project pagination">
-    <button class="btn btn-outline" disabled={currentPage <= 1} on:click={() => currentPage--}>
+    <button class="btn btn-outline" disabled={currentPage <= 1} on:click={() => goToPage(currentPage - 1)}>
       <Icon icon="solar:alt-arrow-left-linear" width={16} height={16} />
       Previous
     </button>
     <span class="pagination-info text-desc text-sm">Page {currentPage} of {totalPages}</span>
-    <button class="btn btn-outline" disabled={currentPage >= totalPages} on:click={() => currentPage++}>
+    <button class="btn btn-outline" disabled={currentPage >= totalPages} on:click={() => goToPage(currentPage + 1)}>
       Next
       <Icon icon="solar:alt-arrow-right-linear" width={16} height={16} />
     </button>

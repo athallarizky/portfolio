@@ -341,6 +341,11 @@ Vercel Functions yet — see sprint-27 phase-5 report).
 - **DNS (Cloudflare):** apex `A 76.76.21.21` + `www CNAME cname.vercel-dns.com`
   (both DNS-only) → frontend · `api CNAME cname.vercel-dns.com` → backend ·
   `media` → R2 (proxied). Never touch `kodeva` / `watch-vault` records.
+- **Data-sync engine contracts (sprint-28):** archives carry `createdAt`/`updatedAt`
+  (import restores them — Payload honors `createdAt` on create *and* update; publish
+  updates preserve it) and globals' relation fields travel as portable `{uuid, key}`
+  refs (`GLOBAL_RELATIONS`), never source-DB numeric ids. `experiences` is part of the
+  sync set. Unit tests pin all three (`data-sync/sprint28.test.ts`).
 - **Content pipeline (sprint-23 contract, sprint-27 transport):** author in git →
   `publish-article.yml` / `publish-project.yml`. CI imports **runner-direct**: the
   Actions runner executes the data-sync engine itself against Neon + R2

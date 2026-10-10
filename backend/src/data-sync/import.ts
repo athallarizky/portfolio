@@ -19,8 +19,10 @@ import {
   type ArchiveManifest,
   type ContentCollection,
   type ImportReport,
+  type RelationDef,
+  type SyncGlobal,
 } from './types'
-import { NATURAL_KEYS, RELATIONS, RELATION_TARGETS, RICH_TEXT_BODY, LOCALIZED_FIELDS, DEFAULT_LOCALE, OVERLAY_LOCALES } from './keys'
+import { NATURAL_KEYS, RELATIONS, GLOBAL_RELATIONS, RELATION_TARGETS, RICH_TEXT_BODY, LOCALIZED_FIELDS, DEFAULT_LOCALE, OVERLAY_LOCALES } from './keys'
 import { validateManifest } from './manifest'
 import { readZip, readJson, readEntry } from './archive'
 import { getEditorConfig, mdBodyToLexical, type EditorConfig } from './converters'
@@ -298,15 +300,32 @@ export function rewriteRelationsToIds(
   row: Record<string, any>,
   resolver: IdResolver,
 ): Record<string, any> {
+  return rewriteRelsToIds(RELATIONS[collection], row, resolver, collection)
+}
+
+/** Sprint-28: globals get the same uuid→id rewrite collections do (avatar bug fix). */
+export function rewriteGlobalRelationsToIds(
+  globalSlug: SyncGlobal,
+  row: Record<string, any>,
+  resolver: IdResolver,
+): Record<string, any> {
+  return rewriteRelsToIds(GLOBAL_RELATIONS[globalSlug], row, resolver, globalSlug)
+}
+
+function rewriteRelsToIds(
+  rels: RelationDef[] | undefined,
+  row: Record<string, any>,
+  resolver: IdResolver,
+  label: string,
+): Record<string, any> {
   const data: Record<string, any> = { ...row }
-  const rels = RELATIONS[collection]
   if (!rels) return data
   for (const rel of rels) {
     if (rel.selfRef) continue
     const val = data[rel.field]
     if (val == null) {
       if (rel.required) {
-        throw new UnresolvedRelationError(rel.to, '(missing)', `${collection}.${rel.field}`)
+        throw new UnresolvedRelationError(rel.to, '(missing)', `${label}.${rel.field}`)
       }
       continue
     }
@@ -320,13 +339,13 @@ export function rewriteRelationsToIds(
     } else {
       const ref = toRef(val)
       if (!ref) {
-        if (rel.required) throw new UnresolvedRelationError(rel.to, '(invalid)', `${collection}.${rel.field}`)
+        if (rel.required) throw new UnresolvedRelationError(rel.to, '(invalid)', `${label}.${rel.field}`)
         delete data[rel.field]
         continue
       }
       const id = resolver.resolve(rel.to, ref)
       if (id === undefined) {
-        if (rel.required) throw new UnresolvedRelationError(rel.to, ref.key, `${collection}.${rel.field}`)
+        if (rel.required) throw new UnresolvedRelationError(rel.to, ref.key, `${label}.${rel.field}`)
         delete data[rel.field]
       } else {
         data[rel.field] = id
@@ -707,7 +726,11 @@ export async function importFromArchive(
   // Globals.
   for (const g of SYNC_GLOBALS) {
     if (!zip.getEntry(`${pfx}globals/${g}.json`)) continue
-    const data = readJson<Record<string, any>>(zip, `${pfx}globals/${g}.json`)
+    const raw = readJson<Record<string, any>>(zip, `${pfx}globals/${g}.json`)
+    // Sprint-28: relation fields arrive as {uuid, key} refs — resolve to local ids
+    // (legacy archives with raw numeric ids can't be resolved; they pass through and
+    // get flagged by verification).
+    const data = rewriteGlobalRelationsToIds(g, raw, resolver)
     try {
       if (!opts.dryRun) await payload.updateGlobal({ slug: g, data } as any)
       bump(report, 'updated', `global:${g}`)

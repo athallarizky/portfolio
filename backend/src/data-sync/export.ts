@@ -13,10 +13,12 @@ import {
   INTERNAL_FIELDS,
   UPLOAD_AUTO_FIELDS,
   type ContentCollection,
+  type SyncGlobal,
   type ArchiveManifest,
   type RelationRef,
+  type RelationDef,
 } from './types'
-import { NATURAL_KEYS, RELATIONS, RELATION_TARGETS, RICH_TEXT_BODY, LOCALIZED_FIELDS } from './keys'
+import { NATURAL_KEYS, RELATIONS, GLOBAL_RELATIONS, RELATION_TARGETS, RICH_TEXT_BODY, LOCALIZED_FIELDS } from './keys'
 import { buildManifest } from './manifest'
 import { createZip, type ZipEntry } from './archive'
 import { getEditorConfig, lexicalToMd } from './converters'
@@ -44,14 +46,8 @@ async function buildIdRefMaps(payload: Payload): Promise<IdRefMaps> {
   return maps
 }
 
-/** Rewrite a doc's relationship fields from ids → dual refs { uuid, key }, in place (v2 format). */
-export function rewriteRelations(
-  doc: Record<string, any>,
-  collection: ContentCollection,
-  maps: IdRefMaps,
-): void {
-  const rels = RELATIONS[collection]
-  if (!rels) return
+/** Shared core: rewrite relationship fields from ids → dual refs { uuid, key }, in place. */
+function rewriteWithRels(doc: Record<string, any>, rels: RelationDef[], maps: IdRefMaps): void {
   for (const rel of rels) {
     const val = doc[rel.field]
     if (val == null) continue
@@ -66,6 +62,27 @@ export function rewriteRelations(
       doc[rel.field] = targetMap.get(String(val)) ?? null
     }
   }
+}
+
+/** Rewrite a doc's relationship fields from ids → dual refs { uuid, key }, in place (v2 format). */
+export function rewriteRelations(
+  doc: Record<string, any>,
+  collection: ContentCollection,
+  maps: IdRefMaps,
+): void {
+  const rels = RELATIONS[collection]
+  if (rels) rewriteWithRels(doc, rels, maps)
+}
+
+/** Sprint-28: same rewrite for globals — their relation fields must leave the source
+ *  environment as portable {uuid, key} refs, not as the source DB's numeric ids. */
+export function rewriteGlobalRelations(
+  doc: Record<string, any>,
+  globalSlug: SyncGlobal,
+  maps: IdRefMaps,
+): void {
+  const rels = GLOBAL_RELATIONS[globalSlug]
+  if (rels) rewriteWithRels(doc, rels, maps)
 }
 
 /** Strip Payload-managed + upload auto-fields. Keeps `filename` on upload collections. */
@@ -149,6 +166,8 @@ export async function exportToArchive(payload: Payload, opts: ExportOptions): Pr
 
   for (const globalSlug of SYNC_GLOBALS) {
     const data = await payload.findGlobal({ slug: globalSlug, depth: 0 } as any)
+    // Sprint-28: relation fields must leave as portable {uuid, key} refs (avatar bug).
+    rewriteGlobalRelations(data as Record<string, any>, globalSlug, maps)
     const clean = stripInternal(data as Record<string, any>, false)
     entries.push({ path: `globals/${globalSlug}.json`, data: JSON.stringify(clean, null, 2) })
     counts[`global:${globalSlug}`] = 1

@@ -2,7 +2,7 @@
 // Local and prod assign different DB ids, so relationships are serialized as
 // natural keys (slug/name/title/platform) and resolved back to ids on import.
 
-import type { ContentCollection, RelationDef } from './types'
+import type { ContentCollection, RelationDef, SyncGlobal } from './types'
 
 /** collection → the field used as the upsert key. */
 export const NATURAL_KEYS: Record<ContentCollection, string> = {
@@ -15,6 +15,7 @@ export const NATURAL_KEYS: Record<ContentCollection, string> = {
   projects: 'slug',
   'social-profiles': 'platform',
   media: 'filename',
+  experiences: 'company', // sprint-28: uuid always present; company is unique across the 6 rows
 }
 
 /** Relationships to rewrite, keyed by source collection. */
@@ -34,6 +35,14 @@ export const RELATIONS: Partial<Record<ContentCollection, RelationDef[]>> = {
   ],
 }
 
+/** Relationships to rewrite, keyed by source global (sprint-28).
+ *  Globals' relations previously traveled as raw numeric IDs from the source DB —
+ *  unportable across environments (the avatar bug: VPS media id 1 ≠ Neon media id 1).
+ *  Same dual {uuid, key} ref form as collections. */
+export const GLOBAL_RELATIONS: Partial<Record<SyncGlobal, RelationDef[]>> = {
+  'site-config': [{ field: 'avatar', to: 'media', hasMany: false }],
+}
+
 /** Topological import order — parents before children (matches the seed phase order). */
 export const IMPORT_ORDER: ContentCollection[] = [
   'document-categories',
@@ -45,6 +54,7 @@ export const IMPORT_ORDER: ContentCollection[] = [
   'technologies',
   'projects',
   'social-profiles',
+  'experiences', // sprint-28: no relations — position is dependency-free
 ]
 
 /** Collections that can be the target of a relationship — pre-fetched as id→key maps on export. */

@@ -375,6 +375,46 @@ async function applyOverlays(
   }
 }
 
+/** Sprint-27: byte-equality check for idempotent media re-uploads. Dev stores uploads
+ *  on disk; prod (serverless) serves them from R2 — compare there when the local file
+ *  is absent. Any read failure → false (re-upload to be safe). */
+async function storedBytesEqual(
+  payload: Payload,
+  collection: string,
+  filename: string,
+  incoming: Buffer,
+  existingRow: unknown,
+): Promise<boolean> {
+  // Cheap gate first: a size mismatch can never be byte-equal.
+  const storedSize = (existingRow as any)?.fileSize
+  if (typeof storedSize === 'number' && storedSize !== incoming.length) return false
+
+  const staticDir =
+    (payload as any).collections?.[collection]?.config?.upload?.staticDir ?? collection
+  try {
+    return fs.readFileSync(path.join(staticDir, filename)).equals(incoming)
+  } catch {
+    // no local disk (serverless) — fall through to the object store
+  }
+
+  const { S3_ENDPOINT, S3_BUCKET, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY } = process.env
+  if (!S3_ENDPOINT || !S3_BUCKET || !S3_ACCESS_KEY_ID || !S3_SECRET_ACCESS_KEY) return false
+  try {
+    const { S3Client, GetObjectCommand } = await import('@aws-sdk/client-s3')
+    const s3 = new S3Client({
+      endpoint: S3_ENDPOINT,
+      region: 'auto',
+      credentials: { accessKeyId: S3_ACCESS_KEY_ID, secretAccessKey: S3_SECRET_ACCESS_KEY },
+    })
+    // storage-s3 stores objects at key = filename (no collection prefix by default).
+    const got = await s3.send(new GetObjectCommand({ Bucket: S3_BUCKET, Key: filename }))
+    if (!got.Body) return false
+    return Buffer.from(await got.Body.transformToByteArray()).equals(incoming)
+  } catch {
+    return false // missing object / unreadable → re-upload to be safe
+  }
+}
+
 async function upsertDoc(
   payload: Payload,
   collection: ContentCollection,
@@ -453,21 +493,14 @@ async function upsertDoc(
         : undefined
     if (exists) {
       // Idempotent re-upload: if the DB row already carries this exact filename AND the
-      // on-disk bytes are identical, skip the file payload — passing `file` makes Payload
+      // stored bytes are identical, skip the file payload — passing `file` makes Payload
       // suffix the filename (foo.png → foo-1.png) and orphan the old stored file.
       // Renames and changed bytes still re-upload (content-addressed by filename+hash).
+      // Sprint-27: prod serves media from R2 (no local disk on serverless), so the
+      // byte-compare falls back to the object store when the local file is absent.
       let skipFile = false
       if (file && (existingRow as any)?.filename === row.filename) {
-        const storedPath = path.join(
-          (payload as any).collections?.[collection]?.config?.upload?.staticDir ?? collection,
-          row.filename,
-        )
-        try {
-          const existingBytes = fs.readFileSync(storedPath)
-          skipFile = existingBytes.equals(file.data)
-        } catch {
-          skipFile = false // unreadable/missing on disk → re-upload to be safe
-        }
+        skipFile = await storedBytesEqual(payload, collection, row.filename, file.data, existingRow)
       }
       await payload.update({
         collection,

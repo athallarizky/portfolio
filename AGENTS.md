@@ -354,6 +354,10 @@ Vercel Functions yet — see sprint-27 phase-5 report).
 - **Rollback:** the old VPS (43.159.42.234) stays powered with the pre-migration
   stack untouched — DNS rollback = point apex/`www` back to it. Retire it only when
   the new stack has been stable for a comfortable stretch.
+- **Portability:** Vercel is replaceable compute — Neon, R2, and the runner-direct
+  publish CI all live outside it. If we ever migrate away: BE is config-only, FE needs
+  an adapter swap + an ISR replacement, data/CI need nothing. Full analysis:
+  [`docs/sprint-27/reports/final-report.md`](docs/sprint-27/reports/final-report.md) § "Appendix: portability".
 - **Retired:** `.github/workflows/deploy.yml` (VPS rsync deploy, deleted sprint-27),
   `VPS_HOST`/`VPS_USER`/`VPS_SSH_KEY` secrets (unused — safe to delete).
 

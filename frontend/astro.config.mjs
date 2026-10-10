@@ -1,7 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import svelte from '@astrojs/svelte';
-import node from '@astrojs/node';
+import vercel from '@astrojs/vercel';
 import sitemap from '@astrojs/sitemap';
 
 // Sprint-25: hreflang alternates for the bilingual content routes (en ↔ id, x-default → en).
@@ -19,7 +19,11 @@ export default defineConfig({
   // sprint-13: stable origin for canonical URLs + sitemap (was request-derived).
   site: SITE,
   output: 'server',
-  adapter: node({ mode: 'standalone' }),
+  // Sprint-27: Vercel adapter (prod). `output: 'server'` unchanged — the adapter targets
+  // Vercel Functions; dev/local preview behavior is the same as the node adapter.
+  // Astro pinned to v6 (sprint-27): v7's rolldown bundler can't ship its native binding
+  // inside Vercel Functions yet — revisit when the adapter fixes runtime tracing.
+  adapter: vercel(),
   integrations: [
     svelte(),
     sitemap({

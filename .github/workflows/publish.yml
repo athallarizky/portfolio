@@ -64,6 +64,7 @@ jobs:
         env:
           PUBLISH_EMAIL: ${{ secrets.PUBLISH_EMAIL }}
           PUBLISH_PASSWORD: ${{ secrets.PUBLISH_PASSWORD }}
+          PUBLISH_BASE: ${{ secrets.PUBLISH_BASE }}
           DRY_RUN: ${{ inputs.dry_run }}
         run: |
           FLAGS=""

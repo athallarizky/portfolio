@@ -301,36 +301,57 @@ cd backend && npm run build && npm test
 `http://localhost:3000/api`). Verify visually across **light + dark + mobile**;
 check `prefers-reduced-motion` and touch/no-hover behavior.
 
+**Sprint-27 note — adapters are env-switched (backend):** with no env vars, dev is
+SQLite (`payload.db`) + local-disk uploads, exactly as before. Setting `DATABASE_URL`
+(postgres) / `S3_*` switches to Neon/R2 — see `backend/.env.example` conventions in
+[`docs/sprint-27/`](docs/sprint-27/). **The data-sync CLI (`npm run import/export`)
+does not load `.env`** (plain tsx) — inject envs first:
+`cd backend && set -a && source .env && set +a && npm run import -- <zip>`.
+
 ---
 
 ## 8. Deploy (production)
 
-> Live at **https://athallarizky.com** (Tencent Lighthouse VPS, ~2 GB RAM).
-> Full design + concepts: [`docs/sprint-12/resources/architecture.md`](docs/sprint-12/resources/architecture.md).
+> Live at **https://athallarizky.com** — **Vercel + Neon + R2** since sprint-27
+> (2026-10-10), migrated off the Tencent VPS. Migration story + incidents:
+> [`docs/sprint-27/`](docs/sprint-27/) · final report:
+> [`docs/sprint-27/reports/final-report.md`](docs/sprint-27/reports/final-report.md).
 
-**Flow (build-on-runner, sprint-12):** the GitHub Actions runner compiles
-backend + frontend with ~7 GB RAM, **rsyncs** artifacts to the VPS, and the VPS
-only runs `npm ci --omit=dev` + `pm2 restart`. **The VPS never compiles** (a 2 GB
-box OOM'd and locked us out before — see the [sprint-11 RCA](docs/sprint-11/rca/2026-07-19-deploy-build-oom-lockout.md)).
+**Stack:** `portfolio-backend` (Payload, Vercel, Root Directory `backend/`) → Neon
+Postgres (Singapore, pooled connection) + Cloudflare R2 (`portfolio-media`, served at
+`media.athallarizky.com`) · `portfolio-frontend` (Astro, Vercel, Root Directory
+`frontend/`) → API at `api.athallarizky.com`. All projects live in the Vercel team
+**"Personal"** (`my-personal-d3401eaa`) — the team that owns the `athallarizky.com`
+domain. Astro is **pinned to v6** (v7's rolldown can't ship native bindings into
+Vercel Functions yet — see sprint-27 phase-5 report).
 
-- **Deploy user:** `root`. Repo at **`/root/portfolio`**. PM2 + nginx run as root.
-  → GitHub secret `VPS_USER` **must be `root`** (it owns the repo + PM2).
-- **Secrets:** `VPS_HOST` (IP), `VPS_USER` (`root`), `VPS_SSH_KEY` (private key;
-  its public half is in `/root/.ssh/authorized_keys`).
-- **Dispatch:** GitHub → Actions → "Deploy to VPS" → Run workflow (branch `main`).
-  **You must push workflow edits before dispatching** (GitHub runs the remote copy).
-- **VPS-only files — NEVER overwrite:** `backend/.env` (holds `PAYLOAD_SECRET`),
-  `backend/payload.db` (SQLite DB), and `backend/documents/` (Payload uploads).
-  These are protected by rsync `--exclude` in the workflow — **do not remove those
-  excludes** (a stray `--delete-excluded` would wipe the DB or uploads).
-- **Swap:** 2 GB swap is active on the VPS (4 GB effective). Baked into
-  [`scripts/setup-vps.sh`](scripts/setup-vps.sh) step 2.
-- **Files:** `.github/workflows/deploy.yml` (the 8-step build-on-runner workflow),
-  [`scripts/deploy.sh`](scripts/deploy.sh) (VPS-side restart helper — no compile),
-  `ecosystem.config.cjs` (PM2 entries — `next start` + `dist/server/entry.mjs`, unchanged).
-- **Out-of-band recovery** (if SSH is unreachable — OOM/hang): Tencent Lighthouse
-  console → **Reboot** (or VNC), *not* the "one-click login" (needs the OrcaTerm
-  agent, which isn't installed). PM2 auto-resurrects via `pm2 startup`. See RCA §4.
+- **Backend deploys:** push to `main` → Vercel builds (git-connected). Env vars are
+  in the Vercel dashboard (9 keys, Production + Preview): `DATABASE_URL`,
+  `PAYLOAD_SECRET`, `PAYLOAD_PUBLIC_SERVER_URL`, `PAYLOAD_PUBLIC_CORS`, `S3_*`.
+- **Frontend deploys:** `cd frontend && vercel deploy --prod` (not git-connected
+  yet; needs a clean tree — `rm -rf .vercel/output dist` first, or a stale macOS
+  prebuilt gets uploaded). `output: 'static'` + ISR 300s; SSR routes keep
+  `prerender = false` (detail pages, `api/contact.ts`).
+- **CLI-created Vercel projects need `vercel.json` with the framework pin**
+  (`{"framework":"nextjs"}` / `astro`) — without it the build silently produces a
+  broken static deploy (sprint-27 lesson, twice).
+- **Custom domains must be attached as project domains**
+  (`vercel domains add <domain> <project>`) — an alias alone (`vercel alias set`)
+  leaves production behind Vercel Authentication (302 `sso-api`; sprint-27 phase-6).
+- **DNS (Cloudflare):** apex `A 76.76.21.21` + `www CNAME cname.vercel-dns.com`
+  (both DNS-only) → frontend · `api CNAME cname.vercel-dns.com` → backend ·
+  `media` → R2 (proxied). Never touch `kodeva` / `watch-vault` records.
+- **Content pipeline (unchanged, sprint-23):** author in git → `publish-article.yml`
+  / `publish-project.yml` workflows hit `PUBLISH_BASE` (= `api.athallarizky.com`,
+  GitHub secret) with the service account (`PUBLISH_EMAIL`/`PUBLISH_PASSWORD`).
+- **Backups:** git is the content source of truth (sprint-23 contract) · Neon holds
+  data (Neon-side backups + history) · R2 holds media (11 nines durability) ·
+  full zip snapshot anytime: `cd backend && npm run export`.
+- **Rollback:** the old VPS (43.159.42.234) stays powered with the pre-migration
+  stack untouched — DNS rollback = point apex/`www` back to it. Retire it only when
+  the new stack has been stable for a comfortable stretch.
+- **Retired:** `.github/workflows/deploy.yml` (VPS rsync deploy, deleted sprint-27),
+  `VPS_HOST`/`VPS_USER`/`VPS_SSH_KEY` secrets (unused — safe to delete).
 
 ---
 

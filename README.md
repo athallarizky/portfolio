@@ -26,7 +26,7 @@ A personal portfolio that doubles as a CMS playground — content lives in a hea
 | Backend | [PayloadCMS 3](https://payloadcms.com) — Next.js + SQLite, Lexical rich text |
 | Icons | [Iconify](https://iconify.design) — Solar for UI, simple-icons for brands |
 | Font | Inter (Google Fonts) + system `ui-monospace` |
-| Deploy | Tencent Lighthouse VPS, nginx + PM2, GitHub Actions (build-on-runner) |
+| Deploy | Vercel (both apps) + Neon Postgres + Cloudflare R2, DNS on Cloudflare |
 
 ## 🚀 Quick Start
 
@@ -56,7 +56,7 @@ portfolio/
 │   ├── src/seed.ts       # npm run seed — content seeding
 │   └── src/data-sync/    # export/import/snapshot engine
 ├── docs/              # sprint records — symlink to the private engineering-handbook (not tracked here)
-├── scripts/           # deploy + VPS setup helpers
+├── scripts/           # publish + legacy VPS setup helpers
 ├── tools/             # repo-to-project generator
 └── temp/blinko/       # design reference only — never ship
 ```
@@ -116,13 +116,13 @@ Check both **light + dark** themes and **mobile** — the layout collapses to a 
 
 ## 🌐 Deployment
 
-Production runs at **https://athallarizky.com** — a Tencent Lighthouse VPS (2 GB RAM, 2 GB swap).
+Production runs at **https://athallarizky.com** — **Vercel + Neon + Cloudflare R2** (free tiers, migrated off the VPS in sprint-27):
 
-The GitHub Actions workflow builds both apps on the runner (7 GB RAM available), rsyncs artifacts to the VPS, and the VPS only does `npm ci --omit=dev` + `pm2 restart`. **The VPS never compiles** — that's what keeps a 2 GB box from OOMing.
+- **Backend** (Payload): Vercel project `portfolio-backend` (Root Directory `backend/`), git-connected — pushes to `main` deploy automatically. Data in Neon Postgres (Singapore), uploads in R2 (`media.athallarizky.com`), API at `api.athallarizky.com`.
+- **Frontend** (Astro): Vercel project `portfolio-frontend` (Root Directory `frontend/`), static output + ISR (300 s). Deploy via `cd frontend && vercel deploy --prod`.
+- **Content**: authored in git, shipped by the *Publish Article* / *Publish Project* workflows (sprint-23 pipeline — unchanged).
 
-Trigger it manually: GitHub → Actions → "Deploy to VPS" → Run workflow.
-
-> ⚠️ VPS-only files (never overwritten): `backend/.env`, `backend/payload.db`, `backend/documents/` — protected by rsync `--exclude` in the workflow.
+Details, gotchas, and rollback story: [`AGENTS.md` §8](AGENTS.md).
 
 ## 📚 Documentation
 

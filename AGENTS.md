@@ -341,9 +341,13 @@ Vercel Functions yet — see sprint-27 phase-5 report).
 - **DNS (Cloudflare):** apex `A 76.76.21.21` + `www CNAME cname.vercel-dns.com`
   (both DNS-only) → frontend · `api CNAME cname.vercel-dns.com` → backend ·
   `media` → R2 (proxied). Never touch `kodeva` / `watch-vault` records.
-- **Content pipeline (unchanged, sprint-23):** author in git → `publish-article.yml`
-  / `publish-project.yml` workflows hit `PUBLISH_BASE` (= `api.athallarizky.com`,
-  GitHub secret) with the service account (`PUBLISH_EMAIL`/`PUBLISH_PASSWORD`).
+- **Content pipeline (sprint-23 contract, sprint-27 transport):** author in git →
+  `publish-article.yml` / `publish-project.yml`. CI imports **runner-direct**: the
+  Actions runner executes the data-sync engine itself against Neon + R2
+  (secrets `DATABASE_URL`, `S3_*`) — no API hop, so the serverless caps (4.5 MB body,
+  300 s duration, Hobby-locked iad1 region) don't apply. Manual/laptop publishes and
+  the admin UI still use the API path (`scripts/publish-content.mjs`,
+  `/api/data-import`, big zips via `/api/data-import-r2` + R2 `publish-inbox/`).
 - **Backups:** git is the content source of truth (sprint-23 contract) · Neon holds
   data (Neon-side backups + history) · R2 holds media (11 nines durability) ·
   full zip snapshot anytime: `cd backend && npm run export`.

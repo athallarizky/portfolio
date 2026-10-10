@@ -51,7 +51,8 @@ export const dataExportEndpoint: Endpoint = {
 }
 
 /** POST /api/data-import (multipart: file + dryRun) → ImportReport JSON.
- *  Tolerates a top-level folder prefix (macOS/Windows re-zip) and ignores OS junk. */
+ *  Tolerates a top-level folder prefix (macOS/Windows re-zip) and ignores OS junk.
+ *  ⚠️ Vercel caps request bodies at 4.5 MB — for larger zips use /api/data-import-r2. */
 export const dataImportEndpoint: Endpoint = {
   path: '/data-import',
   method: 'post',
@@ -80,6 +81,66 @@ export const dataImportEndpoint: Endpoint = {
       return Response.json(report)
     } catch (e) {
       return badRequest(e) // empty/corrupt zip, manifest mismatch, partial-archive replace-all → user error
+    }
+  },
+}
+
+/** Sprint-27 addendum: POST /api/data-import-r2 (json: { key, dryRun, replaceOnly? }).
+ *  Serverless request bodies are capped (Vercel: 4.5 MB), so large publish zips travel
+ *  via the R2 bucket instead: the client uploads the zip to `publish-inbox/`, then calls
+ *  this endpoint with the object key. Same engine + options as /api/data-import; the
+ *  object is deleted best-effort after a successful import (inbox, not storage). */
+export const dataImportR2Endpoint: Endpoint = {
+  path: '/data-import-r2',
+  method: 'post',
+  handler: async (req) => {
+    if (!req.user) return unauthorized()
+    const { S3_ENDPOINT, S3_BUCKET, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY } = process.env
+    if (!S3_ENDPOINT || !S3_BUCKET || !S3_ACCESS_KEY_ID || !S3_SECRET_ACCESS_KEY) {
+      return serverError('R2 import is not configured (S3_* env vars missing)')
+    }
+    try {
+      const body = (await req.json()) as {
+        key?: string
+        dryRun?: boolean
+        replaceAll?: boolean
+        replaceOnly?: string
+      }
+      const { key, dryRun, replaceAll, replaceOnly } = body ?? {}
+      // Only the inbox prefix, zip extension, safe filename chars — never arbitrary keys.
+      if (typeof key !== 'string' || !/^publish-inbox\/[A-Za-z0-9._-]+\.zip$/.test(key)) {
+        return Response.json(
+          { error: 'key must be publish-inbox/<name>.zip with a safe filename' },
+          { status: 400 },
+        )
+      }
+      const replaceCollections =
+        typeof replaceOnly === 'string' && replaceOnly
+          ? replaceOnly.split(',').map((s) => s.trim()).filter(Boolean)
+          : undefined
+
+      const { S3Client, GetObjectCommand, DeleteObjectCommand } = await import('@aws-sdk/client-s3')
+      const s3 = new S3Client({
+        endpoint: S3_ENDPOINT,
+        region: 'auto',
+        credentials: { accessKeyId: S3_ACCESS_KEY_ID, secretAccessKey: S3_SECRET_ACCESS_KEY },
+      })
+      const got = await s3.send(new GetObjectCommand({ Bucket: S3_BUCKET, Key: key }))
+      if (!got.Body) return Response.json({ error: `object not found: ${key}` }, { status: 404 })
+      const buf = Buffer.from(await got.Body.transformToByteArray())
+
+      const report = await importFromArchive(req.payload, buf, {
+        dryRun: !!dryRun,
+        replaceAll: !!replaceAll,
+        replaceCollections: replaceCollections as ContentCollection[] | undefined,
+      })
+      // Inbox hygiene — keep the object only when something went wrong (debuggability).
+      if (!report.errors?.length) {
+        await s3.send(new DeleteObjectCommand({ Bucket: S3_BUCKET, Key: key })).catch(() => null)
+      }
+      return Response.json(report)
+    } catch (e) {
+      return badRequest(e) // missing object, corrupt zip, manifest mismatch → user error
     }
   },
 }
@@ -174,6 +235,7 @@ export const dataMergeEndpoint: Endpoint = {
 export const dataSyncEndpoints: Endpoint[] = [
   dataExportEndpoint,
   dataImportEndpoint,
+  dataImportR2Endpoint,
   dataInsertOneEndpoint,
   dataSnapshotEndpoint,
   dataMergeEndpoint,

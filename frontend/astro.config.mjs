@@ -17,13 +17,20 @@ const HREFLANG_PAIRS = new Map([
 
 export default defineConfig({
   // sprint-13: stable origin for canonical URLs + sitemap (was request-derived).
+  // Sprint-27: 'static' + per-route `prerender = false` (detail pages, contact API) so
+  // list/home pages build statically and ship through Vercel ISR — see adapter note.
   site: SITE,
-  output: 'server',
+  output: 'static',
   // Sprint-27: Vercel adapter (prod). `output: 'server'` unchanged — the adapter targets
   // Vercel Functions; dev/local preview behavior is the same as the node adapter.
   // Astro pinned to v6 (sprint-27): v7's rolldown bundler can't ship its native binding
   // inside Vercel Functions yet — revisit when the adapter fixes runtime tracing.
-  adapter: vercel(),
+  // ISR: serve cached HTML and revalidate in the background (stale-while-revalidate),
+  // so function cold starts and Neon's scale-to-zero never block a navigation.
+  // Content is publish-driven only — a 5-minute staleness window is invisible.
+  adapter: vercel({
+    isr: { expiration: 300 },
+  }),
   integrations: [
     svelte(),
     sitemap({

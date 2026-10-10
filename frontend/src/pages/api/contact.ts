@@ -2,6 +2,9 @@ import type { APIRoute } from 'astro';
 import { API, safeFetch } from '../../lib/api';
 import type { SiteConfig } from '../../lib/api-types';
 
+// Sprint-27: output flipped to 'static' for ISR caching — POST routes must stay SSR.
+export const prerender = false;
+
 export const POST: APIRoute = async ({ request }) => {
   const sc = await safeFetch<SiteConfig>('/globals/site-config');
   if (!sc.contactFormEnabled) {

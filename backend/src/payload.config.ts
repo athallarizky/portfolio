@@ -3,6 +3,8 @@ import { fileURLToPath } from 'url'
 
 import { buildConfig } from 'payload'
 import { sqliteAdapter } from '@payloadcms/db-sqlite'
+import { postgresAdapter } from '@payloadcms/db-postgres'
+import { s3Storage } from '@payloadcms/storage-s3'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import sharp from 'sharp'
 
@@ -33,6 +35,12 @@ const cors = (process.env.PAYLOAD_PUBLIC_CORS || 'http://localhost:8080')
   .map((s) => s.trim())
   .filter(Boolean)
 
+// Sprint-27: adapters are env-switched so dev stays untouched — no env vars →
+// SQLite + local disk; DATABASE_URL=postgres://… → Neon, S3_BUCKET set → R2.
+const databaseUrl = process.env.DATABASE_URL || 'file:./payload.db'
+const isPostgres = databaseUrl.startsWith('postgres') // matches postgres:// and postgresql://
+const s3Enabled = Boolean(process.env.S3_BUCKET)
+
 export default buildConfig({
   admin: {
     user: Users.slug,
@@ -61,21 +69,41 @@ export default buildConfig({
   },
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || 'dev-secret-change-me',
+  serverURL: process.env.PAYLOAD_PUBLIC_SERVER_URL || undefined,
   sharp,
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
-  // DB adapter: SQLite for dev. For production Postgres, swap to:
-  //   import { postgresAdapter } from '@payloadcms/db-postgres'
-  //   db: postgresAdapter({ pool: { connectionString: process.env.DATABASE_URL! } })
-  db: sqliteAdapter({
-    client: { url: process.env.DATABASE_URL || 'file:./payload.db' },
-  }),
-  // Uploads: local disk for dev. For production S3/R2:
-  //   npm install @payloadcms/plugin-cloud-storage @aws-sdk/client-s3
+  // DB adapter by DATABASE_URL: postgres://… → Neon (prod), anything else → SQLite (dev).
+  db: isPostgres
+    ? postgresAdapter({ pool: { connectionString: databaseUrl } })
+    : sqliteAdapter({ client: { url: databaseUrl } }),
   upload: {
     limits: { fileSize: 10 * 1024 * 1024 },
   },
+  // Uploads: S3_BUCKET set → R2 via storage-s3 (prod). Unset → Payload's default local disk (dev).
+  plugins: s3Enabled
+    ? [
+        s3Storage({
+          config: {
+            endpoint: process.env.S3_ENDPOINT,
+            credentials: {
+              accessKeyId: process.env.S3_ACCESS_KEY_ID!,
+              secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
+            },
+            region: 'auto',
+          },
+          bucket: process.env.S3_BUCKET!,
+          collections: {
+            media: {
+              // Serve via the R2 custom domain instead of the S3 endpoint:
+              generateFileURL: ({ filename, prefix = '' }) =>
+                `${process.env.S3_PUBLIC_BASE_URL}/${prefix}${filename}`,
+            },
+          },
+        }),
+      ]
+    : [],
   cors,
   endpoints: dataSyncEndpoints,
 })

@@ -85,3 +85,13 @@ test('every synced collection has a natural key and an import-order slot', () =>
     assert.ok(IMPORT_ORDER.includes(c), `missing import order slot: ${c}`)
   }
 })
+
+// ---- Sprint-28 addendum: every upload/relationship field is declared in RELATIONS/GLOBAL_RELATIONS ----
+
+test('media relations: authors.avatar, articles.featuredImage and site-config.avatar are declared', async () => {
+  const { RELATIONS: R } = await import('./keys')
+  const flat = (a?: { field: string }[]) => (a ?? []).map((r) => r.field)
+  assert.ok(flat(R.authors).includes('avatar'), 'authors.avatar must be declared')
+  assert.ok(flat(R.articles).includes('featuredImage'), 'articles.featuredImage must be declared')
+  assert.ok(flat(GLOBAL_RELATIONS['site-config']).includes('avatar'))
+})

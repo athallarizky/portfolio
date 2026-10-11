@@ -24,6 +24,14 @@ export const RELATIONS: Partial<Record<ContentCollection, RelationDef[]>> = {
     { field: 'tags', to: 'tags', hasMany: true },
     { field: 'author', to: 'authors', hasMany: false, required: true },
     { field: 'relatedArticles', to: 'articles', hasMany: true, selfRef: true },
+    // Sprint-28: upload relation — same portability rule as every other relation
+    // (undeclared until now; unused data-wise but must not travel as a numeric id).
+    { field: 'featuredImage', to: 'media', hasMany: false },
+  ],
+  authors: [
+    // Sprint-28: was undeclared — the author avatar traveled as a source-DB numeric id
+    // and silently broke (fell back to initials) after the sprint-27 migration.
+    { field: 'avatar', to: 'media', hasMany: false },
   ],
   documents: [{ field: 'category', to: 'document-categories', hasMany: false, required: true }],
   projects: [

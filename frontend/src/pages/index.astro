@@ -7,7 +7,7 @@ import MagneticButton from '../components/home/MagneticButton.svelte';
 import Reveal from '../components/home/Reveal.svelte';
 import GlowGrid from '../components/home/GlowGrid.svelte';
 import AuroraEffect from '../components/home/AuroraEffect.svelte';
-import { safeFetch, API_ORIGIN } from '../lib/api';
+import { safeFetch, API_ORIGIN, mediaThumbUrl} from '../lib/api';
 import type { Home, SiteConfig, SocialProfile, PaginatedResponse, Project, Article } from '../lib/api-types';
 
 const home = await safeFetch<Home>('/globals/home');
@@ -52,7 +52,7 @@ const stats = (home.stats || []).map((s) =>
   s.value in AUTO_STATS ? { ...s, value: String(AUTO_STATS[s.value]) } : s,
 );
 
-const avatarUrl = siteConfig.avatar?.thumbnailURL ? `${API_ORIGIN}${siteConfig.avatar.thumbnailURL}` : (siteConfig.avatar?.url ? `${API_ORIGIN}${siteConfig.avatar.url}` : null);
+const avatarUrl = mediaThumbUrl(siteConfig.avatar); // sprint-28: sizes first (thumbnailURL can be malformed)
 ---
 
 <BaseLayout title="Home" pageTitle="Home" activeNav="/" description="Athalla Rizky — full-stack engineer building backend systems, AI tooling, and developer experience. Selected work, writing, and projects.">

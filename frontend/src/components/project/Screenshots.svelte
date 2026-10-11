@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { API_ORIGIN } from '../../lib/api';
+  import { API_ORIGIN, mediaThumbUrl } from '../../lib/api';
 
   export interface ScreenshotItem {
     id?: number
@@ -9,6 +9,7 @@
     filename?: string | null
     width?: number | null
     height?: number | null
+    sizes?: Record<string, { url?: string | null } | undefined>
     /** Legacy fallback: bannerColor + icon when no image */
     bannerColor?: string | null
     icon?: string | null
@@ -23,9 +24,9 @@
     if (s.filename) return `${API_ORIGIN}/api/media/file/${s.filename}`
     return null
   }
+  // Sprint-28: generated sizes first — thumbnailURL can carry a malformed host.
   function thumbUrl(s: ScreenshotItem): string | null {
-    if (s.thumbnailURL) return s.thumbnailURL.startsWith('http') ? s.thumbnailURL : `${API_ORIGIN}${s.thumbnailURL}`
-    return imgUrl(s)
+    return mediaThumbUrl(s)
   }
 
   let open = $state(false)

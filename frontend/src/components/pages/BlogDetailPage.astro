@@ -3,7 +3,7 @@
 // Pure presentation: the route owns fetch + redirects (see lib/content.ts + the route files).
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { renderLexical } from '../../lib/render-lexical';
-import { API_ORIGIN, mediaUrl } from '../../lib/api';
+import { API_ORIGIN, mediaUrl, mediaThumbUrl } from '../../lib/api';
 import { localePath, type Locale } from '../../lib/i18n';
 import LangSwitcher from '../LangSwitcher.astro';
 import type { Article } from '../../lib/api-types';
@@ -21,7 +21,7 @@ const slug = article.slug;
 const bannerColor = article.bannerColor || 'linear-gradient(135deg,#9936e6,#5b21b6)';
 const bannerIcon = article.bannerIcon || 'solar:rocket-bold';
 const bannerUrl = article.featuredImage?.sizes?.hero?.url ? `${API_ORIGIN}${article.featuredImage.sizes.hero.url}` : mediaUrl(article.featuredImage);
-const authorAvatarUrl = article.author.avatar?.thumbnailURL ? `${API_ORIGIN}${article.author.avatar.thumbnailURL}` : mediaUrl(article.author.avatar);
+const authorAvatarUrl = mediaThumbUrl(article.author.avatar); // sprint-28: sizes first (thumbnailURL can be malformed)
 const detailBase = locale === 'id' ? '/id/blogs' : '/blogs';
 ---
 

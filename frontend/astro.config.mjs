@@ -27,9 +27,12 @@ export default defineConfig({
   // inside Vercel Functions yet — revisit when the adapter fixes runtime tracing.
   // ISR: serve cached HTML and revalidate in the background (stale-while-revalidate),
   // so function cold starts and Neon's scale-to-zero never block a navigation.
-  // Content is publish-driven only — a 5-minute staleness window is invisible.
+  // Daily TTL — content changes only on publish, and publishes trigger an
+  // on-demand rebuild via the Vercel Deploy Hook (publish-article.yml /
+  // publish-project.yml). The TTL is only a self-heal safety net if a hook
+  // ever fails; it also burns almost no CDN request budget (~1/day/route).
   adapter: vercel({
-    isr: { expiration: 300 },
+    isr: { expiration: 86400 },
   }),
   integrations: [
     svelte(),

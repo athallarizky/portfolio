@@ -78,3 +78,27 @@ jobs:
           FLAGS=""
           [ "$DRY_RUN" = "true" ] && FLAGS="--dry-run"
           npx tsx src/data-sync/cli/import.ts ../publish.zip --replace-only ${{ inputs.collection }} $FLAGS
+
+      - name: Trigger frontend rebuild (on-demand ISR refresh)
+        # Content just changed -> rebuild portfolio-frontend now so the new
+        # content is live in ~1-2 min. The daily ISR TTL in astro.config.mjs is
+        # only a self-heal safety net if this step ever fails. Skips silently on
+        # dry-run or when VERCEL_TOKEN secret is not configured yet.
+        # (portfolio-frontend deploys via CLI, not git-connected, so Vercel
+        # Deploy Hooks are unavailable — API redeploy of the last production
+        # deployment is the equivalent trigger.)
+        if: ${{ inputs.dry_run != true && env.VERCEL_TOKEN != '' }}
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_TEAM: team_sZqAJi3zZthPcrbbZJERbr7C
+          VERCEL_PROJECT_ID: prj_5Yj5xAvekbfm3aEJzcsnr8TjG9oB
+          VERCEL_PROJECT_NAME: portfolio-frontend
+        run: |
+          set -euo pipefail
+          DPL=$(curl -sf "https://api.vercel.com/v6/deployments?projectId=${VERCEL_PROJECT_ID}&teamId=${VERCEL_TEAM}&target=production&limit=1&state=READY" \
+            -H "Authorization: Bearer ${VERCEL_TOKEN}" \
+            | python3 -c "import json,sys;print(json.load(sys.stdin)['deployments'][0]['uid'])")
+          curl -sf -X POST "https://api.vercel.com/v13/deployments?teamId=${VERCEL_TEAM}" \
+            -H "Authorization: Bearer ${VERCEL_TOKEN}" -H "Content-Type: application/json" \
+            -d "{\"name\":\"${VERCEL_PROJECT_NAME}\",\"deploymentId\":\"${DPL}\",\"target\":\"production\"}" \
+            | python3 -c "import json,sys;d=json.load(sys.stdin);print('rebuild triggered:',d.get('uid') or d.get('error',{}).get('message'))"

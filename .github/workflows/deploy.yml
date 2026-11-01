@@ -98,6 +98,14 @@ jobs:
         run: |
           rsync -az scripts/ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/home/ubuntu/portfolio/scripts/
 
+      # ── 6c. Sync root files to the VPS ────────────────────────────────────
+      # ecosystem.config.cjs is PM2's process list and lives at the repo root —
+      # the old box got it from a one-time git clone and it went stale forever.
+      # The box never clones GitHub; everything arrives via deploy.
+      - name: Sync root files to VPS
+        run: |
+          rsync -az ecosystem.config.cjs ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/home/ubuntu/portfolio/
+
       # ── 7. Install runtime deps + restart PM2 on the VPS (no compile) ─────
       - name: Restart services on VPS
         uses: appleboy/ssh-action@v1

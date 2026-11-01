@@ -52,6 +52,18 @@ async function checkArticle(path, zone) {
 
   check(path, 'image is absolute URL', typeof post?.image === 'string' && /^https?:\/\//.test(post.image));
   check(path, 'dates present', !!post?.datePublished && !!post?.dateModified);
+
+  // sprint-30 answer-first + FAQ: visible content ⇔ schema, one source of truth
+  const hasLead = /class="lead-answer"/.test(html);
+  check(path, 'lead answer block present', hasLead);
+  const visibleQuestions = [...html.matchAll(/<div class="faq-q">(.*?)<\/div>/gs)].map((m) =>
+    m[1].replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&').trim(),
+  );
+  const faqPage = ld.find((d) => d['@type'] === 'FAQPage');
+  const schemaQuestions = (faqPage?.mainEntity || []).map((q) => q.name);
+  check(path, 'FAQ visible ⇔ FAQPage schema', visibleQuestions.length === schemaQuestions.length && (visibleQuestions.length === 0 || visibleQuestions.every((q, i) => q === schemaQuestions[i])),
+    `visible:${visibleQuestions.length} schema:${schemaQuestions.length}${visibleQuestions[0] ? ` first:"${visibleQuestions[0].slice(0, 30)}"` : ''}`);
+  check(path, 'FAQPage emitted only when FAQ exists', Boolean(faqPage) === visibleQuestions.length > 0);
 }
 
 async function checkProject(path) {

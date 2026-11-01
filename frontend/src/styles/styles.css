@@ -878,6 +878,31 @@ a.exp-company:hover { color: var(--primary); }
 .prose a { color: var(--secondary); text-decoration: underline; }
 .prose img { max-width: 100%; border-radius: 12px; margin: 16px 0; }
 
+/* ---------- Answer-first & FAQ (sprint-30 AEO) ---------- */
+/* Lead answer: the article's excerpt as the first self-contained answer under the
+   title — the block answer engines quote. Same accent language as blockquote. */
+.lead-answer {
+  border-left: 3px solid var(--primary);
+  padding: 4px 0 4px 16px;
+  margin: 18px 0 6px;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--foreground);
+  opacity: .95;
+}
+.faq-section { margin-top: 28px; border-top: 1px solid var(--border); padding-top: 8px; }
+.faq-section h3 {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  color: var(--desc);
+  margin: 12px 0;
+}
+.faq-item { margin: 14px 0; }
+.faq-item .faq-q { font-weight: 700; font-size: 15px; color: var(--foreground); }
+.faq-item .faq-a { font-size: 14px; line-height: 1.65; color: var(--desc); margin-top: 4px; }
+
 /* ---------- Author bio card (article footer) ---------- */
 /* Notion-style author card (revamped) — canvas surface, hairline, 12px radius */
 .author-card {

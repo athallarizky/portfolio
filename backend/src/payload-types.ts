@@ -348,6 +348,16 @@ export interface Article {
      */
     ogImage?: string | null;
   };
+  /**
+   * AEO — question exactly as a reader would ask it; answer self-contained in 1–3 sentences
+   */
+  faq?:
+    | {
+        question: string;
+        answer: string;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -741,6 +751,13 @@ export interface ArticlesSelect<T extends boolean = true> {
         metaTitle?: T;
         metaDescription?: T;
         ogImage?: T;
+      };
+  faq?:
+    | T
+    | {
+        question?: T;
+        answer?: T;
+        id?: T;
       };
   updatedAt?: T;
   createdAt?: T;

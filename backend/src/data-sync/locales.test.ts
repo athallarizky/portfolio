@@ -356,3 +356,22 @@ test('attachOverlaySibling: non-localized fields in the sibling → refuses', ()
     SingleArchiveError,
   )
 })
+
+// sprint-30 (AEO): article overlays may carry a localized `faq` array — same shape of
+// allowance as projects' `features`. Pinned after wiring FAQPage support end-to-end.
+test('attachOverlaySibling: articles faq rides the id overlay', () => {
+  const faq = [{ question: 'What is this?', answer: 'A self-contained answer.' }]
+  const en = tmpFile('article.json', { uuid: 'u-30', slug: 'aeo-faq' })
+  fs.writeFileSync(
+    en.replace(/\.json$/, '.id.json'),
+    JSON.stringify({ uuid: 'u-30', slug: 'aeo-faq', title: 'Judul', faq: [{ question: 'Apa ini?', answer: 'Jawaban mandiri.' }] }),
+  )
+  const row: Record<string, any> = { uuid: 'u-30', slug: 'aeo-faq', faq }
+  attachOverlaySibling(en, 'articles', row)
+  assert.deepEqual(row.locales.id.faq, [{ question: 'Apa ini?', answer: 'Jawaban mandiri.' }])
+})
+
+test('validateOverlayRow: faq is accepted for articles, still refused for projects', () => {
+  validateOverlayRow('articles', { faq: [{ question: 'Q?', answer: 'A.' }] })
+  assert.throws(() => validateOverlayRow('projects', { faq: [] }), OverlayValidationError)
+})

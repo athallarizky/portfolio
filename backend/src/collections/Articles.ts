@@ -63,5 +63,17 @@ export const Articles: CollectionConfig = {
         { name: 'ogImage', type: 'text', admin: { description: 'URL or path to OG image' } },
       ],
     },
+    {
+      // sprint-30 (AEO): predictable questions with standalone, quotable answers —
+      // emitted as FAQPage JSON-LD on the article page (only when non-empty).
+      name: 'faq',
+      type: 'array',
+      localized: true,
+      admin: { description: 'AEO — question exactly as a reader would ask it; answer self-contained in 1–3 sentences' },
+      fields: [
+        { name: 'question', type: 'text', required: true },
+        { name: 'answer', type: 'textarea', required: true },
+      ],
+    },
   ],
 }

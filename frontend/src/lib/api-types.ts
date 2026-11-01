@@ -99,6 +99,9 @@ export interface Article {
   relatedArticles: number[];
   status: 'draft' | 'published';
   seo: { metaTitle: string | null; metaDescription: string | null; ogImage: string | null } | null;
+  /** sprint-30 (AEO): localized Q&A — rendered visibly + as FAQPage JSON-LD. */
+  faq: { question: string; answer: string }[] | null;
+  updatedAt: string;
 }
 
 export interface Technology {

@@ -92,7 +92,8 @@ export const OVERLAY_LOCALES = ['id'] as const
  *  truth for the data-sync overlay model — keep in lockstep with the `localized: true`
  *  flags in the collection configs (Articles/Projects). */
 export const LOCALIZED_FIELDS: Partial<Record<ContentCollection, readonly string[]>> = {
-  articles: ['title', 'excerpt', 'body', 'seo.metaTitle', 'seo.metaDescription'],
+  // 'faq' (sprint-30): localized Q&A on articles — rides overlays like projects' 'features'.
+  articles: ['title', 'excerpt', 'body', 'faq', 'seo.metaTitle', 'seo.metaDescription'],
   projects: ['title', 'excerpt', 'body', 'features', 'seo.metaTitle', 'seo.metaDescription'],
 }
 

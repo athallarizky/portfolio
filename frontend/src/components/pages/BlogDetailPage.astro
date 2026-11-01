@@ -60,6 +60,21 @@ const breadcrumb = {
     { '@type': 'ListItem', position: 3, name: article.title },
   ],
 };
+
+// sprint-30 (AEO): FAQ — the schema describes exactly the visible .faq-section below
+// (structured data must represent on-page content; they share this one source).
+const faq = article.faq || [];
+const faqSchema = faq.length
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faq.map((f) => ({
+        '@type': 'Question',
+        name: f.question,
+        acceptedAnswer: { '@type': 'Answer', text: f.answer },
+      })),
+    }
+  : null;
 ---
 
 <BaseLayout
@@ -76,7 +91,7 @@ const breadcrumb = {
         { hreflang: 'x-default', href: `/blogs/${slug}` },
       ]
     : []}
-  jsonLd={[blogPosting, breadcrumb]}
+  jsonLd={faqSchema ? [blogPosting, breadcrumb, faqSchema] : [blogPosting, breadcrumb]}
 >
   <div class="article-layout mt-4">
     <div class="article-main">
@@ -107,7 +122,23 @@ const breadcrumb = {
         </div>
       </div>
 
+      {/* sprint-30 (AEO): answer-first — the excerpt leads as a self-contained answer. */}
+      {article.excerpt && <p class="lead-answer">{article.excerpt}</p>}
+
       <div class="prose mt-4" set:html={renderLexical(article.body)}></div>
+
+      {/* sprint-30 (AEO): visible twin of the FAQPage JSON-LD — same `faq` source. */}
+      {faq.length > 0 && (
+        <section class="faq-section">
+          <h3>Frequently asked</h3>
+          {faq.map((f) => (
+            <div class="faq-item">
+              <div class="faq-q">{f.question}</div>
+              <div class="faq-a">{f.answer}</div>
+            </div>
+          ))}
+        </section>
+      )}
 
       <div class="author-card">
         <div class="author-avatar">

@@ -26,7 +26,7 @@ A personal portfolio that doubles as a CMS playground — content lives in a hea
 | Backend | [PayloadCMS 3](https://payloadcms.com) — Next.js + SQLite, Lexical rich text |
 | Icons | [Iconify](https://iconify.design) — Solar for UI, simple-icons for brands |
 | Font | Inter (Google Fonts) + system `ui-monospace` |
-| Deploy | Vercel (both apps) + Neon Postgres + Cloudflare R2, DNS on Cloudflare |
+| Deploy | Tencent VPS (nginx + PM2) + Neon Postgres + Cloudflare R2, DNS on Cloudflare |
 
 ## 🚀 Quick Start
 
@@ -116,11 +116,12 @@ Check both **light + dark** themes and **mobile** — the layout collapses to a 
 
 ## 🌐 Deployment
 
-Production runs at **https://athallarizky.com** — **Vercel + Neon + Cloudflare R2** (free tiers, migrated off the VPS in sprint-27):
+Production runs at **https://athallarizky.com** — **Tencent VPS + Neon + Cloudflare R2** (compute back on the box since sprint-29; data never left Neon/R2):
 
-- **Backend** (Payload): Vercel project `portfolio-backend` (Root Directory `backend/`), git-connected — pushes to `main` deploy automatically. Data in Neon Postgres (Singapore), uploads in R2 (`media.athallarizky.com`), API at `api.athallarizky.com`.
-- **Frontend** (Astro): Vercel project `portfolio-frontend` (Root Directory `frontend/`), static output + ISR (300 s). Deploy via `cd frontend && vercel deploy --prod`.
-- **Content**: authored in git, shipped by the *Publish Article* / *Publish Project* workflows (sprint-23 pipeline — unchanged).
+- **Box**: `43.173.26.154` (Ubuntu 24.04, `ssh vps`) — nginx + PM2 serve backend (:3000, Payload → `api.athallarizky.com`) and frontend (:4321, Astro node-standalone → `athallarizky.com`). nginx `proxy_cache` (60 s) is the CDN/ISR layer.
+- **Deploys**: Actions → **Deploy to VPS** (manual) — builds on the GitHub runner (webpack), rsyncs artifacts, restarts PM2. The box never compiles.
+- **Content**: authored in git, shipped by the *Publish Article* / *Publish Project* workflows (sprint-23 pipeline — unchanged, runner-direct into Neon + R2). Freshness on the site ≤ 60 s (cache TTL).
+- **Rollback**: Vercel still holds a live copy of both apps against the same Neon — flipping three DNS records back is a full rollback.
 
 Details, gotchas, and rollback story: [`AGENTS.md` §8](AGENTS.md).
 

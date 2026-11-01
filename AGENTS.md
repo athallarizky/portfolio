@@ -277,8 +277,11 @@ Toggle via the sidebar button; persisted in `localStorage['portfolio-theme']`;
 | 23 | **Content publish pipeline (GitHub = source of truth)** — scoped replace-all (`replaceOnly` on import CLI + `/api/data-import`; drift-deletion per target collection only, refs never deleted); `wrap:publish` builds the full-set zip from git-tracked content JSONs + refs manifest (`npm run refs:export`); workflows `publish-article`/`publish-project` run entirely on the GH runner → service-account login → REST import (zero VPS execution). Content JSONs/MDs now tracked in git. **Contract: articles/projects are authored via git — prod-admin drafts die on next publish; cosmetic fields survive (omitted on upsert).** ([final-report](docs/sprint-23/final-report.md)) |
 | 24 | **Bilingual content layer (EN + optional ID, UI stays English)** — Payload `localization` on Articles/Projects (localized: title/excerpt/body/seo.*, + project features; slug/relations shared); data-sync **archive v3** (`locales.id` overlays, EN flat; v1/v2 import unchanged; EN-only emits still v2) with **non-clobber per-locale imports** (proven: EN-only publish can't destroy translations); `*.id.json` sibling authoring contract + auto-attach in wrap:publish/wrap CLIs; content tools gained step 3b translate stages; first bilingual article live in git; hand-written prod migration + owner runbook. Frontend untouched — `/id/` zone is sprint-25. ([final-report](docs/sprint-24/final-report.md)) |
 | 25 | **The Indonesian zone (frontend + SEO + full translations)** — shared locale-parameterized page components (`components/pages/`) behind 8 thin route wrappers; `/id/blogs` + `/id/projects` lists show translated-only (`?locale=id&fallback-locale=none` detection), untranslated detail → **301 to EN**; static `EN\|ID` switcher on list header + detail title (hidden when no counterpart); BaseLayout `lang` + hreflang alternates; sitemap `xhtml:link` alternates via `serialize`; detail loaders in `lib/content.ts` (routes own redirects — `Astro.redirect` is a no-op in components); **all content translated (4/4 articles, 5/5 projects)** and verified bilingual through wrap→import→routes. EN pages byte-identical. ([final-report](docs/sprint-25/final-report.md)) |
+| 27 | **Prod migration → Vercel + Neon + R2** (data plane leaves the VPS; publish CI goes runner-direct; ISR for cold starts; portability appendix). ([final-report](docs/sprint-27/reports/final-report.md)) |
+| 28 | **Post-migration repair** — three data-sync engine defects fixed at the root (portable global relations, timestamp preservation, experiences in the sync set) + pagination UX; 113/113 tests. ([final-report](docs/sprint-28/reports/final-report.md)) |
+| 29 | **Prod homecoming → Tencent VPS** — compute back to a fresh box (ubuntu, nginx + PM2) against the unchanged Neon + R2; one trunk / `DEPLOY_TARGET` dual-build (vercel↔node adapters); resurrected build-on-runner `deploy.yml` (webpack — Turbopack artifacts aren't relocatable, RCA); nginx `proxy_cache` 60 s replaces ISR; Vercel kept as the DNS-flip rollback. Full parity proven by pinned sweep; cutover in one day. ([final-report](docs/sprint-29/reports/final-report.md)) |
 
-Latest detail: [`docs/sprint-25/final-report.md`](docs/sprint-25/final-report.md).
+Latest detail: [`docs/sprint-29/reports/final-report.md`](docs/sprint-29/reports/final-report.md).
 
 ---
 
@@ -312,59 +315,57 @@ does not load `.env`** (plain tsx) — inject envs first:
 
 ## 8. Deploy (production)
 
-> Live at **https://athallarizky.com** — **Vercel + Neon + R2** since sprint-27
-> (2026-10-10), migrated off the Tencent VPS. Migration story + incidents:
-> [`docs/sprint-27/`](docs/sprint-27/) · final report:
-> [`docs/sprint-27/reports/final-report.md`](docs/sprint-27/reports/final-report.md).
+> Live at **https://athallarizky.com** — **Tencent VPS + Neon + R2** since sprint-29
+> (2026-11-01): compute came home to the box, the data plane never moved. Sprint story:
+> [`docs/sprint-29/`](docs/sprint-29/) · final report:
+> [`docs/sprint-29/reports/final-report.md`](docs/sprint-29/reports/final-report.md).
 
-**Stack:** `portfolio-backend` (Payload, Vercel, Root Directory `backend/`) → Neon
-Postgres (Singapore, pooled connection) + Cloudflare R2 (`portfolio-media`, served at
-`media.athallarizky.com`) · `portfolio-frontend` (Astro, Vercel, Root Directory
-`frontend/`) → API at `api.athallarizky.com`. All projects live in the Vercel team
-**"Personal"** (`my-personal-d3401eaa`) — the team that owns the `athallarizky.com`
-domain. Astro is **pinned to v6** (v7's rolldown can't ship native bindings into
-Vercel Functions yet — see sprint-27 phase-5 report).
+**Stack:** Tencent VPS `43.173.26.154` (2 vCPU / 2 GB, Ubuntu 24.04; access
+`ssh vps` → `ubuntu@…`, key `~/.ssh/id_ed25519_vps`) running nginx + PM2
+(`portfolio-backend` :3000, `portfolio-frontend` :4321, `ecosystem.config.cjs`) →
+Neon Postgres (Singapore, pooled) + Cloudflare R2 (`portfolio-media`, served at
+`media.athallarizky.com`). Domains: apex + `www` → frontend, `api` → backend,
+`media` → R2 — all Cloudflare DNS; apex/`www`/`api` **DNS-only/grey**, TLS via certbot.
 
-- **Backend deploys:** push to `main` → Vercel builds (git-connected). Env vars are
-  in the Vercel dashboard (9 keys, Production + Preview): `DATABASE_URL`,
-  `PAYLOAD_SECRET`, `PAYLOAD_PUBLIC_SERVER_URL`, `PAYLOAD_PUBLIC_CORS`, `S3_*`.
-- **Frontend deploys:** `cd frontend && vercel deploy --prod` (not git-connected
-  yet; needs a clean tree — `rm -rf .vercel/output dist` first, or a stale macOS
-  prebuilt gets uploaded). `output: 'static'` + ISR 300s; SSR routes keep
-  `prerender = false` (detail pages, `api/contact.ts`).
-- **CLI-created Vercel projects need `vercel.json` with the framework pin**
-  (`{"framework":"nextjs"}` / `astro`) — without it the build silently produces a
-  broken static deploy (sprint-27 lesson, twice).
-- **Custom domains must be attached as project domains**
-  (`vercel domains add <domain> <project>`) — an alias alone (`vercel alias set`)
-  leaves production behind Vercel Authentication (302 `sso-api`; sprint-27 phase-6).
-- **DNS (Cloudflare):** apex `A 76.76.21.21` + `www CNAME cname.vercel-dns.com`
-  (both DNS-only) → frontend · `api CNAME cname.vercel-dns.com` → backend ·
-  `media` → R2 (proxied). Never touch `kodeva` / `watch-vault` records.
-- **Data-sync engine contracts (sprint-28):** archives carry `createdAt`/`updatedAt`
-  (import restores them — Payload honors `createdAt` on create *and* update; publish
-  updates preserve it) and globals' relation fields travel as portable `{uuid, key}`
-  refs (`GLOBAL_RELATIONS`), never source-DB numeric ids. `experiences` is part of the
-  sync set. Unit tests pin all three (`data-sync/sprint28.test.ts`).
-- **Content pipeline (sprint-23 contract, sprint-27 transport):** author in git →
-  `publish-article.yml` / `publish-project.yml`. CI imports **runner-direct**: the
-  Actions runner executes the data-sync engine itself against Neon + R2
-  (secrets `DATABASE_URL`, `S3_*`) — no API hop, so the serverless caps (4.5 MB body,
-  300 s duration, Hobby-locked iad1 region) don't apply. Manual/laptop publishes and
-  the admin UI still use the API path (`scripts/publish-content.mjs`,
-  `/api/data-import`, big zips via `/api/data-import-r2` + R2 `publish-inbox/`).
-- **Backups:** git is the content source of truth (sprint-23 contract) · Neon holds
-  data (Neon-side backups + history) · R2 holds media (11 nines durability) ·
+- **Deploys — "Deploy to VPS" workflow (manual `workflow_dispatch`):** builds **on the
+  GitHub runner** (never on the box — 2 GB OOMs, sprint-11 RCA), rsyncs artifacts +
+  `scripts/` + `ecosystem.config.cjs`, then `deploy.sh` runs `npm ci --omit=dev` +
+  `pm2 restart` on the box. Secrets: `VPS_HOST` / `VPS_USER` (`ubuntu`) / `VPS_SSH_KEY`
+  (private half of `id_ed25519_vps`).
+- **One trunk, two targets (`DEPLOY_TARGET`):** unset → Vercel adapter
+  (`output:'static'` + ISR — the rollback target's shape); `vps` → `@astrojs/node`
+  standalone (`output:'server'`). The workflow sets `DEPLOY_TARGET=vps` +
+  `PUBLIC_API_URL` at build time — `PUBLIC_*` inlines at build, so the box's env
+  never carries it.
+- **Backend MUST build with webpack** (`next build --webpack`): Next 16's default
+  Turbopack artifacts are **not relocatable** — hash-suffixed externals only resolve on
+  the build machine. Sprint-29 RCA:
+  [`docs/sprint-29/rca/2026-11-01-turbopack-build-not-relocatable.md`](docs/sprint-29/rca/2026-11-01-turbopack-build-not-relocatable.md).
+- **Cache (the ISR replacement):** nginx `proxy_cache`, **60 s TTL**, frontend vhost
+  only (`X-Cache-Status` header; POST never cached; the api vhost is uncached).
+  Publishes become visible ≤ 60 s — no purge webhook by design (sprint-29 D2).
+  `vps.athallarizky.com` is an uncached debug alias.
+- **nginx conf management is manual, NOT deploy-automated:** certbot `--nginx` rewrites
+  the live conf with 443 blocks — a deploy-time reinstall from git would clobber TLS.
+  Conf change: `ssh vps` → `sudo cp scripts/nginx/portfolio.conf /etc/nginx/sites-available/portfolio`
+  → `sudo nginx -t` → `sudo systemctl reload nginx`.
+- **Certs:** certbot — one cert for `athallarizky.com` + `www`, separate for `api` and
+  `vps`; `certbot.timer` renews. Tencent's **security group** must allow 22/80/443 —
+  ufw alone is not the whole firewall (sprint-29 lesson).
+- **Content pipeline: unchanged** (sprint-23 contract, sprint-27 transport): CI imports
+  runner-direct into Neon + R2; the API path stays for admin/manual publishes.
+  `publish.yml`'s Vercel-redeploy step is now **intentional** — it keeps the rollback
+  copy fresh; remove it only when Vercel is decommissioned.
+- **Data-sync engine contracts (sprint-28):** archives carry `createdAt`/`updatedAt`,
+  globals' relations travel as portable `{uuid, key}` refs, `experiences` is in the
+  sync set — all pinned by `data-sync/sprint28.test.ts`.
+- **Backups:** git is the content source of truth · Neon holds data · R2 holds media ·
   full zip snapshot anytime: `cd backend && npm run export`.
-- **Rollback:** the old VPS (43.159.42.234) stays powered with the pre-migration
-  stack untouched — DNS rollback = point apex/`www` back to it. Retire it only when
-  the new stack has been stable for a comfortable stretch.
-- **Portability:** Vercel is replaceable compute — Neon, R2, and the runner-direct
-  publish CI all live outside it. If we ever migrate away: BE is config-only, FE needs
-  an adapter swap + an ISR replacement, data/CI need nothing. Full analysis:
-  [`docs/sprint-27/reports/final-report.md`](docs/sprint-27/reports/final-report.md) § "Appendix: portability".
-- **Retired:** `.github/workflows/deploy.yml` (VPS rsync deploy, deleted sprint-27),
-  `VPS_HOST`/`VPS_USER`/`VPS_SSH_KEY` secrets (unused — safe to delete).
+- **Rollback = DNS flip back to Vercel (zero data risk — both stacks read the same
+  Neon):** apex `A 76.76.21.21`, `www`/`api` `CNAME cname.vercel-dns.com`, grey.
+  The Vercel projects stay untouched while they hold rollback duty.
+- **Portability (proven twice):** data/CI live outside compute; a host move is one
+  adapter switch + configs. The sprint-29 operator manual executed end-to-end in a day.
 
 ---
 

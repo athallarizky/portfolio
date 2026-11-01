@@ -1,0 +1,22 @@
+# athallarizky.com — Athalla Rizky's portfolio
+
+> Backend/full-stack engineer (Jakarta) — backend systems, AI tooling, developer experience. Personal site: writing in English with an Indonesian edition (/id/), projects with full architecture write-ups.
+
+## Writing
+
+- [How MCP Lets Claude Plan Your Train Route](/blogs/mcp-train-route-planning): what an MCP server looks like in practice — one query traced end to end, and the design choices that keep an LLM's answers honest. Indonesian edition: /id/blogs/mcp-train-route-planning.
+- [Agent Playbooks: real-world-analogy](/blogs/agent-playbook-real-world-analogy): explaining systems through stories with strict 1-to-1 mapping tables — and declaring honestly where each analogy breaks.
+- [Agent Playbooks: cross-lang-analogy](/blogs/agent-playbook-cross-lang-analogy): teaching a language through another language the learner already knows.
+- [How to Learn New Things in the AI Era](/blogs/how-to-learn-new-things-in-ai-era): learning strategy when answers are cheap and verification is the scarce skill.
+
+## Projects
+
+- [krl-mcp](/projects/krl-mcp): a fully self-contained MCP server for Jakarta's KRL Commuter schedules — Go, zero infrastructure, the data snapshot embedded in one binary. Source: https://github.com/athallarizky/krl-mcp
+- [kodeva](/projects/kodeva): production project leading the portfolio grid.
+- [mini-harness](/projects/mini-harness): a ~180-line AI coding-agent harness in TypeScript — the exact mechanics of agentic loops, streaming, and parallel tool execution, with nothing hidden.
+
+## About
+
+- All pages: https://athallarizky.com · Indonesian edition under /id/
+- Sitemap: /sitemap-index.xml
+- Contact form: /contact · Socials: /social

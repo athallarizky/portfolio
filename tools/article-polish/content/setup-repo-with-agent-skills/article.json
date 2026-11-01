@@ -11,5 +11,19 @@
   "publishedAt": "2026-08-20",
   "readMinutes": 3,
   "body": "## The problem: unfamiliar repos\n\nWith AI in the toolbox, my company has been nudging everyone away from sticking to a single role — backend engineers pick up frontend tasks, and the other way around.\n\nBut one early obstacle shows up again and again: how do you set up a repo you've never touched? Especially a legacy one, with tricky dependencies, where the way to run it lives only in a few people's heads.\n\nThat part usually eats time, because it means asking around first:\n\n- which Node version does this use?\n- what service dependencies does it need?\n- when error A shows up, what am I supposed to do?\n\n## Make it a skill, not a doc\n\nSo the idea: why not write a skill per repo? Not ordinary setup documentation, but instructions written specifically to be executed by an AI agent. The user just tells the agent:\n\n> \"Set up repo <X> on port <X>\"\n\nThe flow, roughly:\n\n1. Take the knowledge from the engineer who knows the repo\n2. Write the step-by-step setup\n3. Add conditional instructions for the common cases\n4. Split troubleshooting into its own file\n5. Have the agent help produce the skill version\n\n## The format\n\n```\n<repo-name>/\n├── docs/\n│   └── troubleshooting.md\n├── SKILL.md\n└── AGENTS.md\n```\n\n> **AGENTS.md** — the entrypoint each agent reads.\n> **SKILL.md** — the step-by-step repo setup, including IF-ELSE instructions for specific conditions.\n> **docs/troubleshooting.md** — the errors that show up often, their causes, and how to solve them.\n\n## Does it work?\n\nIn practice, the agent used the skill to set up one of our repos from zero to running on a local machine. What surprised me: even a lighter model could follow the instructions, as long as the skill was clear enough.\n\nYou can also instruct the agent to use a \"user-select question\" tool, so it offers the human a choice of actions instead of guessing. Example — when installing the repo:\n\n1. localhost only (`localhost:3000`)\n2. also set up a local proxy domain (`example.domain.local`)\n\nThat makes installation flexible depending on what the user needs. Is this a best practice? Maybe not yet. As a small experiment, the results are promising.\n\nThe real win: setup context that used to live inside a few engineers' heads becomes a reusable instruction. Another engineer just asks the agent to run the setup, reviews the steps, accepts the commands that need running — and gets back to their actual task.\n\nIf engineers are going multi-role anyway, this hopefully makes stepping into a repo outside your daily area a little more seamless, with a lot less friction.",
-  "status": "published"
+  "status": "published",
+  "faq": [
+    {
+      "question": "What is an agent skill for repo setup?",
+      "answer": "A skill is setup instructions written to be executed by an AI agent, not read by a human. The user just tells the agent to set up the repo, and the skill carries the exact steps — the same tribal knowledge a senior teammate would recite, in executable form."
+    },
+    {
+      "question": "Why write a skill instead of regular setup documentation?",
+      "answer": "Docs turn every unfamiliar repo into a Q&A marathon, especially when engineers cross roles — backend picking up frontend work and back. A skill turns that setup knowledge into an artifact any agent can run, so the answers stop depending on who's online."
+    },
+    {
+      "question": "Does it work with smaller models?",
+      "answer": "In practice, yes: an agent used the skill to take one of the team's repos from zero to running locally, and even a lighter model could follow it — as long as the skill itself was written clearly enough."
+    }
+  ]
 }

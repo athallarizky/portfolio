@@ -50,6 +50,17 @@ function renderNode(node: LexicalNode): string {
     }
     case 'listitem':
       return `<li>${node.children.map(renderNode).join('')}</li>`;
+    case 'linebreak':
+      return '<br />';
+    case 'table':
+      return `<table>${node.children.map(renderNode).join('')}</table>`;
+    case 'table-row':
+      return `<tr>${node.children.map(renderNode).join('')}</tr>`;
+    case 'table-cell': {
+      const cell = node as { type: 'table-cell'; headerState: number; children: LexicalNode[] };
+      const tag = cell.headerState ? 'th' : 'td';
+      return `<${tag}>${cell.children.map(renderNode).join('')}</${tag}>`;
+    }
     case 'upload': {
       const uploadNode = node as { type: 'upload'; value: { id: number }; fields: null; relationTo: string; version: number };
       if (!uploadNode.value?.id) return '';

@@ -90,22 +90,131 @@ function rootNode(children: Record<string, any>[]): Record<string, any> {
 }
 
 /** Markdown body → Lexical SerializedEditorState with real `code` nodes for fenced
- *  blocks. Prose segments go through the stock converter; empty segments are dropped. */
+ *  blocks and real `table` nodes for pipe tables. Prose goes through the stock
+ *  converter; empty segments are dropped. */
 export function mdBodyToLexical(markdown: string, editorConfig: EditorConfig): Record<string, any> {
-  const segments = splitMarkdownFences(markdown)
-  // No fences at all → stock conversion, byte-for-byte the legacy behavior.
-  if (!segments.some((s) => s.kind === 'code')) {
-    return mdToLexical(markdown, editorConfig) as Record<string, any>
-  }
   const children: Record<string, any>[] = []
-  for (const seg of segments) {
+  const inlineChildren = (md: string): Record<string, any>[] => {
+    const converted = mdToLexical(md, editorConfig) as any
+    return converted.root.children ?? []
+  }
+  for (const seg of splitMarkdownFences(markdown)) {
     if (seg.kind === 'code') {
       children.push(makeCodeNode(seg.lang ?? '', seg.text))
       continue
     }
-    if (!seg.text.trim()) continue
-    const converted = mdToLexical(seg.text, editorConfig) as any
-    children.push(...(converted.root.children ?? []))
+    for (const t of splitMarkdownTables(seg.text)) {
+      if (t.kind === 'table') {
+        children.push(makeTableNode(t.rows ?? [], inlineChildren))
+        continue
+      }
+      if (!t.text.trim()) continue
+      children.push(...inlineChildren(t.text))
+    }
   }
   return rootNode(children)
+}
+
+// ---- Markdown tables (sprint-30 follow-up): same story as the fences above — the
+// stock transformers have no table support, so pipe rows collapsed into paragraph
+// soup with literal `|` text. Bodies are pre-split on table blocks and each becomes
+// a hand-built table/table-row/table-cell node; cell content goes through the stock
+// inline converter so **bold**, links etc. keep working inside cells.
+
+export interface TableSegment {
+  kind: 'md' | 'table'
+  text: string
+  /** parsed rows (header first) — table segments only */
+  rows?: string[][]
+}
+
+/** `|---|---|` / `:---:` — pipes/colons/dashes/spaces with at least one dash run. */
+const isSeparatorRow = (line: string) => /^[\s|:-]+$/.test(line) && line.includes('-')
+
+/** `| a | b |` → ['a','b'] (outer pipes optional, cells trimmed). Escaped pipes
+ * (`\|`) inside cells are not handled — write around them. */
+export function parseTableRow(line: string): string[] {
+  return line
+    .trim()
+    .replace(/^\|/, '')
+    .replace(/\|$/, '')
+    .split('|')
+    .map((c) => c.trim())
+}
+
+/** Split a prose segment into md/table segments (order preserved). A table starts
+ * at a pipe-line whose next line is a separator row, and ends at the first
+ * non-pipe line. */
+export function splitMarkdownTables(md: string): TableSegment[] {
+  const lines = md.split('\n')
+  const segments: TableSegment[] = []
+  let buf: string[] = []
+  const flush = () => {
+    if (buf.length) segments.push({ kind: 'md', text: buf.join('\n') })
+    buf = []
+  }
+  const isRow = (l: string) => l.includes('|') && l.trim() !== ''
+  let i = 0
+  while (i < lines.length) {
+    if (isRow(lines[i]) && isSeparatorRow(lines[i + 1] ?? '')) {
+      flush()
+      const rows = [parseTableRow(lines[i])]
+      i += 2
+      while (i < lines.length && isRow(lines[i])) {
+        rows.push(parseTableRow(lines[i]))
+        i++
+      }
+      segments.push({ kind: 'table', text: '', rows })
+    } else {
+      buf.push(lines[i])
+      i++
+    }
+  }
+  flush()
+  return segments
+}
+
+function makeTableNode(
+  rows: string[][],
+  inlineChildren: (md: string) => Record<string, any>[],
+): Record<string, any> {
+  return {
+    type: 'table',
+    direction: 'ltr',
+    format: '',
+    indent: 0,
+    version: 1,
+    children: rows.map((cells, r) => ({
+      type: 'table-row',
+      direction: 'ltr',
+      format: '',
+      indent: 0,
+      version: 1,
+      children: cells.map((cell) => ({
+        type: 'table-cell',
+        direction: 'ltr',
+        format: '',
+        indent: 0,
+        version: 1,
+        colSpan: 1,
+        rowSpan: 1,
+        // headerState 3 = row+column header (Lexical TableCellHeaderState.BOTH)
+        headerState: r === 0 ? 3 : 0,
+        children: inlineChildren(cell).length ? inlineChildren(cell) : [paragraphNode(cell)],
+      })),
+    })),
+  }
+}
+
+function paragraphNode(text: string): Record<string, any> {
+  return {
+    type: 'paragraph',
+    direction: 'ltr',
+    format: '',
+    indent: 0,
+    version: 1,
+    children: [
+      { type: 'text', detail: 0, format: 0, mode: 'normal', style: '', textStyle: '', version: 1, text },
+    ],
+  }
 }

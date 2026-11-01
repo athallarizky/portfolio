@@ -877,6 +877,22 @@ a.exp-company:hover { color: var(--primary); }
 }
 .prose a { color: var(--secondary); text-decoration: underline; }
 .prose img { max-width: 100%; border-radius: 12px; margin: 16px 0; }
+/* Tables (sprint-30 follow-up: markdown pipe tables → Lexical table nodes) */
+.prose table {
+  display: block; /* horizontal scroll on narrow screens instead of crushing cells */
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0;
+  font-size: 14px;
+}
+.prose th, .prose td {
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  text-align: left;
+  vertical-align: top;
+}
+.prose th { background: var(--muted); font-weight: 700; color: var(--foreground); }
+.prose td p { margin: 0; }
 
 /* ---------- Answer-first & FAQ (sprint-30 AEO) ---------- */
 /* Lead answer: the article's excerpt as the first self-contained answer under the

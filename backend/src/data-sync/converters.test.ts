@@ -55,3 +55,35 @@ test('splitMarkdownFences: multiple fences in order', () => {
     ['md', 'code', 'md', 'code', 'md'],
   )
 })
+
+// ---- splitMarkdownTables (sprint-30 follow-up: pipe tables must not collapse
+// into paragraph soup) ----
+
+import { splitMarkdownTables, parseTableRow } from './converters'
+
+test('splitMarkdownTables: prose + table + prose, rows parsed', () => {
+  const md = 'before\n\n| A | B |\n|---|---|\n| 1 | 2 |\n| 3 | 4 |\n\nafter'
+  assert.deepEqual(splitMarkdownTables(md), [
+    // the blank line before the table rides the preceding md segment
+    { kind: 'md', text: 'before\n' },
+    { kind: 'table', text: '', rows: [['A', 'B'], ['1', '2'], ['3', '4']] },
+    { kind: 'md', text: '\nafter' },
+  ])
+})
+
+test('splitMarkdownTables: pipe line without separator row is NOT a table', () => {
+  const md = 'a | b\nstill prose'
+  assert.deepEqual(splitMarkdownTables(md), [{ kind: 'md', text: md }])
+})
+
+test('splitMarkdownTables: table ends at first non-pipe line (blank line after)', () => {
+  const md = '| H |\n|:-:|\n| x |\n\ntrailing'
+  const segs = splitMarkdownTables(md)
+  assert.equal(segs.length, 2) // table, then md — nothing before it
+  assert.deepEqual(segs[0].rows, [['H'], ['x']])
+})
+
+test('parseTableRow: outer pipes optional, cells trimmed', () => {
+  assert.deepEqual(parseTableRow('|  a  | b |'), ['a', 'b'])
+  assert.deepEqual(parseTableRow('a|b'), ['a', 'b'])
+})

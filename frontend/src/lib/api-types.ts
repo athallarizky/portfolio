@@ -203,6 +203,10 @@ export type LexicalNode =
   | { type: 'listitem'; children: LexicalNode[]; direction: string; format: string; indent: number; version: number }
   | { type: 'link'; children: LexicalNode[]; fields: { linkType: string; newTab: boolean; url: string } | null; direction: string | null; format: string; indent: number; version: number }
   | { type: 'upload'; value: { id: number }; fields: null; relationTo: string; version: number }
+  | { type: 'table'; children: LexicalNode[]; direction: string; format: string; indent: number; version: number }
+  | { type: 'table-row'; children: LexicalNode[]; direction: string; format: string; indent: number; version: number }
+  | { type: 'table-cell'; children: LexicalNode[]; headerState: number; colSpan: number; rowSpan: number; direction: string; format: string; indent: number; version: number }
+  | { type: 'linebreak'; version: number }
   | LexicalText;
 
 export interface LexicalText {

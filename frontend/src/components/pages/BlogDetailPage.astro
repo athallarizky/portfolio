@@ -23,6 +23,43 @@ const bannerIcon = article.bannerIcon || 'solar:rocket-bold';
 const bannerUrl = article.featuredImage?.sizes?.hero?.url ? `${API_ORIGIN}${article.featuredImage.sizes.hero.url}` : mediaUrl(article.featuredImage);
 const authorAvatarUrl = mediaThumbUrl(article.author.avatar); // sprint-28: sizes first (thumbnailURL can be malformed)
 const detailBase = locale === 'id' ? '/id/blogs' : '/blogs';
+
+// sprint-30 (AEO): structured data derived 1:1 from the props this page renders —
+// the answer-engine layer mirrors the visible content, never invents it.
+const origin = Astro.site ?? Astro.url.origin;
+const otherLocale = locale === 'id' ? 'en' : 'id';
+const counterpartPath = locale === 'id' ? `/blogs/${slug}` : `/id/blogs/${slug}`;
+const blogPosting = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: article.title,
+  description: article.seo?.metaDescription || article.excerpt,
+  inLanguage: locale,
+  datePublished: article.publishedAt,
+  dateModified: article.updatedAt || article.publishedAt,
+  author: { '@type': 'Person', name: article.author.name, url: `${origin}/` },
+  image: bannerUrl || new URL('/og.png', origin).href,
+  mainEntityOfPage: new URL(Astro.url.pathname, origin).href,
+  isPartOf: { '@type': 'WebSite', name: 'Athalla Rizky — Portfolio', url: `${origin}/` },
+  ...(translated
+    ? {
+        workTranslation: {
+          '@type': 'BlogPosting',
+          url: new URL(counterpartPath, origin).href,
+          inLanguage: otherLocale,
+        },
+      }
+    : {}),
+};
+const breadcrumb = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: `${origin}/` },
+    { '@type': 'ListItem', position: 2, name: 'Blogs', item: new URL(detailBase, origin).href },
+    { '@type': 'ListItem', position: 3, name: article.title },
+  ],
+};
 ---
 
 <BaseLayout
@@ -31,7 +68,7 @@ const detailBase = locale === 'id' ? '/id/blogs' : '/blogs';
   activeNav="/blogs"
   mesh={false}
   lang={locale}
-  description={article.excerpt || `${article.title} — an article by Athalla Rizky.`}
+  description={article.seo?.metaDescription || article.excerpt || `${article.title} — an article by Athalla Rizky.`}
   alternates={translated
     ? [
         { hreflang: 'en', href: `/blogs/${slug}` },
@@ -39,6 +76,7 @@ const detailBase = locale === 'id' ? '/id/blogs' : '/blogs';
         { hreflang: 'x-default', href: `/blogs/${slug}` },
       ]
     : []}
+  jsonLd={[blogPosting, breadcrumb]}
 >
   <div class="article-layout mt-4">
     <div class="article-main">

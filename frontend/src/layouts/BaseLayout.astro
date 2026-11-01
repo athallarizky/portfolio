@@ -3,10 +3,15 @@ import '../styles/styles.css';
 import Sidebar from '../components/shell/Sidebar.svelte';
 import Header from '../components/shell/Header.svelte';
 import { safeFetch } from '../lib/api';
-import type { Nav, SiteConfig } from '../lib/api-types';
+import type { Nav, SiteConfig, PaginatedResponse, SocialProfile } from '../lib/api-types';
 
 const nav = await safeFetch<Nav>('/globals/nav');
 const siteConfig = await safeFetch<SiteConfig>('/globals/site-config');
+
+// sprint-30 (AEO): Person.sameAs from the SocialProfiles collection — graceful omit
+// when the fetch yields nothing (never emit an empty array).
+const socials = await safeFetch<PaginatedResponse<SocialProfile>>('/social-profiles?sort=order');
+const sameAs = (socials.docs || []).map((p) => p.url).filter(Boolean);
 
 const contactEnabled = siteConfig.contactFormEnabled !== false;
 const docsEnabled = siteConfig.documentsEnabled !== false;
@@ -29,6 +34,9 @@ interface Props {
   /** hreflang alternates (relative hrefs, absolutized here). Empty on pages without a
    *  counterpart (e.g. an untranslated article's EN page). */
   alternates?: { hreflang: string; href: string }[];
+  /** Per-page structured data (sprint-30 AEO) — rendered as extra ld+json blocks in
+   *  <head>. Values must derive from data the page already renders; never hand-typed. */
+  jsonLd?: Record<string, unknown>[];
 }
 
 const {
@@ -40,6 +48,7 @@ const {
   mesh = true,
   lang = 'en',
   alternates = [],
+  jsonLd = [],
 } = Astro.props;
 
 // sprint-13: stable absolute URLs (Astro.site is set in astro.config.mjs).
@@ -85,7 +94,7 @@ const alternateLinks = alternates.map((a) => ({
 
   <title>{title} — Portfolio</title>
 
-  <!-- Structured data (sprint-13) -->
+  <!-- Structured data (sprint-13; sameAs sprint-30 AEO) -->
   <script type="application/ld+json" set:html={JSON.stringify({
     "@context": "https://schema.org",
     "@type": "Person",
@@ -93,7 +102,13 @@ const alternateLinks = alternates.map((a) => ({
     "url": "https://athallarizky.com",
     "jobTitle": "Full-Stack Engineer",
     "description": description,
+    ...(sameAs.length ? { sameAs } : {}),
   })} />
+
+  <!-- Per-page structured data (sprint-30 AEO) — emitted by content detail pages -->
+  {jsonLd?.map((schema) => (
+    <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+  ))}
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

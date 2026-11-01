@@ -23,6 +23,38 @@ const slug = project.slug;
 const bannerUrl = bannerUrlOf(project.bannerImage);
 const detailBase = locale === 'id' ? '/id/projects' : '/projects';
 const features = project.features || [];
+
+// sprint-30 (AEO): honest minimal project schema — every field maps to rendered data.
+// codeRepository only when a GitHub link actually exists on the page.
+const origin = Astro.site ?? Astro.url.origin;
+const pageUrl = new URL(Astro.url.pathname, origin).href;
+const sourceLink = project.links?.find((l) => l.url?.includes('github.com'));
+const projectPage = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: project.title,
+  description: project.seo?.metaDescription || project.excerpt,
+  inLanguage: locale,
+  url: pageUrl,
+  isPartOf: { '@type': 'WebSite', name: 'Athalla Rizky — Portfolio', url: `${origin}/` },
+  about: {
+    '@type': 'SoftwareApplication',
+    name: project.title,
+    description: project.excerpt,
+    url: pageUrl,
+    author: { '@type': 'Person', name: 'Athalla Rizky', url: `${origin}/` },
+    ...(sourceLink ? { codeRepository: sourceLink.url, downloadUrl: sourceLink.url } : {}),
+  },
+};
+const breadcrumb = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: `${origin}/` },
+    { '@type': 'ListItem', position: 2, name: 'Projects', item: new URL(detailBase, origin).href },
+    { '@type': 'ListItem', position: 3, name: project.title },
+  ],
+};
 ---
 
 <BaseLayout
@@ -31,7 +63,7 @@ const features = project.features || [];
   activeNav="/projects"
   mesh={false}
   lang={locale}
-  description={project.excerpt || `${project.descriptor || project.title}${project.year ? ` (${project.year})` : ''} — a project by Athalla Rizky.`}
+  description={project.seo?.metaDescription || project.excerpt || `${project.descriptor || project.title}${project.year ? ` (${project.year})` : ''} — a project by Athalla Rizky.`}
   alternates={translated
     ? [
         { hreflang: 'en', href: `/projects/${slug}` },
@@ -39,6 +71,7 @@ const features = project.features || [];
         { hreflang: 'x-default', href: `/projects/${slug}` },
       ]
     : []}
+  jsonLd={[projectPage, breadcrumb]}
 >
   <div class="article-layout mt-4">
     <div class="article-main">

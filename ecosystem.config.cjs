@@ -12,6 +12,9 @@ module.exports = {
       autorestart: true,
       max_restarts: 10,
       min_uptime: '10s',
+      // sprint-29 (sprint-11 RCA): bounded restart beats OOM-kill on the 2 GB box —
+      // PM2 recycles the process instead of the kernel taking out sshd next.
+      max_memory_restart: '1G',
     },
     {
       name: 'portfolio-frontend',
@@ -24,6 +27,7 @@ module.exports = {
       autorestart: true,
       max_restarts: 10,
       min_uptime: '10s',
+      max_memory_restart: '512M',
     },
   ],
 };

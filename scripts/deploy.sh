@@ -8,42 +8,23 @@
 #   2. Restarts PM2 so the new build is served.
 #
 # IMPORTANT: this script assumes the artifacts + package*.json were already
-# rsynced to /root/portfolio by the workflow. It must NOT overwrite backend/.env
-# or backend/payload.db (rsync excludes them — see architecture.md §7.5).
+# rsynced to /home/ubuntu/portfolio by the workflow. It must NOT overwrite
+# backend/.env (rsync excludes it) — that file is hand-maintained on the box.
+#
+# Sprint-29: runs as `ubuntu` (passwordless sudo). nginx conf management is
+# deliberately NOT automated: certbot --nginx rewrites the live conf (443 blocks),
+# so a deploy-time reinstall from git would clobber TLS. Conf changes are a rare,
+# manual op: ssh in → sudo cp scripts/nginx/portfolio.conf
+# /etc/nginx/sites-available/portfolio → sudo nginx -t → sudo systemctl reload nginx.
+
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-echo "=== nginx: allow content-zip uploads (idempotent, best-effort) ==="
-# Sprint-27: publish zips now carry git-tracked project screenshots (multi-MB PNGs),
-# POSTed to /api/data-import by the Publish workflows. nginx's default 1 MB
-# client_max_body_size rejects them with 413. Raise the limit once, verify with
-# nginx -t, reload; NEVER let this block the rest of the deploy.
-NGX_CONF='/etc/nginx/sites-available/portfolio'
-if [ ! -f "$NGX_CONF" ]; then
-  NGX_CONF=$(grep -rls 'server_name[^;]*athallarizky\.com' /etc/nginx/sites-available/ /etc/nginx/conf.d/ 2>/dev/null | head -1 || true)
-fi
-if [ -n "${NGX_CONF:-}" ] && [ -f "$NGX_CONF" ] && grep -q 'listen 443 ssl' "$NGX_CONF" && ! grep -q 'client_max_body_size' "$NGX_CONF"; then
-  cp "$NGX_CONF" "$NGX_CONF.pre-413fix"
-  sed -i '/listen 443 ssl/a\    client_max_body_size 100m;' "$NGX_CONF"
-  if nginx -t 2>/dev/null; then
-    if systemctl reload nginx 2>/dev/null || service nginx reload 2>/dev/null; then
-      echo "nginx: client_max_body_size 100m added to $NGX_CONF + reloaded"
-    else
-      echo "⚠️  nginx config updated but reload failed — will apply on next reload (deploy continues)"
-    fi
-  else
-    cp "$NGX_CONF.pre-413fix" "$NGX_CONF"
-    echo "⚠️  nginx -t failed after edit — reverted, reload skipped (deploy continues)"
-  fi
-else
-  echo "nginx: limit already set or config not found — skipping (deploy continues)"
-fi
-
 echo "=== Install backend runtime deps (no compile) ==="
 cd backend
 if [ ! -f .env ]; then
-  echo "❌ backend/.env not found. Copy backend/.env.example and fill in PAYLOAD_SECRET."
+  echo "❌ backend/.env not found. It is hand-maintained on the box — see sprint-29 AGENTS.md step 2.5."
   exit 1
 fi
 if grep -q 'your-secret-here' .env 2>/dev/null; then

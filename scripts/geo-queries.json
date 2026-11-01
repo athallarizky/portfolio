@@ -1,0 +1,13 @@
+{
+  "_comment": "Fixed query set for the GEO citation tracker. Do not edit casually — comparability across runs depends on the set staying stable. Add queries only at the end, never reorder.",
+  "selfDomains": ["athallarizky.com", "github.com/athallarizky"],
+  "queries": [
+    { "label": "brand-id",        "q": "apa itu krl-mcp" },
+    { "label": "brand-en",        "q": "krl-mcp MCP server jakarta commuter schedule" },
+    { "label": "topic-id",        "q": "mcp server untuk jadwal KRL commuter jakarta" },
+    { "label": "topic-broad",     "q": "cara bikin MCP server dengan golang" },
+    { "label": "article-android", "q": "cara mengontrol aplikasi android dengan ai agent tanpa root" },
+    { "label": "article-agents",  "q": "how do ai agents work internally while loop tools" },
+    { "label": "name",            "q": "athallarizky" }
+  ]
+}

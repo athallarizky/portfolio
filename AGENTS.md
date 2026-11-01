@@ -138,6 +138,20 @@ Two token layers in `frontend/src/styles/styles.css`:
 
 ## 5. Conventions
 
+### AEO / structured data (sprint-30)
+- Detail pages emit JSON-LD via BaseLayout's `jsonLd` prop — **values derive from the
+  props the page already renders; never hand-type schema** (schema that disagrees with
+  the visible page is a trust killer).
+- Articles may carry a localized `faq` array → rendered as the visible FAQ section AND
+  `FAQPage` JSON-LD from the same source (schema must mirror on-page content).
+- `LOCALIZED_FIELDS` (data-sync `keys.ts`) is the engine's contract table — a new
+  localized field must be added there too, or overlays silently drop it.
+- Verify with `node scripts/aeo-check.mjs [baseURL]` (32 assertions; runs against a
+  local boot or prod). Layer-4 validators (validator.schema.org / Rich Results) need a
+  public URL. FAQ *rich-result display* is deprecated for personal sites (2023) — the
+  claim is extractability, not SERP dropdowns.
+- `llms.txt` is hand-curated (flagship subset) — update it when flagship content changes.
+
 ### Add a page
 1. Create `frontend/src/pages/<name>.astro` (copy `projects.astro` as a template).
 2. Wrap in `BaseLayout` (gives the sidebar/header shell); set `activeNav`.
@@ -281,7 +295,9 @@ Toggle via the sidebar button; persisted in `localStorage['portfolio-theme']`;
 | 28 | **Post-migration repair** — three data-sync engine defects fixed at the root (portable global relations, timestamp preservation, experiences in the sync set) + pagination UX; 113/113 tests. ([final-report](docs/sprint-28/reports/final-report.md)) |
 | 29 | **Prod homecoming → Tencent VPS** — compute back to a fresh box (ubuntu, nginx + PM2) against the unchanged Neon + R2; one trunk / `DEPLOY_TARGET` dual-build (vercel↔node adapters); resurrected build-on-runner `deploy.yml` (webpack — Turbopack artifacts aren't relocatable, RCA); nginx `proxy_cache` 60 s replaces ISR; Vercel kept as the DNS-flip rollback. Full parity proven by pinned sweep; cutover in one day. ([final-report](docs/sprint-29/reports/final-report.md)) |
 
-Latest detail: [`docs/sprint-29/reports/final-report.md`](docs/sprint-29/reports/final-report.md).
+| 30 | **AEO — make the portfolio quotable** — per-content JSON-LD (`BlogPosting` + `workTranslation` mirroring hreflang, `WebPage`/`SoftwareApplication`, `BreadcrumbList`, `Person.sameAs`); answer-first lead block + localized `faq` field → visible section + `FAQPage` schema (one source, schema = visible twin); `llms.txt` + explicit AI-crawler policy; `scripts/aeo-check.mjs` (32 cross-consistency assertions, runs vs any base URL). GEO garnish only — extractability proven, citation-share is weeks-scale monitoring. ([final-report](docs/sprint-30/reports/final-report.md)) |
+
+Latest detail: [`docs/sprint-30/reports/final-report.md`](docs/sprint-30/reports/final-report.md).
 
 ---
 

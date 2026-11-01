@@ -1,0 +1,63 @@
+{
+  "at": "2026-11-01T15:32:00.978Z",
+  "model": "manual:perplexity",
+  "results": [
+    {
+      "label": "brand-id",
+      "query": "apa itu krl-mcp",
+      "citations": [],
+      "selfCited": false,
+      "selfUrls": []
+    },
+    {
+      "label": "brand-en",
+      "query": "krl-mcp MCP server jakarta commuter schedule",
+      "citations": [],
+      "selfCited": true,
+      "selfUrls": [
+        "https://github.com/athallarizky/krl-mcp"
+      ]
+    },
+    {
+      "label": "topic-id",
+      "query": "mcp server untuk jadwal KRL commuter jakarta",
+      "citations": [],
+      "selfCited": true,
+      "selfUrls": [
+        "https://github.com/athallarizky/krl-mcp"
+      ]
+    },
+    {
+      "label": "topic-broad",
+      "query": "cara bikin MCP server dengan golang",
+      "citations": [],
+      "selfCited": false,
+      "selfUrls": []
+    },
+    {
+      "label": "article-android",
+      "query": "cara mengontrol aplikasi android dengan ai agent tanpa root",
+      "citations": [],
+      "selfCited": false,
+      "selfUrls": []
+    },
+    {
+      "label": "article-agents",
+      "query": "how do ai agents work internally while loop tools",
+      "citations": [],
+      "selfCited": false,
+      "selfUrls": []
+    },
+    {
+      "label": "name",
+      "query": "athallarizky",
+      "citations": [],
+      "selfCited": true,
+      "selfUrls": [
+        "https://athallarizky.com/",
+        "https://www.linkedin.com/in/athallarizky",
+        "https://github.com/athallarizky"
+      ]
+    }
+  ]
+}

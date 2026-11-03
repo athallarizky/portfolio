@@ -100,6 +100,12 @@ export default buildConfig({
               generateFileURL: ({ filename, prefix = '' }) =>
                 `${process.env.S3_PUBLIC_BASE_URL}/${prefix}${filename}`,
             },
+            // documents join R2 (2026-11-03): the Resume lived on box disk and a deploy
+            // wiped it once; box-persistent storage is a bug class, not a feature.
+            documents: {
+              generateFileURL: ({ filename, prefix = '' }) =>
+                `${process.env.S3_PUBLIC_BASE_URL}/${prefix}${filename}`,
+            },
           },
         }),
       ]

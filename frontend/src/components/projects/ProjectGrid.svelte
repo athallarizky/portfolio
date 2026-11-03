@@ -23,20 +23,32 @@
   let currentPage = 1;
 
   // Sprint-28: the page lives in the URL (?page=N) so detail → back returns to the
-  // same page. Initialized from the address bar; kept in sync via history.replaceState
-  // (no extra history entries — back from a detail page lands here with the param).
-  onMount(() => {
+  // same page. Sprint-31: page-to-page navigation now WALKS browser history
+  // (pushState) — back from page 3 lands on page 2 instead of leaving the list;
+  // popstate re-syncs the component when the user walks those entries. Sprint-28's
+  // detail-back contract is untouched (detail → back returns to ?page=N).
+  function syncFromUrl() {
     const raw = new URLSearchParams(window.location.search).get('page');
     const n = raw ? parseInt(raw, 10) : NaN;
-    if (Number.isInteger(n) && n >= 1) currentPage = n;
+    currentPage = Number.isInteger(n) && n >= 1 ? n : 1;
+  }
+
+  onMount(() => {
+    syncFromUrl();
+    const onPop = () => syncFromUrl();
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
   });
 
-  function goToPage(n: number) {
+  /** `replace: true` for silent auto-corrections (e.g. clamping the page after a
+   *  search shrinks totalPages) — those must not litter browser history. */
+  function goToPage(n: number, { replace = false } = {}) {
     currentPage = n;
     const url = new URL(window.location.href);
     if (n <= 1) url.searchParams.delete('page');
     else url.searchParams.set('page', String(n));
-    history.replaceState(null, '', url);
+    if (replace) history.replaceState(null, '', url);
+    else history.pushState(null, '', url);
   }
 
   $: matching = projects.filter((p) => {
@@ -53,7 +65,7 @@
   $: start = (currentPage - 1) * pageSize;
   $: paged = matching.slice(start, start + pageSize);
 
-  $: if (currentPage > totalPages) goToPage(totalPages);
+  $: if (currentPage > totalPages) goToPage(totalPages, { replace: true });
 </script>
 
 <SearchInput bind:value={query} placeholder="Search projects" maxWidth="100%" />

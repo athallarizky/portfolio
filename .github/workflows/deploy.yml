@@ -73,6 +73,9 @@ jobs:
       #    --delete keeps the VPS tidy. Excluded files are PROTECTED from
       #    deletion by plain --delete (only --delete-excluded would remove them),
       #    so backend/.env on the box is safe. DO NOT add --delete-excluded.
+      #    '/documents' is disk-served uploads (the Resume) — box-persistent
+      #    like .env; a deploy once wiped it (2026-11-03). Media is NOT here:
+      #    it lives in R2 via the storage plugin.
       - name: Sync backend to VPS
         run: |
           rsync -az --delete \
@@ -82,7 +85,7 @@ jobs:
             --exclude 'portfolio-snapshot-*.zip' \
             --exclude 'node_modules' \
             --exclude '.next/cache' \
-            --exclude '/documents' \   # disk-served uploads (Resume) — box-persistent like .env (a deploy once wiped it)
+            --exclude '/documents' \
             backend/ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/home/ubuntu/portfolio/backend/
 
       # ── 6. Sync frontend artifacts to the VPS ─────────────────────────────

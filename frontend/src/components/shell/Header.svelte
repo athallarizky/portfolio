@@ -12,7 +12,10 @@
     </button>
     <div class="header-title-row">
       <div class="accent-bar"></div>
-      <span class="page-title">{pageTitle}</span>
+      <!-- single-line ellipsis (sprint-31 fix): long titles kept the bar at a stable
+           64px on mobile instead of wrapping — full title stays in the page content
+           and in this hover tooltip. -->
+      <span class="page-title" title={pageTitle}>{pageTitle}</span>
     </div>
   </div>
   <div class="header-right">

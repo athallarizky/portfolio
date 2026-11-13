@@ -10,9 +10,34 @@
     "productivity"
   ],
   "links": [
-    { "label": "Source", "icon": "mdi:github", "url": "https://github.com/athallarizky/cv-tailor" }
+    {
+      "label": "Source",
+      "icon": "mdi:github",
+      "url": "https://github.com/athallarizky/cv-tailor"
+    }
   ],
   "body": "## Overview\n\nAsk an LLM to \"tailor my CV for this job posting\" and you get two failure modes at once: generic templates that ignore the job description, and confident fabrication — invented metrics, claimed-but-unused technologies, inflated titles. CV Tailor is an agentic skill for Claude Code (a `SKILL.md` pipeline any AI agent can execute) designed against both: it produces a genuinely tailored, ATS-friendly LaTeX CV **where every bullet traces back to a source file you control**.\n\n## The Pipeline\n\n```\njob description (URL or text)\n        │\n        ▼\n1–3  fetch JD · read your resource library · extract seniority/stack/culture signals\n        ▼\n4    FIT ASSESSMENT — 3–5 strongest matches, 1–3 honest gaps,\n        verdict (Qualified / Stretch / Overqualified) — shown BEFORE any drafting\n        ▼\n5–8  select bullets (ownership-first, compressed for older roles) · rewrite\n        impact-first (XYZ: Outcome → Metric → Mechanism, ≤2 lines) · tailor\n        summary to your voice · mirror JD keywords verbatim for ATS\n        ▼\n9–10  write Markdown + LaTeX · compile (tectonic → pdflatex → xelatex → latexmk)\n        · debrief + archive to iCloud (per-company folders, aux files never sync)\n```\n\nThe structural piece is the **resource library**: experiences live as brag files with structured sections — *What I Did / Impact / Context / Framing Notes* — where framing notes say which angle to emphasize per role type (the same CI/CD project reads as reliability for SRE, cost savings for FinOps). Selection is a real retrieval problem, not generation: the skill picks and re-frames what exists.\n\n## Honesty Rules (the actual feature)\n\n- **No fabricated metrics** — every number traces to `resources/experiences/`; unquantified impact stays descriptive\n- **No claimed technologies** you haven't used — missing skills surface as *gaps in the fit assessment*, not as skills\n- **No title inflation** — official titles stay; scope shows through ownership verbs\n- **Pushes back** — requests to add unverified tools or numbers are refused by design\n\n## Privacy & Tooling\n\n- **Privacy by gitignore**: the repo ships only `*.template.md` skeletons; real contact details, experience files, and brag notes never leave your machine via git\n- **Templates**: single-column ATS-friendly LaTeX with `glyphtounicode` (machine-readable PDF), 1–2 page discipline — cut bullets, never shrink fonts; dual-engine (pdfTeX/XeTeX compile identically)\n- **Tectonic bootstrap**: `setup.sh` installs a single static LaTeX binary (~30 MB, no sudo) — no TeX Live marathon\n",
   "architecture": "cv-tailor/\n├── SKILL.md              # the skill: 10-step pipeline, modes, honesty rules\n├── resources/\n│   ├── meta/              # contact · about (voice) · location (templates only in git)\n│   ├── educations/        # degrees, honors\n│   └── experiences/       # brag files: What I Did / Impact / Context /\n│                         #   Framing Notes + YAML meta (featured, overlap_risk)\n├── templates/\n│   └── ats-friendly-technical-resume/   # LaTeX + Markdown, dual-engine\n├── scripts/               # setup.sh (tectonic) · compile.sh · publish-icloud.sh\n└── output/                # generated CVs (gitignored → archived to iCloud)\n…",
-  "status": "published"
+  "status": "published",
+  "bannerImage": {
+    "file": "thumbnail.png",
+    "alt": "CV Tailor in Claude Code — a job description goes in, a fit assessment with matches, gaps, and a verdict comes out before any drafting"
+  },
+  "screenshots": [
+    {
+      "file": "thumbnail.png",
+      "alt": "The fit-assessment step — strongest matches, honest gaps, verdict shown before drafting",
+      "caption": "Fit assessment first: should you even apply?"
+    },
+    {
+      "file": "screenshot-1.png",
+      "alt": "The compiled tailored CV — ATS-friendly single-column LaTeX output",
+      "caption": "The output: a compiled, tailored, ATS-friendly CV."
+    },
+    {
+      "file": "screenshot-2.png",
+      "alt": "The resource library — experience brag files with What I Did, Impact, and Context sections",
+      "caption": "The grounding: every bullet traces to a brag file you control."
+    }
+  ]
 }

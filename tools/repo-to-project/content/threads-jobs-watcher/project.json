@@ -12,5 +12,26 @@
   "links": [],
   "body": "## Overview\n\nJob postings on Threads move fast and bury fast. Threads Jobs Watcher turns that firehose into a daily digest: every two hours (07:00–22:00 WIB) it searches Threads for Indonesian IT vacancies — frontend, fullstack, AI engineer — filters what it finds through a calibrated scoring model, deduplicates against seen posts, and delivers the survivors two ways: a Telegram digest to a private topic, and a full markdown archive (the entire thread content plus metadata, categorized by role) auto-pushed to a private org repo. Runs unattended on macOS `launchd`; a run with zero findings stays silent on purpose.\n\n*(The repo is private — it contains scraping infrastructure and operational details — so there is no public source link.)*\n\n## Architecture & Flow\n\n```\nlaunchd (macOS) ── every 2h, 07:00–22:00 WIB, random minute offset\n   └─ runner.sh ── jitter 0–15 min → scraper.py\n        ├─ CloakBrowser (stealth Chromium, headed + humanized input)\n        │   └─ persistent burner profile: profiles/threads-burner/ (gitignored)\n        ├─ per-query search on threads.com → scroll → extract posts\n        ├─ filter: anchor terms (required) + keyword score + location hints\n        ├─ dedup vs state.json (local, incremental)\n        ├─ reports/YYYY-MM-DD/run-*.json → auto-push (private repo)\n        ├─ markdown tree → categorized archive (fullstack | ai | frontend |\n        │   backend | data | mobile | devops | qa | other)\n        └─ Telegram digest → notify.py via `hermes send` (bot-side tokens —\n            zero credentials live in this repo)\n```\n\n**Why the timing looks like this.** The two-hour cadence with a random minute offset plus 0–15 min runner jitter is deliberate: fixed-interval, on-the-dot requests are the cheapest bot fingerprint there is. The watcher behaves like an inconsistent human instead.\n\n**Filter calibration as config, not code.** `config.py` carries the whole scoring model — `ANCHORS` (a post must contain hiring language at all), `INCLUDE_KW` (+1), `EXCLUDE_KW` (−2), `LOCATION_HINTS` (+1), and a `MIN_SCORE` threshold. Every knob is testable without touching a browser (`test_filter.py` runs the logic against fixtures), so tuning precision/recall is a config edit, not a re-run of a scrape.\n\n**Dual sinks, different jobs.** The Telegram digest is for acting fast (new postings age out in days); the categorized markdown archive is for looking back — full thread bodies under `5-nov-2026/<kategori>/<username>-N.md`, which makes the archive greppable history of the Indonesian IT job market as a side effect.\n\n## Security & Ops Stance\n\n- **Burner account only** — the Threads session belongs to a disposable account; suspension costs nothing\n- **Zero credentials in repo** — Telegram delivery goes through Hermes (`hermes send`), so the bot token never appears in code, logs, or printed output\n- **Session/state hygiene** — `profiles/`, `.env`, `logs/`, `state.json` all gitignored; logs prune themselves after 14 days\n- **Silent-by-default** — no findings means no message; the digest's signal-to-noise is the feature\n",
   "architecture": "threads-jobs-watcher/  (private)\n├── scraper.py            # CloakBrowser session → search → scroll → extract posts\n├── config.py             # queries · ANCHORS · INCLUDE/EXCLUDE_KW · LOCATION_HINTS · MIN_SCORE\n├── test_filter.py        # filter logic vs fixtures — calibration without a browser\n├── notify.py             # Telegram digest via hermes send (token lives bot-side)\n├── login_setup.py        # one-time manual burner login (headed window)\n├── runner.sh             # jitter + run + log prune\n├── push_reports.sh       # report + archive auto-push\n├── reports/YYYY-MM-DD/   # run JSONs (gitignored locally, pushed to private archive)\n└── launchd plist         # every 2h 07:00–22:00 WIB, randomized offset\n…",
-  "status": "published"
+  "status": "published",
+  "bannerImage": {
+    "file": "thumbnail.png",
+    "alt": "The Telegram digest — curated Indonesian IT job postings delivered to the Job Watch topic"
+  },
+  "screenshots": [
+    {
+      "file": "thumbnail.png",
+      "alt": "Telegram digest in the Job Watch topic — filtered postings with roles, locations, and links",
+      "caption": "Every two hours: only what survived the filter."
+    },
+    {
+      "file": "screenshot-1.png",
+      "alt": "The categorized markdown archive — dated folders by role category, one file per posting",
+      "caption": "The archive side: a greppable history of the Indonesian IT job market."
+    },
+    {
+      "file": "screenshot-2.png",
+      "alt": "One archived thread report open — the full posting content with metadata",
+      "caption": "Each posting kept whole — thread body plus metadata."
+    }
+  ]
 }

@@ -79,6 +79,15 @@
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   })
+
+  // lock body scroll while open — zoom/pan transforms can otherwise create
+  // a horizontal scrollbar on the page behind the overlay
+  $effect(() => {
+    if (!open) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = prev }
+  })
 </script>
 
 <div class="screenshot-row">
@@ -210,8 +219,10 @@
   }
   .lb-photo.lb-has-img {
     background: var(--card) !important;
-    width: min(90vw, none); max-width: 90vw;
-    height: auto; max-height: 85vh;
+    /* shrink-wrap the image — the box IS the photo (was an invalid min(90vw, none)
+       that dropped, leaving a rigid width behind) */
+    width: auto; height: auto;
+    max-width: 90vw; max-height: 85vh;
   }
   .lb-photo img {
     max-width: 90vw; max-height: 85vh; object-fit: contain;

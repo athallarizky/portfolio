@@ -75,8 +75,11 @@
     <article class="card is-hoverable project-card">
       <a href={`${base}/projects/${p.slug}`} style="display:block; text-decoration:none; color:inherit;">
         {#if bannerSrc(p)}
+          <!-- full-ratio (2026-11-13): banners are ~5:3 screenshots — a 140px cover crop
+               amputated two-thirds of them. height:auto shows the whole shot; ratios are
+               uniform enough (~1.55–1.70) that grid rows stay visually even. -->
           <img src={bannerSrc(p)!} alt={p.bannerImage?.alt || p.title} loading="lazy"
-               style={`height: 140px; width: 100%; object-fit: cover; border-radius: 12px; margin-bottom:12px; display:block;`} />
+               style={`width: 100%; height: auto; border-radius: 12px; margin-bottom:12px; display:block;`} />
         {:else}
           <div style={`height: 140px; border-radius: 12px; background: ${p.bannerColor}; display:flex; align-items:center; justify-content:center; margin-bottom:12px;`}>
             <Icon icon={p.bannerIcon || 'solar:rocket-bold'} width={48} height={48} />
